@@ -1,0 +1,226 @@
+<?php
+
+namespace App\Exports;
+
+use Throwable;
+use Vtiful\Kernel\Excel;
+use App\Models\Customer;
+use App\Models\ExportTask;
+use App\Models\CustomerPhone;
+use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+
+class CustomerExport implements ShouldQueue
+{
+    use Queueable;
+
+    protected ExportTask $task;
+    protected array $request;
+    protected ?int $user_id;
+
+    /**
+     * 存储文件系统配置
+     * @var string
+     */
+    protected string $disk = 'public';
+
+    /**
+     * 分批处理数据的大小
+     * @var int
+     */
+    protected int $chunkSize = 1000;
+
+    /**
+     * 设置任务超时时间
+     * @var int
+     */
+    public int $timeout = 1200;
+
+    public function __construct(array $request, ExportTask $task, int $user_id)
+    {
+        $this->task    = $task;
+        $this->request = $request;
+        $this->user_id = $user_id;
+    }
+
+    public function handle(): void
+    {
+        try {
+            // 更新任务状态为处理中
+            $this->task->update([
+                'status'     => 'processing',
+                'started_at' => now(),
+            ]);
+
+            // 获取存储路径
+            $path = Storage::disk($this->disk)->path(dirname($this->task->file_path));
+
+            // 检查并创建目录（仅本地存储需要）
+            if ($this->isLocalStorage()) {
+                if (!is_dir($path)) {
+                    mkdir($path, 0755, true);
+                }
+            }
+
+            // 初始化 xlswriter
+            $excel = new Excel(['path' => $path]);
+
+            // 设置导出文件名
+            $sheet = $excel->constMemory(basename($this->task->file_path), 'Sheet1', false);
+
+            // 设置表头
+            $headers = [
+                '顾客卡号',
+                '顾客姓名',
+                '联系QQ',
+                '微信号码',
+                '身份证号',
+                '职业信息',
+                '经济能力',
+                '婚姻状况',
+                '性别',
+                '生日',
+                '年龄',
+                '联系电话',
+                '通讯地址',
+                '会员等级',
+                '首次来源',
+                '累计付款',
+                '账户余额',
+                '累计消费',
+                '累计欠款',
+                '现有积分',
+                '已用积分',
+                '初诊日期',
+                '最近光临',
+                '最近回访',
+                '开发人员',
+                '现场咨询',
+                '建档人员',
+                '建档时间',
+                '备注信息',
+            ];
+            $sheet->header($headers);
+
+            // 设置列宽
+            $sheet->setColumn('A:A', 15);
+            $sheet->setColumn('B:B', 20);
+            $sheet->setColumn('E:E', 20);
+            $sheet->setColumn('L:L', 20);
+
+            // 写入数据
+            $query = $this->getQuery();
+
+            // 分批处理数据并直接写入
+            $query->chunk($this->chunkSize, function ($records) use ($sheet) {
+                $batchData = [];
+                foreach ($records as $row) {
+                    $batchData[] = [
+                        $row->idcard,
+                        $row->name,
+                        $row->qq,
+                        $row->wechat,
+                        $row->sfz,
+                        $row->job_id,
+                        $row->economic_id,
+                        $row->marital,
+                        $row->sex == 1 ? '男' : ($row->sex == 2 ? '女' : '未知'),
+                        $row->birthday,
+                        $row->age,
+                        $row->phones->map(fn(CustomerPhone $customerPhone) => $customerPhone->getRawOriginal('phone'))->implode(','),
+                        $row->address_id,
+                        $row->level_id,
+                        get_medium_name($row->medium_id),
+                        $row->total_payment,
+                        $row->balance,
+                        $row->amount,
+                        $row->arrearage,
+                        $row->integral,
+                        $row->expend_integral,
+                        $row->first_time,
+                        $row->last_time,
+                        $row->last_followup,
+                        get_user_name($row->ascription),
+                        get_user_name($row->consultant),
+                        get_user_name($row->user_id),
+                        $row->created_at->toDateTimeString(),
+                        $row->remark,
+                    ];
+                }
+                // 每一批数据直接写入文件
+                if (!empty($batchData)) {
+                    $sheet->data($batchData);
+                }
+            });
+
+            // 导出文件
+            $sheet->output();
+
+            // 关闭文件
+            $excel->close();
+
+            // 更新任务状态为完成
+            $this->task->update([
+                'status'       => 'completed',
+                'completed_at' => now(),
+            ]);
+
+        } catch (Throwable $exception) {
+            $this->task->update([
+                'status'        => 'failed',
+                'failed_at'     => now(),
+                'error_message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    protected function getQuery()
+    {
+        $keyword  = $this->request['keyword'] ?? null;
+        $filters  = $this->request['filters'] ?? [];
+        $group_id = ($this->request['group_id'] ?? 'all') === 'all' ? null : $this->request['group_id'];
+
+        return Customer::query()
+            ->select(['customer.*'])
+            ->with(['phones'])
+            ->when($keyword, fn(Builder $query) => $query->where('keyword', 'like', "%{$keyword}%"))
+            ->when($group_id, fn(Builder $query) => $query->leftJoin('customer_group_details', 'customer_group_details.customer_id', '=', 'customer.id')
+                ->where('customer_group_details.customer_group_id', $group_id)
+            )
+            ->queryConditions('CustomerIndex', $filters)
+            // 权限限制
+            ->when(!user($this->user_id)->hasAnyAccess(['superuser', 'customer.view.all']), function (Builder $query) {
+                $ids = user($this->user_id)->getCustomerViewUsersPermission();
+                $query->where(function ($query) use ($ids) {
+                    $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
+                });
+            })
+            ->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * 任务失败时调用
+     * @param Throwable $exception
+     * @return void
+     */
+    public function failed(Throwable $exception): void
+    {
+        $this->task->update([
+            'status'        => 'failed',
+            'failed_at'     => now(),
+            'error_message' => '导出任务执行失败: ' . $exception->getMessage(),
+        ]);
+    }
+
+    /**
+     * 判断当前存储是否为本地存储
+     * @return bool
+     */
+    protected function isLocalStorage(): bool
+    {
+        return Storage::disk($this->disk)->getAdapter() instanceof LocalFilesystemAdapter;
+    }
+}
