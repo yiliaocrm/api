@@ -53,10 +53,15 @@ class MediumController extends Controller
      */
     public function create(MediumRequest $request): JsonResponse
     {
-        $medium = Medium::query()->create(
-            $request->formData()
-        );
-        return response_success($medium);
+        $formData = $request->formData();
+
+        // 批量创建
+        $createdRecords = [];
+        foreach ($formData as $data) {
+            $createdRecords[] = Medium::query()->create($data);
+        }
+
+        return response_success($createdRecords);
     }
 
     /**

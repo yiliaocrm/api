@@ -179,17 +179,30 @@ class MediumRequest extends FormRequest
      */
     public function formData(): array
     {
-        $data = [
+        $actionMethod = request()->route()->getActionMethod();
+
+        // 新增模式：支持批量创建，返回二维数组
+        if ($actionMethod === 'create') {
+            $names = explode("\n", $this->input('name'));
+            $names = array_filter(array_map('trim', $names)); // 去除空行和首尾空格
+
+            $result = [];
+            foreach ($names as $name) {
+                $result[] = [
+                    'name'           => $name,
+                    'parentid'       => $this->input('parentid') ?? 0,
+                    'create_user_id' => user()->id,
+                ];
+            }
+
+            return $result;
+        }
+
+        // 更新模式：返回一维数组
+        return [
             'name'     => $this->input('name'),
             'parentid' => $this->input('parentid') ?? 0,
         ];
-
-        // 新增
-        if (request()->route()->getActionMethod() == 'create') {
-            $data['create_user_id'] = user()->id;
-        }
-
-        return $data;
     }
 
     private function getSwapRules(): array
