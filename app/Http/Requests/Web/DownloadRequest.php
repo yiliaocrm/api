@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Web;
 
 use App\Models\ExportTask;
+use App\Enums\ExportTaskStatus;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -47,7 +48,7 @@ class DownloadRequest extends FormRequest
                     }
 
                     // 检查任务状态
-                    if ($task->status !== 'completed') {
+                    if ($task->status !== ExportTaskStatus::COMPLETED) {
                         $fail('导出任务未完成');
                         return;
                     }
