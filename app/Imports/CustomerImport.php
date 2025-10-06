@@ -54,14 +54,14 @@ class CustomerImport implements ToCollection, WithHeadingRow, WithChunkReading, 
                     'id'          => $customer_id,
                     'name'        => $row['顾客姓名'],
                     'sex'         => (isset($row['顾客性别']) && $row['顾客性别'] == '男') ? 1 : 2,
-                    'age'         => $row['顾客年龄'],
+                    'age'         => empty($row['顾客年龄']) ? null : intval($row['顾客年龄']),
                     'idcard'      => $row['顾客卡号'] ?? date('Ymd') . str_pad($count, 4, '0', STR_PAD_LEFT),
                     'file_number' => $row['档案编号'] ?? null,
                     'sfz'         => $row['身份证号'] ?? null,
                     'address_id'  => $address->where('name', $row['通讯地址'])->first()->id,
                     'medium_id'   => $medium->where('name', $row['首次来源'])->first()->id,
                     'job_id'      => $job->where('name', $row['职业信息'])->first()->id ?? null,
-                    'birthday'    => $row['顾客生日'] ?? null,
+                    'birthday'    => empty($row['顾客生日']) ? null : $row['顾客生日'],
                     'qq'          => $row['联系QQ'] ?? null,
                     'wechat'      => $row['微信号码'] ?? null,
                     'marital'     => $row['婚姻状况'] ? $marital[$row['婚姻状况']] : null,
@@ -101,7 +101,7 @@ class CustomerImport implements ToCollection, WithHeadingRow, WithChunkReading, 
                 if (!$row['顾客卡号']) {
                     $count++;
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 // 记录错误和行信息到日志或其他存储系统
                 Log::error("Error processing row: {$index}", [
                     'row'   => $row->toArray(),
@@ -151,7 +151,7 @@ class CustomerImport implements ToCollection, WithHeadingRow, WithChunkReading, 
      */
     public function chunkSize(): int
     {
-        return 300;
+        return 100;
     }
 
     /**
@@ -160,7 +160,7 @@ class CustomerImport implements ToCollection, WithHeadingRow, WithChunkReading, 
      */
     public function batchSize(): int
     {
-        return 300;
+        return 100;
     }
 
     /**
