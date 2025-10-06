@@ -57,7 +57,6 @@ class AuthRequest extends FormRequest
                 'code' => [
                     'required',
                     function ($attribute, $value, $fail) {
-                        info($value);
                         $userId = Cache::get('login_token_' . $value);
                         if (!$userId) {
                             $fail('一键登录链接已过期或无效！');
