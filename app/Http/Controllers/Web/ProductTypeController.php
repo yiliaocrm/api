@@ -7,13 +7,10 @@ use Throwable;
 use App\Models\Item;
 use App\Models\ProductType;
 use App\Exceptions\HisException;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ProductType\CreateRequest;
-use App\Http\Requests\ProductType\MoveRequest;
-use App\Http\Requests\ProductType\RemoveRequest;
-use App\Http\Requests\ProductType\UpdateRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductTypeRequest;
 
 class ProductTypeController extends Controller
 {
@@ -26,22 +23,17 @@ class ProductTypeController extends Controller
         $type = ProductType::query()
             ->select(['id', 'name AS text', 'parentid', 'child', 'tree'])
             ->get()
-            ->each(function ($v) {
-                if ($v->id !== 1 && $v->parentid !== 1) {
-                    $v->state = $v->child ? 'closed' : 'open';
-                }
-            })
             ->toArray();
         return response_success(list_to_tree($type));
     }
 
     /**
      * 创建分类
-     * @param CreateRequest $request
+     * @param ProductTypeRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function create(CreateRequest $request): JsonResponse
+    public function create(ProductTypeRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -69,11 +61,11 @@ class ProductTypeController extends Controller
 
     /**
      * 更新分类名称
-     * @param UpdateRequest $request
+     * @param ProductTypeRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function update(UpdateRequest $request): JsonResponse
+    public function update(ProductTypeRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -101,11 +93,11 @@ class ProductTypeController extends Controller
 
     /**
      * 删除分类
-     * @param RemoveRequest $request
+     * @param ProductTypeRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function remove(RemoveRequest $request): JsonResponse
+    public function remove(ProductTypeRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -129,11 +121,11 @@ class ProductTypeController extends Controller
 
     /**
      * 移动节点
-     * @param MoveRequest $request
+     * @param ProductTypeRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function move(MoveRequest $request): JsonResponse
+    public function move(ProductTypeRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -158,11 +150,6 @@ class ProductTypeController extends Controller
                 ->orWhere('id', $type->id)
                 ->orderBy('id', 'ASC')
                 ->get()
-                ->each(function ($v) {
-                    if ($v->id !== 1 && $v->parentid !== 1) {
-                        $v->state = $v->child ? 'closed' : 'open';
-                    }
-                })
                 ->toArray();
 
             DB::commit();
