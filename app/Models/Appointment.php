@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AppointmentStatus;
 use App\Traits\QueryConditionsTrait;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,7 +18,7 @@ class Appointment extends BaseModel
     protected function casts(): array
     {
         return [
-            'items' => 'array',
+            'items'  => 'array',
             'status' => AppointmentStatus::class
         ];
     }
@@ -101,5 +102,16 @@ class Appointment extends BaseModel
     public function customerLog(): BelongsTo
     {
         return $this->belongsTo(CustomerLog::class);
+    }
+
+    /**
+     * 获取状态文本
+     * @return Attribute
+     */
+    protected function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->status->getLabel(),
+        );
     }
 }

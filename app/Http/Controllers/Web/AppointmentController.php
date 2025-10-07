@@ -33,13 +33,17 @@ class AppointmentController extends Controller
                 'department:id,name',
                 'createUser:id,name'
             ])
-            ->select(['appointments.*'])
+            ->select([
+                'appointments.*'
+            ])
             ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
-            ->queryConditions('AppointmentList')
+            ->queryConditions('AppointmentIndex')
             ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->when($request->has('status'), fn(Builder $query) => $query->where('status', $status))
             ->orderBy("appointments.{$sort}", $order)
             ->paginate($rows);
+
+        $query->append(['status_text']);
 
         return response_success([
             'rows'  => $query->items(),
