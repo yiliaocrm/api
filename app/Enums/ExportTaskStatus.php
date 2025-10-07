@@ -10,7 +10,7 @@ enum ExportTaskStatus: string
     case FAILED = 'failed';         // 失败
     case EXPIRED = 'expired';       // 文件过期
 
-    public function label(): string
+    public function getLabel(): string
     {
         return match ($this) {
             self::PENDING => '待处理',
@@ -30,7 +30,7 @@ enum ExportTaskStatus: string
     {
         return collect(self::cases())
             ->filter(fn($case) => !in_array($case, $except))
-            ->mapWithKeys(fn($case) => [$case->value => $case->label()])
+            ->mapWithKeys(fn($case) => [$case->value => $case->getLabel()])
             ->toArray();
     }
 }

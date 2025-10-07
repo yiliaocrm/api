@@ -32,7 +32,7 @@ class ExportTask extends BaseModel
     protected function statusText(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->status?->label() ?? $this->status
+            get: fn() => $this->status->getLabel(),
         );
     }
 }

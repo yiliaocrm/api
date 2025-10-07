@@ -46,6 +46,6 @@ class UsersLogin extends BaseModel
      */
     public function getTypeTextAttribute(): string
     {
-        return $this->type->label();
+        return $this->type->getLabel();
     }
 }
