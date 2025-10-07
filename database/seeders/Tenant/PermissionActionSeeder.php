@@ -85,10 +85,14 @@ class PermissionActionSeeder extends Seeder
                 'action'     => '*',
             ],
             [
-                'permission' => 'appointment.manage',
+                'permission' => 'appointment.dashboard',
                 'controller' => 'App\Http\Controllers\Web\AppointmentController',
                 'action'     => '*',
-                'except'     => 'info,getConfig,getSchedule',
+            ],
+            [
+                'permission' => 'appointment.index',
+                'controller' => 'App\Http\Controllers\Web\AppointmentController',
+                'action'     => '*',
             ],
             [
                 'permission' => 'bed.manage',

@@ -2141,14 +2141,14 @@ class WebMenuTableSeeder extends Seeder
             'parentid'   => $root->id,
             'name'       => '预约列表',
             'icon'       => 'iconfont if-record',
-            'url'        => '/new#/appointment/list',
+            'url'        => '/new#/appointment/index',
             'path'       => '/yuyue/index',
             'meta'       => [
                 'title' => '预约列表'
             ],
             'route'      => 'YuyueIndex',
             'component'  => 'yuyue/index',
-            'permission' => 'appointment.list',
+            'permission' => 'appointment.index',
         ]);
 
         WebMenu::query()->create([
@@ -2162,7 +2162,7 @@ class WebMenuTableSeeder extends Seeder
             ],
             'route'      => 'ScheduleIndex',
             'component'  => 'schedule/index',
-            'permission' => 'schedule.manage',
+            'permission' => 'schedule.index',
         ]);
 
         WebMenu::query()->create([
