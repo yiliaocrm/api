@@ -3,20 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use Exception;
-use App\Models\Tenant;
+use App\Models\Admin\Tenant;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\TenantRequest;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Requests\Admin\TenantRequest;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 
-/**
- * 租户管理控制器
- * Class TenantController
- * @package App\Http\Controllers\Admin
- */
 class TenantController extends Controller
 {
     /**

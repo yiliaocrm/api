@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\Tenant;
 
-use App\Models\Tenant;
+use App\Models\Admin\Tenant;
 use App\Models\CustomerGroup;
 use App\Helpers\ParseCdpField;
 use Illuminate\Console\Command;

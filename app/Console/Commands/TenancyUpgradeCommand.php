@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Tenant;
-use Illuminate\Console\Command;
+use App\Models\Admin\Tenant;
 use App\Upgrades\Versions\BaseVersion;
+use Illuminate\Console\Command;
 
 class TenancyUpgradeCommand extends Command
 {

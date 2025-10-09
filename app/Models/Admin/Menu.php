@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Admin;
 
+use App\Models\BaseModel;
 use App\Traits\HasTree;
 
-class AdminMenu extends BaseModel
+class Menu extends BaseModel
 {
     use HasTree;
 
     protected function casts(): array
     {
         return [
-            'meta' => 'array',
+            'meta'             => 'array',
+            'permission_scope' => 'json',
         ];
     }
 

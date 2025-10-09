@@ -44,6 +44,7 @@ Route::controller(ConfigController::class)->prefix('config')->group(function () 
 Route::controller(MenuController::class)->prefix('menu')->group(function () {
     Route::get('sync', 'sync');
     Route::get('tree', 'tree');
+    Route::get('info', 'info');
     Route::get('scope', 'scope');
     Route::get('index', 'index');
     Route::get('remove', 'remove');

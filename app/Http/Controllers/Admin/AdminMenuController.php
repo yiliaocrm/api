@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\AdminMenu;
+use App\Models\Admin\AdminMenu;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdminMenuRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Requests\Admin\AdminMenuRequest;
 
 class AdminMenuController extends Controller
 {

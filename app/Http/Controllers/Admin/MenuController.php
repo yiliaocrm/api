@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Menu;
-use App\Models\Tenant;
-use App\Models\MenuPermissionScope;
+use App\Models\Admin\Menu;
+use App\Models\Admin\Tenant;
+use App\Models\Admin\MenuPermissionScope;
 use App\Jobs\SyncMenusToTenantJob;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MenuRequest;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +90,19 @@ class MenuController extends Controller
         );
         $menu->update(
             $request->formData()
+        );
+        return response_success($menu);
+    }
+
+    /**
+     * 菜单详情
+     * @param MenuRequest $request
+     * @return JsonResponse
+     */
+    public function info(MenuRequest $request): JsonResponse
+    {
+        $menu = Menu::query()->find(
+            $request->input('id')
         );
         return response_success($menu);
     }

@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands\Tenant;
 
-use App\Models\Tenant;
-use App\Jobs\SyncMenusToTenantJob;
+use App\Models\Admin\Tenant;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\SyncMenusToTenantJob;
 
 class UpdateMenuCommand extends Command
 {

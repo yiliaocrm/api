@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\AdminParameter;
 use Illuminate\Http\JsonResponse;
+use App\Models\Admin\AdminParameter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ConfigRequest;
 

@@ -4,9 +4,9 @@ namespace App\Http\Requests\Install;
 
 use PDO;
 use PDOException;
-use App\Models\Admin;
-use App\Models\AdminParameter;
+use App\Models\Admin\Admin;
 use App\Exceptions\HisException;
+use App\Models\Admin\AdminParameter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Http\FormRequest;
 

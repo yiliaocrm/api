@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands\Tenant;
 
-use App\Models\Tenant;
 use App\Models\Customer;
+use App\Models\Admin\Tenant;
 use Illuminate\Support\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;

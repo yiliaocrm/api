@@ -3,8 +3,8 @@
 namespace Database\Seeders\Admin;
 
 use Illuminate\Support\Str;
-use App\Models\AdminParameter;
 use Illuminate\Database\Seeder;
+use App\Models\Admin\AdminParameter;
 
 class AdminParameterSeeder extends Seeder
 {

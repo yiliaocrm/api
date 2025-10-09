@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Admin;
-use App\Models\AdminMenu;
+use App\Models\Admin\Admin;
+use App\Models\Admin\AdminMenu;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\AuthRequest;
 use Illuminate\Support\Facades\Response;
+use App\Http\Requests\Admin\AuthRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AuthController extends Controller

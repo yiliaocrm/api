@@ -5,7 +5,7 @@ use App\Models\Store;
 use App\Traits\HasTree;
 use App\Models\GoodsType;
 use App\Models\Parameter;
-use App\Models\AdminParameter;
+use App\Models\Admin\AdminParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Auth\Authenticatable;

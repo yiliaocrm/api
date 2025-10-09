@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Models\AdminMenu;
+use App\Models\Admin\AdminMenu;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminMenuRequest extends FormRequest

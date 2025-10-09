@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Models\Tenant;
+use App\Models\Admin\Tenant;
 use App\Jobs\SyncMenusToTenantJob;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
