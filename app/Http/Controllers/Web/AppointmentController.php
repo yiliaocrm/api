@@ -176,7 +176,7 @@ class AppointmentController extends Controller
                 'doctor:id,name',
                 'consultant:id,name',
                 'technician:id,name',
-                'customer:id,name,idcard,file_number',
+                'customer:id,idcard,sex,name,file_number,birthday,ascription,consultant,remark',
                 'department:id,name',
                 'createUser:id,name'
             ])
