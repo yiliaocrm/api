@@ -254,10 +254,6 @@ class InstallRequest extends FormRequest
                 'name' => '创建管理员账户'
             ],
             [
-                'key'  => 'key',
-                'name' => '生成应用密钥'
-            ],
-            [
                 'key'  => 'config',
                 'name' => '管理平台参数配置'
             ],
@@ -286,12 +282,11 @@ class InstallRequest extends FormRequest
                 $this->updateEnvironmentConfig($config);
                 break;
 
-            case 'key':
-//                Artisan::call('key:generate', ['--force' => true]);
-                break;
-
             case 'migration':
-                Artisan::call('migrate:fresh', ['--force' => true]);
+                Artisan::call('migrate:fresh', [
+                    '--path'  => 'database/migrations/admin',
+                    '--force' => true
+                ]);
                 break;
 
             case 'seeder':
