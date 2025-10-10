@@ -87,6 +87,7 @@ class AuthController extends Controller
         $config = [
             'oem'                                       => $oem,
             'config'                                    => [
+                'watermark_enable'          => parameter('watermark_enable'),
                 'customer_phone_click2show' => parameter('customer_phone_click2show'),
             ],
             'tenant'                                    => [

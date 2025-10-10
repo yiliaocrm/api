@@ -148,6 +148,12 @@ class ParametersTableSeeder extends Seeder
                 'remark' => '医院名称',
             ],
             [
+                'name'   => 'watermark_enable',
+                'value'  => 'false',
+                'type'   => 'boolean',
+                'remark' => '水印设置',
+            ],
+            [
                 'name'   => 'cywebos_phone_rule',
                 'value'  => '/^(?:(?:0\d{2,3}[\- ]?[1-9]\d{6,7})|(?:1[3-9]\d{9})|(?:[48]00[\- ]?[1-9]\d{6}))$/',
                 'type'   => 'string',
