@@ -7,6 +7,7 @@ use App\Models\Store;
 use App\Models\WebMenu;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
+use App\Models\Admin\TenantLoginBanner;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
@@ -84,6 +85,15 @@ class AuthController extends Controller
             'reverb_app_key'    => admin_parameter('reverb_app_key'),
             'reverb_app_secret' => admin_parameter('reverb_app_secret'),
         ];
+
+        // 从中央数据库读取未禁用的登录轮播图
+        $banners = tenancy()->central(function () {
+            return TenantLoginBanner::query()
+                ->where('disabled', false)
+                ->orderBy('order')
+                ->get();
+        });
+
         $config = [
             'oem'                                       => $oem,
             'config'                                    => [
@@ -96,6 +106,7 @@ class AuthController extends Controller
             ],
             'reverb'                                    => $reverb,
             'stores'                                    => $stores,
+            'banners'                                   => $banners,
             '2fa_enable'                                => admin_parameter('google2fa'),
             'cywebos_hospital_name'                     => parameter('cywebos_hospital_name'),
             'consultant_allow_reception'                => parameter('consultant_allow_reception'),
