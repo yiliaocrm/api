@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ConfigController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminMenuController;
+use App\Http\Controllers\Admin\TenantLoginBannerController;
 
 Route::get('/', [AuthController::class, 'home'])->withoutMiddleware(['auth:sanctum']);
 
@@ -57,6 +58,15 @@ Route::controller(AdminMenuController::class)->prefix('admin-menu')->group(funct
     Route::get('tree', 'tree');
     Route::get('index', 'index');
     Route::get('remove', 'remove');
+    Route::post('create', 'create');
+    Route::post('update', 'update');
+});
+
+Route::controller(TenantLoginBannerController::class)->prefix('tenant-login-banner')->group(function () {
+    Route::get('info', 'info');
+    Route::get('index', 'index');
+    Route::get('remove', 'remove');
+    Route::get('toggle', 'toggle');
     Route::post('create', 'create');
     Route::post('update', 'update');
 });
