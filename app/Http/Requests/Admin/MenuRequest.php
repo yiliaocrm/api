@@ -27,7 +27,7 @@ class MenuRequest extends FormRequest
         return match (request()->route()->getActionMethod()) {
             'create' => $this->getCreateRules(),
             'update' => $this->getUpdateRules(),
-            'remove' => $this->getRemoveRules(),
+            'remove', 'info' => $this->getRemoveRules(),
             default => []
         };
     }
@@ -37,7 +37,7 @@ class MenuRequest extends FormRequest
         return match (request()->route()->getActionMethod()) {
             'create' => $this->getCreateMessages(),
             'update' => $this->getUpdateMessages(),
-            'remove' => $this->getRemoveMessages(),
+            'remove', 'info' => $this->getRemoveMessages(),
             default => []
         };
     }
