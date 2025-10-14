@@ -199,6 +199,24 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2025-05-05 10:38:48',
                 'updated_at' => '2025-05-05 10:39:19',
             ),
+            10 =>
+            array (
+                'id' => 12,
+                'parentid' => 3,
+                'name' => 'TenantLoginBannerIndex',
+                'title' => '登录页配置',
+                'path' => '/tenant/login/banner',
+                'meta' => '{"title":"\\u767b\\u5f55\\u9875\\u914d\\u7f6e","icon":"el-icon-grid","active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'tenant-login-banner/index',
+                'child' => 0,
+                'permission' => 'tenant.login.banner',
+                'order' => 4,
+                'keyword' => 'dengluyepeizhi,dlypz,登录页配置',
+                'remark' => NULL,
+                'tree' => '0-3-12',
+                'created_at' => '2025-10-09 16:36:45',
+                'updated_at' => '2025-10-09 16:38:50',
+            ),
         ));
 
 
