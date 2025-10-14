@@ -98,9 +98,9 @@ class InstallRequest extends FormRequest
     {
         return [
             'php_version' => [
-                'required' => '8.2.0',
+                'required' => '8.4.0',
                 'current'  => PHP_VERSION,
-                'status'   => version_compare(PHP_VERSION, '8.2.0', '>=')
+                'status'   => version_compare(PHP_VERSION, '8.4.0', '>=')
             ],
             'extensions'  => [
                 'bcmath'    => [
