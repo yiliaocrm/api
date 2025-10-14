@@ -157,6 +157,7 @@ class MenuRequest extends FormRequest
             'order'            => $this->input('order') ?? 0,
             'remark'           => $this->input('remark'),
             'component'        => $this->input('component'),
+            'redirect'         => $this->input('redirect'),
             'permission'       => $this->input('permission') ?? '',
             'permission_scope' => $this->input('permission_scope', []),
             'type'             => $this->input('type', 'web'),

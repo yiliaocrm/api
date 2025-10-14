@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->string('path')->comment('访问路径');
             $table->text('meta')->comment('菜单元数据');
             $table->string('component')->nullable()->comment('组件路径');
+            $table->string('redirect')->nullable()->comment('重定向路径');
             $table->string('type', 5)->default('web')->comment('菜单类型(web,app)');
             $table->string('menu_type')->default('menu')->comment('菜单类别(directory,menu,button)');
             $table->tinyInteger('child')->default(0);
