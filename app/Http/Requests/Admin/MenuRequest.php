@@ -46,7 +46,7 @@ class MenuRequest extends FormRequest
     {
         return [
             'parentid'   => 'nullable|integer|exists:menus,id',
-            'name'       => 'required|string|max:255',
+            'name'       => 'nullable|string|max:255',
             'path'       => 'nullable|string|max:255',
             'component'  => 'nullable|string|max:255',
             'type'       => 'required|string|in:web,app',
@@ -60,7 +60,6 @@ class MenuRequest extends FormRequest
         return [
             'parentid.integer'  => '[上级菜单]必须是整数!',
             'parentid.exists'   => '[上级菜单]不存在!',
-            'name.required'     => '[组件名称]不能为空!',
             'name.string'       => '[组件名称]必须是字符串!',
             'name.max'          => '[组件名称]不能超过255个字符!',
             'path.string'       => '[访问路径]必须是字符串!',
@@ -99,7 +98,7 @@ class MenuRequest extends FormRequest
                     }
                 }
             ],
-            'name'       => 'required|string|max:255',
+            'name'       => 'nullable|string|max:255',
             'path'       => 'nullable|string|max:255',
             'component'  => 'nullable|string|max:255',
             'type'       => 'required|string|in:web,app',
@@ -116,7 +115,6 @@ class MenuRequest extends FormRequest
             'parentid.required' => '[上级菜单]不能为空!',
             'parentid.integer'  => '[上级菜单]必须是整数!',
             'parentid.exists'   => '[上级菜单]不存在!',
-            'name.required'     => '[组件名称]不能为空!',
             'name.string'       => '[组件名称]必须是字符串!',
             'name.max'          => '[组件名称]不能超过255个字符!',
             'path.string'       => '[访问路径]必须是字符串!',
@@ -162,6 +160,7 @@ class MenuRequest extends FormRequest
             'permission'       => $this->input('permission') ?? '',
             'permission_scope' => $this->input('permission_scope', []),
             'type'             => $this->input('type', 'web'),
+            'menu_type'        => $this->input('meta.type'),
         ];
     }
 }

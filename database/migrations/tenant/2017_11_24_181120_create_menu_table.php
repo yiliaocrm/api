@@ -15,13 +15,13 @@ return new class extends Migration {
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->integer('parentid')->comment('上级菜单');
-            $table->string('name')->comment('组件名称');
+            $table->string('name')->nullable()->comment('组件名称');
             $table->string('title')->comment('菜单名称');
             $table->string('path')->comment('访问路径');
             $table->text('meta')->comment('菜单元数据');
             $table->string('component')->nullable()->comment('组件路径');
             $table->string('type', 5)->default('web')->comment('菜单类型(web,app)');
-            $table->string('menu_type', 5)->default('menu')->comment('菜单类别(menu,link,button,iframe)');
+            $table->string('menu_type')->default('menu')->comment('菜单类别(directory,menu,button)');
             $table->tinyInteger('child')->default(0);
             $table->string('permission')->nullable()->comment('权限名称');
             $table->json('permission_scope')->nullable()->comment('数据权限范围');
