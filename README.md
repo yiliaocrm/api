@@ -4,7 +4,7 @@
 
 [![Laravel](https://img.shields.io/badge/Laravel-12-red.svg)](https://laravel.com)
 [![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org)
-[![PHP](https://img.shields.io/badge/PHP-8.3+-purple.svg)](https://php.net)
+[![PHP](https://img.shields.io/badge/PHP-8.4+-purple.svg)](https://php.net)
 
 </div>
 
