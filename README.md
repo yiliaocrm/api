@@ -16,15 +16,27 @@
 
 ---
 
+## 🌐 在线演示
+
+### 租户运营平台演示地址
+请安装系统体验
+
+### 机构后台演示地址（旧版前端）
+- **地址**: [https://demo.yiliaocrm.com](https://demo.yiliaocrm.com)
+- **账号**: admin
+- **密码**: yiliaocrm.com@2025
+
+### 机构后台演示地址（新版前端）
+- **地址**: [https://demo.yiliaocrm.com/new](https://demo.yiliaocrm.com/new)
+- **账号**: admin
+- **密码**: yiliaocrm.com@2025
+
+---
+
 ## 🚀 快速开始
 
-<div align="center">
+### 📘 [宝塔部署教程](https://ofwqg6.yuque.com/pf3rgx/mpga40/dzniu1i1a00mg3yq?singleDoc#)
 
-### 📘 [点击查看系统部署指南](https://ofwqg6.yuque.com/pf3rgx/mpga40/dzniu1i1a00mg3yq?singleDoc#)
-
-完整的部署步骤、环境配置和常见问题解决方案
-
-</div>
 
 ---
 
