@@ -63,7 +63,42 @@
 
 ---
 
-## 🖼️ 系统截图
+## 🖼️ 租户管理平台截图
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>系统配置</h3>
+      <img src="readme/config.png" alt="系统配置" />
+    </td>
+    <td width="50%">
+      <h3>数据仪表盘</h3>
+      <img src="readme/dashboard.png" alt="数据仪表盘" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>文件系统</h3>
+      <img src="readme/filesystem.png" alt="文件系统" />
+    </td>
+    <td width="50%">
+      <h3>OEM 定制</h3>
+      <img src="readme/oem.png" alt="OEM 定制" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>租户管理</h3>
+      <img src="readme/tenant.png" alt="租户管理" />
+    </td>
+    <td width="50%">
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🖼️ 机构端系统截图
 
 <table>
   <tr>
