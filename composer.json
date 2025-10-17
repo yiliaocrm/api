@@ -24,6 +24,7 @@
         "overtrue/easy-sms": "^3.2",
         "overtrue/laravel-pinyin": "^5.2.0",
         "php-ffmpeg/php-ffmpeg": "^1.2",
+        "pragmarx/google2fa": "^9.0",
         "sonata-project/google-authenticator": "^2.3",
         "stancl/tenancy": "^3.9.0",
         "w7corp/easywechat": "^6.10",
