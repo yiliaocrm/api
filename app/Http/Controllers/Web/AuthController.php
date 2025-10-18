@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Web;
 use App\Models\Menu;
 use App\Models\Store;
 use App\Models\WebMenu;
-use Illuminate\Support\Str;
-use Illuminate\Http\JsonResponse;
 use App\Models\Admin\TenantLoginBanner;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\AuthRequest;
+use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Requests\Web\AuthRequest;
 use Illuminate\Support\Facades\Response;
-use Google\Authenticator\GoogleAuthenticator;
+use PragmaRX\Google2FA\Google2FA;
+use PragmaRX\Google2FA\Exceptions\InvalidCharactersException;
+use PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException;
+use PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -97,6 +100,7 @@ class AuthController extends Controller
         $config = [
             'oem'                                       => $oem,
             'config'                                    => [
+                'sql_group_tfa'             => admin_parameter('sql_group_tfa'),
                 'watermark_enable'          => parameter('watermark_enable'),
                 'customer_phone_click2show' => parameter('customer_phone_click2show'),
             ],
@@ -107,7 +111,6 @@ class AuthController extends Controller
             'reverb'                                    => $reverb,
             'stores'                                    => $stores,
             'banners'                                   => $banners,
-            '2fa_enable'                                => admin_parameter('google2fa'),
             'cywebos_hospital_name'                     => parameter('cywebos_hospital_name'),
             'consultant_allow_reception'                => parameter('consultant_allow_reception'),
             'cywebos_reminder_autoload'                 => parameter('cywebos_reminder_autoload'),
@@ -124,6 +127,9 @@ class AuthController extends Controller
      * 登录
      * @param AuthRequest $request
      * @return JsonResponse
+     * @throws IncompatibleWithGoogleAuthenticatorException
+     * @throws InvalidCharactersException
+     * @throws SecretKeyTooShortException
      */
     public function login(AuthRequest $request): JsonResponse
     {
@@ -144,8 +150,8 @@ class AuthController extends Controller
             if (!$user->secret) {
                 return response_error(msg: '没有设置动态口令，无法登陆，请联系管理员解决！');
             }
-            $g = new GoogleAuthenticator();
-            if (!$g->checkCode($user->secret, $request->input('code'))) {
+            $google2fa = new Google2FA();
+            if (!$google2fa->verifyKey($user->secret, $request->input('tfa'))) {
                 return response_error(msg: '动态口令验证失败!');
             }
         }

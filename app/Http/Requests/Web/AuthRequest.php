@@ -27,18 +27,18 @@ class AuthRequest extends FormRequest
     public function rules(): array
     {
         return match (request()->route()->getActionMethod()) {
-            'login'         => $this->getLoginRules(),
+            'login' => $this->getLoginRules(),
             'resetPassword' => $this->getResetPasswordRules(),
-            default         => []
+            default => []
         };
     }
 
     public function messages(): array
     {
         return match (request()->route()->getActionMethod()) {
-            'login'         => $this->getLoginMessages(),
+            'login' => $this->getLoginMessages(),
             'resetPassword' => $this->getResetPasswordMessages(),
-            default         => []
+            default => []
         };
     }
 
@@ -73,7 +73,7 @@ class AuthRequest extends FormRequest
         ];
 
         if (parameter('cywebos_force_enable_google_authenticator')) {
-            $rules['code'] = 'required';
+            $rules['tfa'] = 'required';
         }
 
         return $rules;
@@ -89,7 +89,7 @@ class AuthRequest extends FormRequest
         return [
             'email.required'    => '账号不能为空！',
             'password.required' => '密码不能为空！',
-            'code.required'     => '口令不能为空！',
+            'tfa.required'      => '口令不能为空！',
         ];
     }
 

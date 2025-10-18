@@ -10,8 +10,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Requests\Web\UserRequest;
 use Illuminate\Database\Eloquent\Builder;
-use Google\Authenticator\GoogleAuthenticator;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
+use PragmaRX\Google2FA\Google2FA;
+use PragmaRX\Google2FA\Exceptions\InvalidCharactersException;
+use PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException;
+use PragmaRX\Google2FA\Exceptions\IncompatibleWithGoogleAuthenticatorException;
 
 class UserController extends Controller
 {
@@ -182,16 +185,24 @@ class UserController extends Controller
 
     /**
      * 生成密钥
-     * @param Request $request
      * @return JsonResponse
+     * @throws IncompatibleWithGoogleAuthenticatorException
+     * @throws InvalidCharactersException
+     * @throws SecretKeyTooShortException
      */
-    public function getSecret(Request $request): JsonResponse
+    public function getSecret(): JsonResponse
     {
-        $g    = new GoogleAuthenticator();
-        $data = [
-            'secret' => $g->generateSecret()
-        ];
-        return response_success($data);
+        $google2fa = new Google2FA();
+        $secretKey = $google2fa->generateSecretKey();
+        $qrCodeUrl = $google2fa->getQRCodeUrl(
+            admin_parameter('oem_system_name'),
+            admin()->email,
+            $secretKey
+        );
+        return response_success([
+            'secret' => $secretKey,
+            'qrcode' => $qrCodeUrl,
+        ]);
     }
 
     /**
