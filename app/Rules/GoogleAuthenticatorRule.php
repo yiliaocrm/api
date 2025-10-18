@@ -58,7 +58,7 @@ class GoogleAuthenticatorRule implements ValidationRule
         $valid = $google2fa->verifyKey($this->secret, $value, 1);
 
         if (!$valid) {
-            $fail('验证码错误或已过期');
+            $fail('动态口令错误或已过期');
         }
     }
 }
