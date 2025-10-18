@@ -12,6 +12,23 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class GoogleAuthenticatorRule implements ValidationRule
 {
     /**
+     * 双重验证密钥
+     *
+     * @var string|null
+     */
+    protected ?string $secret;
+
+    /**
+     * 构造函数
+     *
+     * @param string|null $secret
+     */
+    public function __construct(?string $secret = null)
+    {
+        $this->secret = $secret;
+    }
+
+    /**
      * @param string $attribute
      * @param mixed $value
      * @param Closure $fail
@@ -22,11 +39,8 @@ class GoogleAuthenticatorRule implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // 获取密钥
-        $secret = admin_parameter('tfa_secret');
-
         // 如果密钥不存在，验证失败
-        if (empty($secret)) {
+        if (empty($this->secret)) {
             $fail('双重验证密钥未配置,请先扫码绑定!');
             return;
         }
@@ -41,7 +55,7 @@ class GoogleAuthenticatorRule implements ValidationRule
         $google2fa = new Google2FA();
 
         // 验证当前 TOTP 码是否有效（允许前后各一个时间窗口，防止时间误差）
-        $valid = $google2fa->verifyKey($secret, $value, 1);
+        $valid = $google2fa->verifyKey($this->secret, $value, 1);
 
         if (!$valid) {
             $fail('验证码错误或已过期');
