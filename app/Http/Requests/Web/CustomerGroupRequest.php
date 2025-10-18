@@ -381,9 +381,9 @@ class CustomerGroupRequest extends FormRequest
             $rules['sql'] = 'required|string';
 
             // 开启2FA验证
-            if (admin_parameter('google2fa')) {
+            if (admin_parameter('sql_group_tfa')) {
                 $rules['code'] = [
-                    new GoogleAuthenticatorRule(admin_parameter('google2fa'))
+                    new GoogleAuthenticatorRule(admin_parameter('tfa_secret'))
                 ];
             }
         }
@@ -432,9 +432,9 @@ class CustomerGroupRequest extends FormRequest
             $rules['sql'] = 'required|string';
 
             // 开启2FA验证
-            if (admin_parameter('google2fa')) {
+            if (admin_parameter('sql_group_tfa')) {
                 $rules['code'] = [
-                    new GoogleAuthenticatorRule(admin_parameter('google2fa'))
+                    new GoogleAuthenticatorRule(admin_parameter('tfa_secret'))
                 ];
             }
         }
