@@ -39,6 +39,8 @@ Route::controller(DashboardController::class)->prefix('dashboard')->group(functi
 Route::controller(ConfigController::class)->prefix('config')->group(function () {
     Route::get('load', 'load');
     Route::post('save', 'save');
+    Route::get('secret', 'secret');
+    Route::post('verify', 'verify');
 });
 
 // 租户后台菜单
