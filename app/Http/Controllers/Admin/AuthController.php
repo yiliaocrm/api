@@ -21,7 +21,7 @@ class AuthController extends Controller
     {
         return response_success([
             'his_version'       => admin_parameter('his_version'),
-            'central_login_2fa' => admin_parameter('central_login_2fa'),
+            'central_login_tfa' => admin_parameter('central_login_tfa'),
         ]);
     }
 

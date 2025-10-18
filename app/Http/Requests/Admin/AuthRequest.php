@@ -44,12 +44,12 @@ class AuthRequest extends FormRequest
         ];
 
         // 开启双重验证
-        if (admin_parameter('central_login_2fa')) {
+        if (admin_parameter('central_login_tfa')) {
             $rules['code'] = [
                 'required',
                 'string',
                 'max:6',
-                new GoogleAuthenticatorRule(admin_parameter('google2fa'))
+                new GoogleAuthenticatorRule(admin_parameter('tfa_secret'))
             ];
         }
 
