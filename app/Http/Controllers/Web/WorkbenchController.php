@@ -2,15 +2,42 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Menu;
+use App\Models\Followup;
+use App\Models\Appointment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\WorkbenchRequest;
-use App\Models\Appointment;
-use App\Models\Followup;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Builder;
 
 class WorkbenchController extends Controller
 {
+    /**
+     * 流水牌
+     * @param WorkbenchRequest $request
+     * @return JsonResponse
+     */
+    public function dashboard(WorkbenchRequest $request): JsonResponse
+    {
+        $user = user();
+        $menu = Menu::query()
+            ->where('parentid', 1)
+            ->where('type', 'web')
+            ->where('menu_type', 'menu')
+            ->when(!$user->isSuperUser(), fn(Builder $query) => $query->whereIn('permission', array_keys(array_filter($user->permissions ?? []))))
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get();
+
+        // 获取对应业务数据
+        $menu->each(function ($item) use ($request) {
+            $item->count = $request->getDashboardCount($item->permission);
+        });
+
+        return response_success($menu);
+    }
+
     /**
      * 今日就诊
      * @param Request $request
