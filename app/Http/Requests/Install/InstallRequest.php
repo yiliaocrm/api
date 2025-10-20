@@ -389,5 +389,8 @@ class InstallRequest extends FormRequest
         if (!file_exists(storage_path('install.lock'))) {
             file_put_contents(storage_path('install.lock'), time());
         }
+
+        // 清除缓存
+        cache()->forget('admin_parameters');
     }
 }
