@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->integer('department_id')->comment('咨询科室');
             $table->string('items')->comment('咨询项目');
             $table->tinyInteger('type')->comment('接诊类型(初诊、复诊..)');
-            $table->tinyInteger('status')->comment('状态（0:未保存、1:未成交、2:成交）');
+            $table->tinyInteger('status')->comment('成交状态（1:未成交、2:成交）');
             $table->integer('consultant')->nullable()->comment('现场咨询');
             $table->integer('reception')->nullable()->comment('分诊接待人员');
             $table->integer('user_id')->comment('录入人员');
