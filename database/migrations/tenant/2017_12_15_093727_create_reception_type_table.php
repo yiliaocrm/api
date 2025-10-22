@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('remark')->nullable()->default(null);
             $table->timestamps();
+            $table->comment('接诊类型表');
         });
     }
 
