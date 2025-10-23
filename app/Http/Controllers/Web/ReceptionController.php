@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Web;
 use Exception;
 use Throwable;
 use Carbon\Carbon;
-use App\Models\Item;
-use App\Models\Medium;
 use App\Models\Customer;
 use App\Models\Reception;
 use App\Exceptions\HisException;
@@ -15,69 +13,9 @@ use App\Http\Requests\Web\ReceptionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Builder;
 
 class ReceptionController extends Controller
 {
-    /**
-     * 分诊记录
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function manage(Request $request): JsonResponse
-    {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'created_at');
-        $order = $request->input('order', 'desc');
-        $query = Reception::query()
-            ->with([
-                'user:id,name',
-                'receptionItems',
-                'medium:id,name',
-                'department:id,name',
-                'receptionType:id,name',
-                'receptionUser:id,name',
-            ])
-            ->select([
-                'reception.*',
-                'customer.name'
-            ])
-            ->join('customer', 'customer.id', '=', 'reception.customer_id')
-            ->when($type = $request->input('type'), fn(Builder $query) => $query->where('reception.type', $type))
-            ->when($items = $request->input('items'), function (Builder $query) use ($items) {
-                $query->leftJoin('reception_items', 'reception.id', '=', 'reception_items.reception_id')
-                    ->whereIn('reception_items.item_id', Item::find($items)->getAllChild()->pluck('id'));
-            })
-            ->when($status = $request->input('status'), fn(Builder $query) => $query->where('reception.status', $status))
-            ->when($doctor = $request->input('doctor'), fn(Builder $query) => $query->where('reception.doctor', $doctor))
-            ->when($ek_user = $request->input('ek_user'), fn(Builder $query) => $query->where('reception.ek_user', $ek_user))
-            ->when($user_id = $request->input('user_id'), fn(Builder $query) => $query->where('reception.user_id', $user_id))
-            ->when($keyword = $request->input('keyword'), fn(Builder $query) => $query->whereLike('customer.keyword', "%{$keyword}%"))
-            ->when($reception = $request->input('reception'), fn(Builder $query) => $query->where('reception.reception', $reception))
-            ->when($medium_id = $request->input('medium_id'), fn(Builder $query) => $query->whereIn('reception.medium_id', Medium::find($medium_id)->getAllChild()->pluck('id')))
-            ->when($consultant = $request->input('consultant'), fn(Builder $query) => $query->where('reception.consultant', $consultant))
-            ->when($department_id = $request->input('department_id'), fn(Builder $query) => $query->where('reception.department_id', $department_id))
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('reception.created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
-                ]);
-            })
-            ->when(!user()->hasAnyAccess(['superuser', 'reception.view.all']), function (Builder $query) {
-                $ids = user()->getReceptionViewUsersPermission();
-                $query->where(function ($query) use ($ids) {
-                    $query->whereIn('reception.user_id', $ids)->orWhere('reception.reception', $ids);
-                });
-            })
-            ->orderBy($sort, $order)
-            ->paginate($rows);
-
-        return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
-        ]);
-    }
-
     /**
      * 自动填充分诊信息
      * 1、读取最后一条未上门的网电记录

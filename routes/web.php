@@ -436,7 +436,6 @@ Route::controller(Web\ConsultantRemarkTemplateController::class)->prefix('consul
 });
 
 Route::controller(Web\ReceptionController::class)->prefix('reception')->group(function () {
-    Route::post('manage', 'manage');
     Route::get('info', 'info');
     Route::get('remove', 'remove');
     Route::get('fill', 'fill');
