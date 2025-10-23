@@ -152,13 +152,23 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '分诊接待',
             'path'       => '/workbench/reception',
             'component'  => 'reception/index',
+            'url'        => '/new#/workbench/reception',
             'meta'       => [
                 'title' => '分诊接待'
             ],
             'icon'       => 'iconfont if-reception',
-            'route'      => 'ReceptionIndex',
+            'route'      => 'WorkbenchReception',
             'remark'     => '前台接待',
-            'permission' => 'reception.manage'
+            'permission' => 'workbench.reception'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '新增分诊',
+            'icon'       => 'icon-add',
+            'remark'     => '新增分诊操作',
+            'display'    => false,
+            'permission' => 'reception.create'
         ]);
 
         WebMenu::query()->create([
@@ -182,7 +192,6 @@ class WebMenuTableSeeder extends Seeder
         WebMenu::query()->create([
             'parentid'   => $menu->id,
             'name'       => '改派咨询',
-            //            'icon'       => 'icon-remove',
             'remark'     => '重新分配顾问',
             'display'    => false,
             'permission' => 'reception.dispatch.consultant'
@@ -191,7 +200,6 @@ class WebMenuTableSeeder extends Seeder
         WebMenu::query()->create([
             'parentid'   => $menu->id,
             'name'       => '改派医生',
-            //            'icon'       => 'icon-remove',
             'remark'     => '重新分配医生',
             'display'    => false,
             'permission' => 'reception.dispatch.doctor'

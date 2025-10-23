@@ -575,9 +575,14 @@ class PermissionActionSeeder extends Seeder
                 'action'     => '*',
             ],
             [
-                'permission' => 'reception.manage',
+                'permission' => 'reception.create',
                 'controller' => 'App\Http\Controllers\Web\ReceptionController',
-                'action'     => '*',
+                'action'     => 'create',
+            ],
+            [
+                'permission' => 'reception.update',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'update',
             ],
             [
                 'permission' => 'reception.remove',
