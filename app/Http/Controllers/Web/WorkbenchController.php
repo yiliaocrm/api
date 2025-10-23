@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Web;
 
 use App\Models\Menu;
 use App\Models\Followup;
+use App\Models\Reception;
 use App\Models\Appointment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\WorkbenchRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -93,6 +95,61 @@ class WorkbenchController extends Controller
         return response_success([
             'rows'  => $query->items(),
             'total' => $query->total()
+        ]);
+    }
+
+    /**
+     * 分诊接待
+     * @param WorkbenchRequest $request
+     * @return JsonResponse
+     */
+    public function reception(WorkbenchRequest $request): JsonResponse
+    {
+        $rows    = $request->input('rows', 10);
+        $sort    = $request->input('sort', 'created_at');
+        $order   = $request->input('order', 'desc');
+        $keyword = $request->input('keyword');
+
+        $builder = Reception::query()
+            ->with([
+                'customer:id,name,idcard',
+                'department:id,name',
+                'receptionType:id,name',
+                'receptionItems',
+                'medium:id,name',
+                'consultantUser:id,name',
+                'ekUserRelation:id,name',
+                'receptionUser:id,name',
+                'doctorUser:id,name',
+                'user:id,name',
+            ])
+            ->select([
+                'reception.*'
+            ])
+            ->leftJoin('customer', 'reception.customer_id', '=', 'customer.id')
+            ->whereBetween('reception.created_at', [
+                Carbon::parse($request->input('created_at.0'))->startOfDay(),
+                Carbon::parse($request->input('created_at.1'))->endOfDay()
+            ])
+            ->queryConditions('WorkbenchReception')
+            ->when($keyword, fn(Builder $query) => $query->whereLike('customer.keyword', '%' . $keyword . '%'))
+            // 权限限制
+            ->when(!user()->hasAnyAccess(['superuser', 'reception.view.all']), function (Builder $query) {
+                $ids = user()->getReceptionViewUsersPermission();
+                $query->where(function ($query) use ($ids) {
+                    $query->whereIn('reception.user_id', $ids)->orWhere('reception.reception', $ids);
+                });
+            })
+            ->orderBy('reception.' . $sort, $order);
+
+        // 执行分页
+        $query = $builder->paginate($rows);
+        $query->append(['status_text']);
+
+        return response_success([
+            'rows'      => $query->items(),
+            'total'     => $query->total(),
+            'dashboard' => $request->getReceptionDashboard($builder)
         ]);
     }
 

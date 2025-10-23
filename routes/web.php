@@ -39,6 +39,7 @@ Route::controller(Web\WorkbenchController::class)->prefix('workbench')->group(fu
     Route::get('today', 'today');
     Route::get('arrival', 'arrival');
     Route::get('followup', 'followup');
+    Route::post('reception', 'reception');
 });
 
 Route::controller(Web\FieldController::class)->prefix('field')->group(function () {

@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ReceptionStatus;
+use App\Traits\QueryConditionsTrait;
 use App\Observers\ReceptionObserver;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,13 +18,15 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 class Reception extends BaseModel
 {
     use HasUuids;
+    use QueryConditionsTrait;
 
     protected $table = 'reception';
 
     protected function casts(): array
     {
         return [
-            'items' => 'array',
+            'items'  => 'array',
+            'status' => ReceptionStatus::class,
         ];
     }
 
@@ -161,11 +166,50 @@ class Reception extends BaseModel
     }
 
     /**
+     * 分诊顾问
+     * @return BelongsTo
+     */
+    public function consultantUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'consultant', 'id');
+    }
+
+    /**
+     * 二开人员
+     * @return BelongsTo
+     */
+    public function ekUserRelation(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ek_user', 'id');
+    }
+
+    /**
+     * 助诊医生
+     * @return BelongsTo
+     */
+    public function doctorUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'doctor', 'id');
+    }
+
+
+    /**
      * 预约记录
      * @return HasOne
      */
     public function appointment(): HasOne
     {
         return $this->hasOne(Appointment::class);
+    }
+
+    /**
+     * 成交状态
+     * @return Attribute
+     */
+    protected function statusText(): Attribute
+    {
+        return new Attribute(
+            get: fn() => $this->status->getLabel(),
+        );
     }
 }

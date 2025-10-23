@@ -4,6 +4,10 @@ namespace App\Http\Requests\Web;
 
 use App\Models\Reception;
 use App\Models\Appointment;
+use App\Rules\Web\SceneRule;
+use App\Models\ReceptionType;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 
 class WorkbenchRequest extends FormRequest
@@ -27,6 +31,7 @@ class WorkbenchRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             'arrival' => $this->getArrivalRules(),
+            'reception' => $this->getReceptionRules(),
             default => [],
         };
     }
@@ -35,6 +40,7 @@ class WorkbenchRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             'arrival' => $this->getArrivalMessages(),
+            'reception' => $this->getReceptionMessages(),
             default => []
         };
     }
@@ -66,8 +72,59 @@ class WorkbenchRequest extends FormRequest
         $receptionManage = Reception::query()->whereDate('created_at', today())->count();
         return match ($permission) {
             'workbench.today' => $todayWorkbench,
-            'reception.manage' => $receptionManage,
+            'workbench.reception' => $receptionManage,
             default => 0,
         };
+    }
+
+    /**
+     * 获取分诊接待类型统计
+     * @param Builder $builder
+     * @return Collection
+     */
+    public function getReceptionDashboard(Builder $builder): Collection
+    {
+        // 获取分诊类型统计
+        $types  = ReceptionType::query()->orderBy('id')->get();
+        $counts = $builder->clone()
+            ->select('reception.type')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('reception.type')
+            ->reorder() // 清除排序，避免影响groupBy
+            ->pluck('count', 'type');
+
+        return $types->map(function ($type) use ($counts) {
+            return [
+                'id'    => $type->id,
+                'name'  => $type->name,
+                'count' => $counts->get($type->id, 0)
+            ];
+        });
+    }
+
+    private function getReceptionRules(): array
+    {
+        return [
+            'filters'      => [
+                'nullable',
+                'array',
+                new SceneRule('WorkbenchReception')
+            ],
+            'created_at'   => 'required|array|size:2',
+            'created_at.*' => 'required|date|date_format:Y-m-d',
+        ];
+    }
+
+    private function getReceptionMessages(): array
+    {
+        return [
+            'filters.array'            => '[场景化筛选条件]格式不正确',
+            'created_at.required'      => '[查询时间]不能为空',
+            'created_at.array'         => '[查询时间]格式不正确',
+            'created_at.size'          => '[查询时间]格式不正确',
+            'created_at.*.required'    => '[查询时间]格式不正确',
+            'created_at.*.date'        => '[查询时间]格式不正确',
+            'created_at.*.date_format' => '[查询时间]格式不正确',
+        ];
     }
 }
