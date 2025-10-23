@@ -67,7 +67,7 @@ class RolesTableSeeder extends Seeder
                 "customer.product"              => true,
                 "customer.goods"                => true,
                 "customer.followup"             => true,
-                "reception.manage"              => true,
+                "workbench.reception"           => true,
                 "reception.remove"              => true,
                 "reception.dispatch.consultant" => true,
                 "reception.dispatch.doctor"     => true,
