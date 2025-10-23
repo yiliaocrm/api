@@ -13,6 +13,7 @@ class TenantSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            Tenant\PositionsSeeder::class,
             Tenant\PermissionActionSeeder::class,
             Tenant\StoreSeeder::class,
             Tenant\WebMenuTableSeeder::class,

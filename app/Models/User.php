@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Cartalyst\Sentinel\Users\EloquentUser;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends EloquentUser
 {
@@ -99,6 +100,16 @@ class User extends EloquentUser
     public function department(): HasOne
     {
         return $this->hasOne(Department::class, 'id', 'department_id');
+    }
+
+    /**
+     * 岗位（多对多关系）
+     * @return BelongsToMany
+     */
+    public function positions(): BelongsToMany
+    {
+        return $this->belongsToMany(Position::class, 'user_positions', 'user_id', 'position_id')
+            ->withTimestamps();
     }
 
     /**
