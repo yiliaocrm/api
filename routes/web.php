@@ -303,6 +303,7 @@ Route::controller(Web\CacheController::class)->prefix('cache')->group(function (
     Route::get('mediums', 'mediums');
     Route::get('suppliers', 'suppliers');
     Route::get('failures', 'failures');
+    Route::get('positions', 'positions');
     Route::get('warehouse', 'warehouse');
     Route::get('departments', 'departments');
     Route::get('goods-type', 'goodsType');

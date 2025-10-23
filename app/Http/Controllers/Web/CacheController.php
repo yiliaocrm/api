@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Position;
 use App\Models\Room;
 use App\Models\Tags;
 use App\Models\Unit;
@@ -146,6 +147,17 @@ class CacheController extends Controller
             })
             ->get();
         return response_success($data);
+    }
+
+    /**
+     * 岗位
+     * @return JsonResponse
+     */
+    public function positions(): JsonResponse
+    {
+        return response_success(
+            Position::query()->get()
+        );
     }
 
     /**
