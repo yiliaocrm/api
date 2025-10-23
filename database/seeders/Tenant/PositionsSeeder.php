@@ -61,6 +61,10 @@ class PositionsSeeder extends Seeder
             [
                 'name' => '行政人员',
                 'code' => 'administrative',
+            ],
+            [
+                'name' => '管理员',
+                'code' => 'administrator',
             ]
         ];
         foreach ($positions as $position) {
