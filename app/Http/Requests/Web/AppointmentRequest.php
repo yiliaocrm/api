@@ -32,7 +32,7 @@ class AppointmentRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             default => [],
-            'info' => $this->getInfoRule(),
+            'info', 'arrival' => $this->getInfoRule(),
             'create' => $this->getCreateRule(),
             'update' => $this->getUpdateRule(),
             'events' => $this->getEventsRule(),
@@ -47,7 +47,7 @@ class AppointmentRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             default => [],
-            'info' => $this->getInfoMessage(),
+            'info', 'arrival' => $this->getInfoMessage(),
             'create' => $this->getCreateMessage(),
             'update' => $this->getUpdateMessage(),
             'events' => $this->getEventsMessage(),

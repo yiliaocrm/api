@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Models\Appointment;
 use Illuminate\Http\Request;
+use App\Enums\AppointmentStatus;
 use Illuminate\Http\JsonResponse;
 use App\Exports\AppointmentExport;
 use App\Http\Controllers\Controller;
@@ -196,6 +197,23 @@ class AppointmentController extends Controller
     public function export(Request $request): AppointmentExport
     {
         return new AppointmentExport($request);
+    }
+
+    /**
+     * 到店操作
+     * @param AppointmentRequest $request
+     * @return JsonResponse
+     */
+    public function arrival(AppointmentRequest $request): JsonResponse
+    {
+        $appointment = Appointment::query()->find(
+            $request->input('id')
+        );
+        $appointment->update([
+            'status'       => AppointmentStatus::ARRIVED,
+            'arrival_time' => now(),
+        ]);
+        return response_success($appointment);
     }
 
     /**
