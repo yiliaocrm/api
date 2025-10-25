@@ -4,15 +4,42 @@ namespace App\Enums;
 
 enum AppointmentStatus: int
 {
-    case PENDING_CONFIRM = 0;   // 待确认
-    case PENDING_ARRIVAL = 1;   // 待上门
-    case ARRIVED = 2;   // 已到店
-    case RECEIVED = 3;  // 已接待
-    case CHARGED = 4;   // 已收费
-    case TREATED = 5;   // 已治疗
-    case TIMEOUT = 6;   // 已超时
-    case LEFT = 7;      // 已离开
-    case CANCELLED = 8; // 已取消
+    /**
+     * 待确认
+     */
+    case PENDING_CONFIRM = 0;
+    /**
+     * 待上门
+     */
+    case PENDING_ARRIVAL = 1;
+    /**
+     * 已到店
+     */
+    case ARRIVED = 2;
+    /**
+     * 已接待
+     */
+    case RECEIVED = 3;
+    /**
+     * 已收费
+     */
+    case CHARGED = 4;
+    /**
+     * 已治疗
+     */
+    case TREATED = 5;
+    /**
+     * 已超时
+     */
+    case TIMEOUT = 6;
+    /**
+     * 已离开
+     */
+    case LEFT = 7;
+    /**
+     * 已取消
+     */
+    case CANCELLED = 8;
 
     public function getLabel(): string
     {
