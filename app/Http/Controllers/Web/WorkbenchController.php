@@ -22,7 +22,9 @@ class WorkbenchController extends Controller
      */
     public function dashboard(WorkbenchRequest $request): JsonResponse
     {
-        $user = user();
+        $user              = user();
+        $user->permissions = $user->getMergedPermissions();
+
         $menu = Menu::query()
             ->where('parentid', 1)
             ->where('type', 'web')
