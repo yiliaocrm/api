@@ -30,7 +30,6 @@ class WorkbenchRequest extends FormRequest
     public function rules(): array
     {
         return match (request()->route()->getActionMethod()) {
-            'arrival' => $this->getArrivalRules(),
             'reception' => $this->getReceptionRules(),
             default => [],
         };
@@ -39,26 +38,9 @@ class WorkbenchRequest extends FormRequest
     public function messages(): array
     {
         return match (request()->route()->getActionMethod()) {
-            'arrival' => $this->getArrivalMessages(),
             'reception' => $this->getReceptionMessages(),
             default => []
         };
-    }
-
-    private function getArrivalRules(): array
-    {
-        return [
-            'id' => 'required|uuid|exists:appointments',
-        ];
-    }
-
-    private function getArrivalMessages(): array
-    {
-        return [
-            'id.required' => '预约ID不能为空',
-            'id.uuid'     => '预约ID格式不正确',
-            'id.exists'   => '预约记录不存在',
-        ];
     }
 
     /**

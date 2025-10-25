@@ -154,21 +154,4 @@ class WorkbenchController extends Controller
             'dashboard' => $request->getReceptionDashboard($builder)
         ]);
     }
-
-    /**
-     * 到店操作
-     * @param WorkbenchRequest $request
-     * @return JsonResponse
-     */
-    public function arrival(WorkbenchRequest $request): JsonResponse
-    {
-        $appointment = Appointment::query()->find(
-            $request->input('id')
-        );
-        $appointment->update([
-            'status'       => 2,
-            'arrival_time' => now(),
-        ]);
-        return response_success($appointment);
-    }
 }
