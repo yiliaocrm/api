@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AppointmentType;
 use App\Enums\AppointmentStatus;
 use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -18,6 +19,7 @@ class Appointment extends BaseModel
     protected function casts(): array
     {
         return [
+            'type'   => AppointmentType::class,
             'items'  => 'array',
             'status' => AppointmentStatus::class
         ];
@@ -112,6 +114,17 @@ class Appointment extends BaseModel
     {
         return Attribute::make(
             get: fn() => $this->status->getLabel(),
+        );
+    }
+
+    /**
+     * 获取类型文本
+     * @return Attribute
+     */
+    protected function typeText(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->type?->getLabel(),
         );
     }
 }
