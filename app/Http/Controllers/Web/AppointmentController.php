@@ -14,45 +14,6 @@ use App\Http\Requests\Web\AppointmentRequest;
 class AppointmentController extends Controller
 {
     /**
-     * 预约列表
-     * @param AppointmentRequest $request
-     * @return JsonResponse
-     */
-    public function index(AppointmentRequest $request): JsonResponse
-    {
-        $sort    = $request->input('sort', 'created_at');
-        $order   = $request->input('order', 'desc');
-        $rows    = $request->input('rows', 10);
-        $status  = $request->input('status');
-        $keyword = $request->input('keyword');
-        $query   = Appointment::query()
-            ->with([
-                'doctor:id,name',
-                'consultant:id,name',
-                'technician:id,name',
-                'customer:id,name,idcard',
-                'department:id,name',
-                'createUser:id,name'
-            ])
-            ->select([
-                'appointments.*'
-            ])
-            ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
-            ->queryConditions('AppointmentIndex')
-            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
-            ->when($request->has('status'), fn(Builder $query) => $query->where('status', $status))
-            ->orderBy("appointments.{$sort}", $order)
-            ->paginate($rows);
-
-        $query->append(['status_text']);
-
-        return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
-        ]);
-    }
-
-    /**
      * 预约设置
      * @param AppointmentRequest $request
      * @return JsonResponse

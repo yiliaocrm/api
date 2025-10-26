@@ -90,11 +90,6 @@ class PermissionActionSeeder extends Seeder
                 'action'     => '*',
             ],
             [
-                'permission' => 'appointment.index',
-                'controller' => 'App\Http\Controllers\Web\AppointmentController',
-                'action'     => '*',
-            ],
-            [
                 'permission' => 'appointment.arrival',
                 'controller' => 'App\Http\Controllers\Web\AppointmentController',
                 'action'     => 'arrival',
