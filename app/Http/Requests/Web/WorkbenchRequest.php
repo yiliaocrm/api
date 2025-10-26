@@ -31,6 +31,7 @@ class WorkbenchRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             'reception' => $this->getReceptionRules(),
+            'appointment' => $this->getAppointmentRules(),
             default => [],
         };
     }
@@ -39,6 +40,7 @@ class WorkbenchRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             'reception' => $this->getReceptionMessages(),
+            'appointment' => $this->getAppointmentMessages(),
             default => []
         };
     }
@@ -98,6 +100,32 @@ class WorkbenchRequest extends FormRequest
     }
 
     private function getReceptionMessages(): array
+    {
+        return [
+            'filters.array'            => '[场景化筛选条件]格式不正确',
+            'created_at.required'      => '[查询时间]不能为空',
+            'created_at.array'         => '[查询时间]格式不正确',
+            'created_at.size'          => '[查询时间]格式不正确',
+            'created_at.*.required'    => '[查询时间]格式不正确',
+            'created_at.*.date'        => '[查询时间]格式不正确',
+            'created_at.*.date_format' => '[查询时间]格式不正确',
+        ];
+    }
+
+    private function getAppointmentRules(): array
+    {
+        return [
+            'filters'      => [
+                'nullable',
+                'array',
+                new SceneRule('WorkbenchAppointment')
+            ],
+            'created_at'   => 'required|array|size:2',
+            'created_at.*' => 'required|date|date_format:Y-m-d',
+        ];
+    }
+
+    private function getAppointmentMessages(): array
     {
         return [
             'filters.array'            => '[场景化筛选条件]格式不正确',
