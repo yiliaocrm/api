@@ -1301,28 +1301,6 @@ class SceneFieldTableSeeder extends Seeder
         return [
             [
                 'page'             => 'WorkbenchAppointment',
-                'name'             => '创建日期',
-                'table'            => 'appointments',
-                'field'            => 'created_at',
-                'field_type'       => 'timestamp',
-                'component'        => 'date-picker',
-                'component_params' => json_encode([
-                    'props' => [
-                        'type'         => 'date',
-                        'value-format' => 'YYYY-MM-DD'
-                    ]
-                ]),
-                'operators'        => json_encode([
-                    ['text' => '等于', 'value' => '='],
-                    ['text' => '大于', 'value' => '>'],
-                    ['text' => '小于', 'value' => '<'],
-                    ['text' => '大于等于', 'value' => '>='],
-                    ['text' => '小于等于', 'value' => '<='],
-                    ['text' => '区间', 'value' => 'between']
-                ])
-            ],
-            [
-                'page'             => 'WorkbenchAppointment',
                 'name'             => '预约科室',
                 'table'            => 'appointments',
                 'field'            => 'department_id',
