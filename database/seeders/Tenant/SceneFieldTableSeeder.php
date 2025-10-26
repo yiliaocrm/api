@@ -17,7 +17,7 @@ class SceneFieldTableSeeder extends Seeder
         $fields = array_merge(
             $this->getCustomerIndexConfig(),
             $this->getPurchaseIndexConfig(),
-            $this->getAppointmentIndexConfig(),
+            $this->getWorkbenchAppointmentConfig(),
             $this->getReportCustomerProductConfig(),
             $this->getReportCustomerGoodsConfig(),
             $this->getReportCustomerRefundConfig(),
@@ -1296,11 +1296,11 @@ class SceneFieldTableSeeder extends Seeder
      * 获取[预约列表]页面搜索字段配置
      * @return array
      */
-    private function getAppointmentIndexConfig(): array
+    private function getWorkbenchAppointmentConfig(): array
     {
         return [
             [
-                'page'             => 'AppointmentIndex',
+                'page'             => 'WorkbenchAppointment',
                 'name'             => '创建日期',
                 'table'            => 'appointments',
                 'field'            => 'created_at',
@@ -1322,7 +1322,7 @@ class SceneFieldTableSeeder extends Seeder
                 ])
             ],
             [
-                'page'             => 'AppointmentIndex',
+                'page'             => 'WorkbenchAppointment',
                 'name'             => '预约科室',
                 'table'            => 'appointments',
                 'field'            => 'department_id',
@@ -1341,7 +1341,7 @@ class SceneFieldTableSeeder extends Seeder
                 ])
             ],
             [
-                'page'       => 'AppointmentIndex',
+                'page'       => 'WorkbenchAppointment',
                 'name'       => '预约顾问',
                 'table'      => 'appointments',
                 'field'      => 'consultant_id',
@@ -1355,7 +1355,7 @@ class SceneFieldTableSeeder extends Seeder
                 ])
             ],
             [
-                'page'       => 'AppointmentIndex',
+                'page'       => 'WorkbenchAppointment',
                 'name'       => '预约医生',
                 'table'      => 'appointments',
                 'field'      => 'doctor_id',
@@ -1369,7 +1369,7 @@ class SceneFieldTableSeeder extends Seeder
                 ])
             ],
             [
-                'page'       => 'AppointmentIndex',
+                'page'       => 'WorkbenchAppointment',
                 'name'       => '预约备注',
                 'table'      => 'appointments',
                 'field'      => 'remark',
@@ -1382,7 +1382,7 @@ class SceneFieldTableSeeder extends Seeder
                 ])
             ],
             [
-                'page'       => 'AppointmentIndex',
+                'page'       => 'WorkbenchAppointment',
                 'name'       => '录单人员',
                 'table'      => 'appointments',
                 'field'      => 'create_user_id',
