@@ -20,7 +20,7 @@ class WorkbenchController extends Controller
      * @param WorkbenchRequest $request
      * @return JsonResponse
      */
-    public function dashboard(WorkbenchRequest $request): JsonResponse
+    public function menu(WorkbenchRequest $request): JsonResponse
     {
         $user              = user();
         $user->permissions = $user->getMergedPermissions();
@@ -36,7 +36,7 @@ class WorkbenchController extends Controller
 
         // 获取对应业务数据
         $menu->each(function ($item) use ($request) {
-            $item->count = $request->getDashboardCount($item->permission);
+            $item->count = $request->getMenuCount($item->permission);
         });
 
         return response_success($menu);

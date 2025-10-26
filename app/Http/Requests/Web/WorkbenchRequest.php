@@ -50,7 +50,7 @@ class WorkbenchRequest extends FormRequest
      * @param string $permission
      * @return int
      */
-    public function getDashboardCount(string $permission): int
+    public function getMenuCount(string $permission): int
     {
         $todayWorkbench  = Appointment::query()->whereDate('date', today())->count();
         $receptionManage = Reception::query()->whereDate('created_at', today())->count();

@@ -35,7 +35,7 @@ Route::controller(Web\DownloadController::class)->prefix('download')->group(func
 });
 
 Route::controller(Web\WorkbenchController::class)->prefix('workbench')->group(function () {
-    Route::get('dashboard', 'dashboard');
+    Route::get('menu', 'menu');
     Route::get('today', 'today');
     Route::get('followup', 'followup');
     Route::post('reception', 'reception');
