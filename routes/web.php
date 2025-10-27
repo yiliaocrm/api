@@ -40,6 +40,8 @@ Route::controller(Web\WorkbenchController::class)->prefix('workbench')->group(fu
     Route::get('followup', 'followup');
     Route::post('reception', 'reception');
     Route::post('appointment', 'appointment');
+    Route::post('inventory-alarm', 'inventoryAlarm');
+    Route::post('inventory-expiry', 'inventoryExpiry');
 });
 
 Route::controller(Web\FieldController::class)->prefix('field')->group(function () {

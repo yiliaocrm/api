@@ -85,6 +85,16 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'arrival',
             ],
             [
+                'permission' => 'workbench.alarm',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'inventoryAlarm',
+            ],
+            [
+                'permission' => 'workbench.expiry',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'inventoryExpiry',
+            ],
+            [
                 'permission' => 'reservation.manage',
                 'controller' => 'App\Http\Controllers\Api\ReservationController',
                 'action'     => 'manage',

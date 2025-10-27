@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\Web;
 
 use App\Models\Menu;
+use App\Models\Goods;
 use App\Models\Followup;
+use App\Models\GoodsType;
 use App\Models\Reception;
 use App\Models\Appointment;
+use App\Models\InventoryBatchs;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\WorkbenchRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 
 class WorkbenchController extends Controller
@@ -193,6 +197,119 @@ class WorkbenchController extends Controller
             ->paginate($rows);
 
         $query->append(['status_text', 'type_text']);
+
+        return response_success([
+            'rows'  => $query->items(),
+            'total' => $query->total()
+        ]);
+    }
+
+    /**
+     * 库存预警
+     * @param WorkbenchRequest $request
+     * @return JsonResponse
+     */
+    public function inventoryAlarm(WorkbenchRequest $request): JsonResponse
+    {
+        $rows         = $request->input('rows', 10);
+        $sort         = $request->input('sort', 'id');
+        $order        = $request->input('order', 'desc');
+        $name         = $request->input('name');
+        $status       = $request->input('status');
+        $type_id      = $request->input('type_id');
+        $filterable   = $request->input('filterable');
+        $warehouse_id = $request->input('warehouse_id');
+
+        $query = Goods::query()
+            ->with(['type', 'units'])
+            ->select(['goods.id', 'goods.type_id', 'goods.name', 'goods.specs'])
+            // 合计预警
+            ->when(!$warehouse_id, fn(Builder $query) => $query->addSelect(['goods.max', 'goods.min', 'goods.inventory_number']))
+            // 分仓预警
+            ->when($warehouse_id, fn(Builder $query) => $request->applyWarehouseSpecificQuery($query, $warehouse_id))
+            ->when($type_id && $type_id != 1, function (Builder $query) use ($type_id) {
+                $query->whereIn('goods.type_id', GoodsType::query()->find($type_id)->getAllChild()->pluck('id'));
+            })
+            ->when($name, fn(Builder $query) => $query->where('goods.name', 'like', '%' . $name . '%'))
+            // 预警状态:库存正常
+            ->when($status == 'normal', fn(Builder $query) => $request->applyInventoryNormalStatus($query, $warehouse_id))
+            // 预警状态:库存过剩
+            ->when($status == 'high', fn(Builder $query) => $request->applyInventoryHighStatus($query, $warehouse_id))
+            // 预警状态:库存不足
+            ->when($status == 'low', fn(Builder $query) => $request->applyInventoryLowStatus($query, $warehouse_id))
+            // 过滤库存为空
+            ->when($filterable == 'hide', fn(Builder $query) => $request->applyInventoryFilterEmpty($query, $warehouse_id))
+            ->orderBy($sort, $order)
+            ->paginate($rows);
+
+        return response_success([
+            'rows'  => $query->items(),
+            'total' => $query->total()
+        ]);
+    }
+
+    /**
+     * 过期预警
+     * @param WorkbenchRequest $request
+     * @return JsonResponse
+     */
+    public function inventoryExpiry(WorkbenchRequest $request): JsonResponse
+    {
+        $rows         = $request->input('rows', 10);
+        $sort         = $request->input('sort', 'id');
+        $order        = $request->input('order', 'desc');
+        $name         = $request->input('name');
+        $status       = $request->input('status');
+        $type_id      = $request->input('type_id');
+        $expiry_diff  = $request->input('expiry_diff');
+        $warehouse_id = $request->input('warehouse_id');
+
+        $query = InventoryBatchs::query()
+            ->select([
+                'inventory_batchs.id',
+                'goods.name',
+                'goods.specs',
+                'goods.warn_days',
+                'inventory_batchs.warehouse_id',
+                'inventory_batchs.manufacturer_name',
+                'inventory_batchs.batch_code',
+                'inventory_batchs.number',
+                'inventory_batchs.unit_name',
+                'inventory_batchs.production_date',
+                'inventory_batchs.expiry_date',
+                'inventory_batchs.created_at',
+            ])
+            ->addSelect(DB::raw('DATEDIFF(cy_inventory_batchs.expiry_date, curdate()) as expiry_diff'))
+            ->leftJoin('goods', 'goods.id', '=', 'inventory_batchs.goods_id')
+            ->when($type_id && $type_id != 1, function (Builder $query) use ($type_id) {
+                $query->whereIn('goods.type_id', GoodsType::query()->find($type_id)->getAllChild()->pluck('id'));
+            })
+            ->where('inventory_batchs.number', '>', 0)
+            ->whereNotNull('inventory_batchs.expiry_date')
+            ->when($name, fn(Builder $query) => $query->where('goods.name', 'like', '%' . $name . '%'))
+            ->when($warehouse_id, fn(Builder $query) => $query->where('inventory_batchs.warehouse_id', $warehouse_id))
+            // 正常
+            ->when($status == 'normal', function (Builder $query) {
+                $query->where('inventory_batchs.expiry_date', '>=', DB::raw('curdate()'))
+                    ->whereNotBetween(DB::raw('curdate()'), [
+                        DB::raw('DATE_SUB(cy_inventory_batchs.expiry_date, INTERVAL cy_goods.warn_days DAY)'),
+                        DB::raw('cy_inventory_batchs.expiry_date')
+                    ]);
+            })
+            // 预警期内
+            ->when($status == 'expiring', function (Builder $query) {
+                $query->where('goods.warn_days', '<>', 0)
+                    ->whereBetween(DB::raw('curdate()'), [
+                        DB::raw('DATE_SUB(cy_inventory_batchs.expiry_date, INTERVAL cy_goods.warn_days DAY)'),
+                        DB::raw('cy_inventory_batchs.expiry_date')
+                    ]);
+            })
+            // 已经过期
+            ->when($status == 'expired', fn(Builder $query) => $query->where('inventory_batchs.expiry_date', '<', DB::raw('curdate()')))
+            // 剩余天数
+            ->when($expiry_diff, fn(Builder $query) => $query->whereRaw('DATEDIFF(cy_inventory_batchs.expiry_date, curdate()) <= ?', $expiry_diff))
+            ->orderBy($sort, $order)
+            ->paginate($rows);
 
         return response_success([
             'rows'  => $query->items(),

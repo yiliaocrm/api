@@ -7,6 +7,8 @@ use App\Models\Appointment;
 use App\Rules\Web\SceneRule;
 use App\Models\ReceptionType;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -43,47 +45,6 @@ class WorkbenchRequest extends FormRequest
             'appointment' => $this->getAppointmentMessages(),
             default => []
         };
-    }
-
-    /**
-     * 获取流水牌数据统计
-     * @param string $permission
-     * @return int
-     */
-    public function getMenuCount(string $permission): int
-    {
-        $todayWorkbench  = Appointment::query()->whereDate('date', today())->count();
-        $receptionManage = Reception::query()->whereDate('created_at', today())->count();
-        return match ($permission) {
-            'workbench.today' => $todayWorkbench,
-            'workbench.reception' => $receptionManage,
-            default => 0,
-        };
-    }
-
-    /**
-     * 获取分诊接待类型统计
-     * @param Builder $builder
-     * @return Collection
-     */
-    public function getReceptionDashboard(Builder $builder): Collection
-    {
-        // 获取分诊类型统计
-        $types  = ReceptionType::query()->orderBy('id')->get();
-        $counts = $builder->clone()
-            ->select('reception.type')
-            ->selectRaw('COUNT(*) as count')
-            ->groupBy('reception.type')
-            ->reorder() // 清除排序，避免影响groupBy
-            ->pluck('count', 'type');
-
-        return $types->map(function ($type) use ($counts) {
-            return [
-                'id'    => $type->id,
-                'name'  => $type->name,
-                'count' => $counts->get($type->id, 0)
-            ];
-        });
     }
 
     private function getReceptionRules(): array
@@ -136,5 +97,146 @@ class WorkbenchRequest extends FormRequest
             'created_at.*.date'        => '[查询时间]格式不正确',
             'created_at.*.date_format' => '[查询时间]格式不正确',
         ];
+    }
+
+    /**
+     * 获取流水牌数据统计
+     * @param string $permission
+     * @return int
+     */
+    public function getMenuCount(string $permission): int
+    {
+        $todayWorkbench  = Appointment::query()->whereDate('date', today())->count();
+        $receptionManage = Reception::query()->whereDate('created_at', today())->count();
+        return match ($permission) {
+            'workbench.today' => $todayWorkbench,
+            'workbench.reception' => $receptionManage,
+            default => 0,
+        };
+    }
+
+    /**
+     * 获取分诊接待类型统计
+     * @param Builder $builder
+     * @return Collection
+     */
+    public function getReceptionDashboard(Builder $builder): Collection
+    {
+        // 获取分诊类型统计
+        $types  = ReceptionType::query()->orderBy('id')->get();
+        $counts = $builder->clone()
+            ->select('reception.type')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('reception.type')
+            ->reorder() // 清除排序，避免影响groupBy
+            ->pluck('count', 'type');
+
+        return $types->map(function ($type) use ($counts) {
+            return [
+                'id'    => $type->id,
+                'name'  => $type->name,
+                'count' => $counts->get($type->id, 0)
+            ];
+        });
+    }
+
+    /**
+     * 分仓预警
+     * @param Builder $query
+     * @param int $warehouse_id
+     * @return Builder
+     */
+    public function applyWarehouseSpecificQuery(Builder $query, int $warehouse_id): Builder
+    {
+        return $query->addSelect(['warehouse_alarm.max', 'warehouse_alarm.min'])
+            ->selectRaw('IFNULL(cy_inventory.number, 0) as inventory_number')
+            ->leftJoin('inventory', function (JoinClause $join) use ($warehouse_id) {
+                $join->on('inventory.goods_id', '=', 'goods.id')
+                    ->where('inventory.warehouse_id', $warehouse_id);
+            })
+            ->leftJoin('warehouse_alarm', function (JoinClause $join) use ($warehouse_id) {
+                $join->on('warehouse_alarm.goods_id', '=', 'goods.id')
+                    ->where('warehouse_alarm.warehouse_id', $warehouse_id);
+            });
+    }
+
+    /**
+     * 应用库存预警状态筛选 - 库存正常
+     * @param Builder $query
+     * @param int|null $warehouse_id
+     * @return Builder
+     */
+    public function applyInventoryNormalStatus(Builder $query, ?int $warehouse_id): Builder
+    {
+        if ($warehouse_id) {
+            return $query->where(function (Builder $query) {
+                $query->whereBetween('inventory.number', [DB::raw('cy_warehouse_alarm.min'), DB::raw('cy_warehouse_alarm.max')])
+                    ->orWhere(function (Builder $query) {
+                        $query->where('warehouse_alarm.max', 0)->where('inventory.number', '>=', DB::raw('cy_warehouse_alarm.min'));
+                    })
+                    ->orWhere(function (Builder $query) {
+                        $query->where('warehouse_alarm.min', 0)->where('inventory.number', '<=', DB::raw('cy_warehouse_alarm.max'));
+                    });
+            });
+        }
+
+        return $query->where(function (Builder $query) {
+            $query->whereBetween('goods.inventory_number', [DB::raw('cy_goods.min'), DB::raw('cy_goods.max')])
+                ->orWhere(function (Builder $query) {
+                    $query->where('goods.max', 0)->where('goods.inventory_number', '>=', DB::raw('cy_goods.min'));
+                })
+                ->orWhere(function (Builder $query) {
+                    $query->where('goods.min', 0)->where('goods.inventory_number', '<=', DB::raw('cy_goods.max'));
+                });
+        });
+    }
+
+    /**
+     * 应用库存预警状态筛选 - 库存过剩
+     * @param Builder $query
+     * @param int|null $warehouse_id
+     * @return Builder
+     */
+    public function applyInventoryHighStatus(Builder $query, ?int $warehouse_id): Builder
+    {
+        if ($warehouse_id) {
+            return $query->where('warehouse_alarm.max', '<>', 0)
+                ->where('warehouse_alarm.max', '<', DB::raw('cy_inventory.number'));
+        }
+
+        return $query->where('goods.max', '<>', 0)
+            ->where('goods.max', '<', DB::raw('inventory_number'));
+    }
+
+    /**
+     * 应用库存预警状态筛选 - 库存不足
+     * @param Builder $query
+     * @param int|null $warehouse_id
+     * @return Builder
+     */
+    public function applyInventoryLowStatus(Builder $query, ?int $warehouse_id): Builder
+    {
+        if ($warehouse_id) {
+            return $query->where('warehouse_alarm.min', '<>', 0)
+                ->where('warehouse_alarm.min', '>', DB::raw('cy_inventory.number'));
+        }
+
+        return $query->where('goods.min', '<>', 0)
+            ->where('goods.min', '>', DB::raw('inventory_number'));
+    }
+
+    /**
+     * 过滤库存为空的商品
+     * @param Builder $query
+     * @param int|null $warehouse_id
+     * @return Builder
+     */
+    public function applyInventoryFilterEmpty(Builder $query, ?int $warehouse_id): Builder
+    {
+        if ($warehouse_id) {
+            return $query->where('inventory.number', '>', 0);
+        }
+
+        return $query->where('goods.inventory_number', '>', 0);
     }
 }
