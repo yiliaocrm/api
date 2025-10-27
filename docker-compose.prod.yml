@@ -1,0 +1,235 @@
+services:
+  # ============================================
+  # PHP-FPM 服务（生产环境）
+  # ============================================
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: clinic-php-prod
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      # 仅挂载存储目录和日志目录
+      - storage-data:/var/www/html/storage
+      - ./storage/logs:/var/www/html/storage/logs
+    environment:
+      # 生产环境变量（建议使用 .env 文件）
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL}
+
+      # 数据库配置
+      DB_CONNECTION: central
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-clinic_central}
+      DB_USERNAME: ${DB_USERNAME:-clinic}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # 缓存和会话
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+
+      # 文件系统（建议生产环境使用 S3）
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}
+
+      # 日志配置
+      LOG_CHANNEL: stack
+      LOG_LEVEL: error
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Nginx 服务（生产环境）
+  # ============================================
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: clinic-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      # 如果使用 SSL，取消注释
+      # - "443:443"
+    volumes:
+      # 只读挂载静态资源
+      - storage-data:/var/www/html/storage:ro
+      # 如果使用 SSL，挂载证书
+      # - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - php
+    networks:
+      - clinic-network
+
+  # ============================================
+  # MySQL 服务（生产环境）
+  # ============================================
+  mysql:
+    image: mysql:8.0
+    container_name: clinic-mysql-prod
+    restart: always
+    ports:
+      # 生产环境建议不暴露端口，或使用防火墙限制
+      - "127.0.0.1:3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE:-clinic_central}
+      MYSQL_USER: ${DB_USERNAME:-clinic}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      # 生产环境性能优化
+      - --innodb_buffer_pool_size=1G
+      - --innodb_log_file_size=256M
+      - --max_connections=500
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME:-clinic}", "-p${DB_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Redis 服务（生产环境）
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: clinic-redis-prod
+    restart: always
+    ports:
+      # 生产环境建议不暴露端口
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Queue Worker 服务（生产环境）
+  # ============================================
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: clinic-queue-prod
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - storage-data:/var/www/html/storage
+      - ./storage/logs:/var/www/html/storage/logs
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: central
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-clinic_central}
+      DB_USERNAME: ${DB_USERNAME:-clinic}
+      DB_PASSWORD: ${DB_PASSWORD}
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+    # 生产环境使用 Supervisor 管理（更稳定）
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Scheduler 服务（生产环境）
+  # ============================================
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: clinic-scheduler-prod
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - storage-data:/var/www/html/storage
+      - ./storage/logs:/var/www/html/storage/logs
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: central
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-clinic_central}
+      DB_USERNAME: ${DB_USERNAME:-clinic}
+      DB_PASSWORD: ${DB_PASSWORD}
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction >> /var/www/html/storage/logs/scheduler.log 2>&1; sleep 60; done"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - clinic-network
+
+# ============================================
+# 数据卷（生产环境持久化）
+# ============================================
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  storage-data:
+    driver: local
+
+# ============================================
+# 网络
+# ============================================
+networks:
+  clinic-network:
+    driver: bridge

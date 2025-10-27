@@ -175,8 +175,42 @@ class InstallRequest extends FormRequest
                     'exists' => file_exists(base_path('.env')),
                     'status' => file_exists(base_path('.env'))
                 ]
-            ]
+            ],
+            'default_config' => $this->getDefaultConfig()
         ];
+    }
+
+    /**
+     * 获取默认配置（从 .env 读取）
+     * @return array
+     */
+    private function getDefaultConfig(): array
+    {
+        return [
+            'db_host'            => env('DB_HOST', 'localhost'),
+            'db_port'            => env('DB_PORT', '3306'),
+            'db_database'        => env('DB_DATABASE', ''),
+            'db_username'        => env('DB_USERNAME', 'root'),
+            'db_password'        => '', // 密码不预填，安全考虑
+            'central_domain'     => $this->extractDomainFromUrl(env('APP_URL', 'http://localhost')),
+            'central_admin_path' => env('CENTRAL_ADMIN_PATH', 'admin'),
+        ];
+    }
+
+    /**
+     * 从 URL 中提取域名（不包含协议和端口）
+     * @param string $url
+     * @return string
+     */
+    private function extractDomainFromUrl(string $url): string
+    {
+        // 移除协议
+        $url = preg_replace('#^https?://#', '', $url);
+        // 移除端口
+        $url = preg_replace('#:\d+$#', '', $url);
+        // 移除路径
+        $url = preg_replace('#/.*$#', '', $url);
+        return $url;
     }
 
 
@@ -317,6 +351,9 @@ class InstallRequest extends FormRequest
         $envPath    = base_path('.env');
         $envContent = file_get_contents($envPath);
 
+        // 构建完整的 APP_URL（包含协议和端口）
+        $appUrl = $this->buildAppUrl($config['central_domain']);
+
         $envContent = preg_replace(
             [
                 '/DB_HOST=.*/',
@@ -332,12 +369,39 @@ class InstallRequest extends FormRequest
                 "DB_DATABASE={$config['db_database']}",
                 "DB_USERNAME={$config['db_username']}",
                 "DB_PASSWORD={$config['db_password']}",
-                "APP_URL={$config['central_domain']}",
+                "APP_URL={$appUrl}",
             ],
             $envContent
         );
 
         file_put_contents($envPath, $envContent);
+    }
+
+    /**
+     * 构建完整的应用 URL
+     * @param string $domain
+     * @return string
+     */
+    private function buildAppUrl(string $domain): string
+    {
+        // 如果用户填写的域名已经包含协议，直接使用
+        if (str_starts_with($domain, 'http://') || str_starts_with($domain, 'https://')) {
+            return rtrim($domain, '/');
+        }
+
+        // 从当前请求获取协议和端口
+        $scheme = request()->getScheme(); // http 或 https
+        $port = request()->getPort(); // 获取端口号
+
+        // 构建 URL
+        $url = $scheme . '://' . $domain;
+
+        // 如果不是标准端口（80/443），添加端口号
+        if (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) {
+            $url .= ':' . $port;
+        }
+
+        return $url;
     }
 
     /**

@@ -95,6 +95,12 @@
             "php-http/discovery": true
         }
     },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        }
+    },
     "minimum-stability": "stable",
     "prefer-stable": true
 }
