@@ -70,6 +70,21 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'execute',
             ],
             [
+                'permission' => 'workbench.today.index',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'today',
+            ],
+            [
+                'permission' => 'workbench.today.reception',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'create',
+            ],
+            [
+                'permission' => 'workbench.today.arrival',
+                'controller' => 'App\Http\Controllers\Web\AppointmentController',
+                'action'     => 'arrival',
+            ],
+            [
                 'permission' => 'reservation.manage',
                 'controller' => 'App\Http\Controllers\Api\ReservationController',
                 'action'     => 'manage',
@@ -88,11 +103,6 @@ class PermissionActionSeeder extends Seeder
                 'permission' => 'appointment.dashboard',
                 'controller' => 'App\Http\Controllers\Web\AppointmentController',
                 'action'     => '*',
-            ],
-            [
-                'permission' => 'appointment.arrival',
-                'controller' => 'App\Http\Controllers\Web\AppointmentController',
-                'action'     => 'arrival',
             ],
             [
                 'permission' => 'bed.manage',
