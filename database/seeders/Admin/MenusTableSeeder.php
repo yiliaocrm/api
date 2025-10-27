@@ -53,7 +53,7 @@ class MenusTableSeeder extends Seeder
                 'redirect' => NULL,
                 'type' => 'web',
                 'menu_type' => 'menu',
-                'child' => 0,
+                'child' => 1,
                 'permission' => 'workbench.today',
                 'permission_scope' => '[]',
                 'order' => 1,
@@ -61,7 +61,7 @@ class MenusTableSeeder extends Seeder
                 'remark' => '工作台数据汇总',
                 'tree' => '0-1-2',
                 'created_at' => NULL,
-                'updated_at' => '2025-10-21 09:11:23',
+                'updated_at' => '2025-10-26 15:42:06',
             ),
             2 =>
             array (
@@ -276,12 +276,12 @@ class MenusTableSeeder extends Seeder
                 'child' => 0,
                 'permission' => 'workbench.alarm',
                 'permission_scope' => '[]',
-                'order' => 10,
+                'order' => 5,
                 'keyword' => 'kucunyujing,kcyj,库存预警',
-                'remark' => NULL,
+                'remark' => '库存上下限预警',
                 'tree' => '0-1-13',
                 'created_at' => '2023-10-27 16:53:22',
-                'updated_at' => '2025-10-20 23:11:07',
+                'updated_at' => '2025-10-24 17:07:16',
             ),
             12 =>
             array (
@@ -1055,28 +1055,6 @@ class MenusTableSeeder extends Seeder
             ),
             47 =>
             array (
-                'id' => 53,
-                'parentid' => 8,
-                'name' => 'AppointmentIndex',
-                'title' => '预约列表',
-                'path' => '/appointment/index',
-                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"menu","title":"\\u9884\\u7ea6\\u5217\\u8868","icon":"el-icon-document","active":null,"color":null,"tag":null}',
-                'component' => 'appointment/index',
-                'redirect' => NULL,
-                'type' => 'web',
-                'menu_type' => 'menu',
-                'child' => 0,
-                'permission' => 'appointment.index',
-                'permission_scope' => '[]',
-                'order' => 2,
-                'keyword' => 'yuyueliebiao,yylb,预约列表',
-                'remark' => NULL,
-                'tree' => '0-8-53',
-                'created_at' => '2024-05-01 05:33:08',
-                'updated_at' => '2025-10-16 05:00:27',
-            ),
-            48 =>
-            array (
                 'id' => 54,
                 'parentid' => 10,
                 'name' => NULL,
@@ -1097,7 +1075,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 11:04:42',
                 'updated_at' => '2025-10-16 05:23:00',
             ),
-            49 =>
+            48 =>
             array (
                 'id' => 55,
                 'parentid' => 54,
@@ -1119,7 +1097,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 11:57:39',
                 'updated_at' => '2025-10-16 05:23:19',
             ),
-            50 =>
+            49 =>
             array (
                 'id' => 56,
                 'parentid' => 54,
@@ -1141,7 +1119,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 12:34:59',
                 'updated_at' => '2025-10-16 05:23:23',
             ),
-            51 =>
+            50 =>
             array (
                 'id' => 57,
                 'parentid' => 54,
@@ -1163,7 +1141,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 12:36:23',
                 'updated_at' => '2025-10-16 05:23:26',
             ),
-            52 =>
+            51 =>
             array (
                 'id' => 58,
                 'parentid' => 54,
@@ -1185,7 +1163,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 12:37:29',
                 'updated_at' => '2025-10-16 05:23:29',
             ),
-            53 =>
+            52 =>
             array (
                 'id' => 59,
                 'parentid' => 11,
@@ -1207,7 +1185,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 19:49:24',
                 'updated_at' => '2025-10-16 05:24:01',
             ),
-            54 =>
+            53 =>
             array (
                 'id' => 60,
                 'parentid' => 11,
@@ -1229,7 +1207,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 19:54:22',
                 'updated_at' => '2025-10-16 05:24:11',
             ),
-            55 =>
+            54 =>
             array (
                 'id' => 61,
                 'parentid' => 11,
@@ -1251,7 +1229,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 19:58:16',
                 'updated_at' => '2025-10-16 05:24:15',
             ),
-            56 =>
+            55 =>
             array (
                 'id' => 62,
                 'parentid' => 11,
@@ -1273,7 +1251,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-20 20:01:10',
                 'updated_at' => '2025-10-16 05:24:18',
             ),
-            57 =>
+            56 =>
             array (
                 'id' => 63,
                 'parentid' => 8,
@@ -1295,7 +1273,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-05-26 10:44:09',
                 'updated_at' => '2025-10-16 05:00:33',
             ),
-            58 =>
+            57 =>
             array (
                 'id' => 64,
                 'parentid' => 37,
@@ -1317,7 +1295,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-06-29 07:22:17',
                 'updated_at' => '2025-10-16 04:59:48',
             ),
-            59 =>
+            58 =>
             array (
                 'id' => 65,
                 'parentid' => 5,
@@ -1339,7 +1317,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-07-02 00:05:27',
                 'updated_at' => '2025-10-16 04:59:35',
             ),
-            60 =>
+            59 =>
             array (
                 'id' => 66,
                 'parentid' => 23,
@@ -1361,7 +1339,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-07-14 15:46:37',
                 'updated_at' => '2025-10-16 05:26:17',
             ),
-            61 =>
+            60 =>
             array (
                 'id' => 67,
                 'parentid' => 6,
@@ -1383,7 +1361,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:33:46',
                 'updated_at' => '2025-10-15 11:20:54',
             ),
-            62 =>
+            61 =>
             array (
                 'id' => 68,
                 'parentid' => 67,
@@ -1405,7 +1383,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:35:21',
                 'updated_at' => '2025-10-15 11:29:51',
             ),
-            63 =>
+            62 =>
             array (
                 'id' => 69,
                 'parentid' => 67,
@@ -1427,7 +1405,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:36:19',
                 'updated_at' => '2025-10-15 16:35:23',
             ),
-            64 =>
+            63 =>
             array (
                 'id' => 70,
                 'parentid' => 67,
@@ -1449,7 +1427,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:37:05',
                 'updated_at' => '2025-10-15 16:35:48',
             ),
-            65 =>
+            64 =>
             array (
                 'id' => 71,
                 'parentid' => 67,
@@ -1471,7 +1449,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:37:54',
                 'updated_at' => '2025-10-15 16:36:02',
             ),
-            66 =>
+            65 =>
             array (
                 'id' => 72,
                 'parentid' => 67,
@@ -1493,7 +1471,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:38:33',
                 'updated_at' => '2025-10-15 16:36:07',
             ),
-            67 =>
+            66 =>
             array (
                 'id' => 73,
                 'parentid' => 67,
@@ -1515,7 +1493,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:44:35',
                 'updated_at' => '2025-10-15 16:36:14',
             ),
-            68 =>
+            67 =>
             array (
                 'id' => 74,
                 'parentid' => 67,
@@ -1537,7 +1515,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-11 11:45:24',
                 'updated_at' => '2025-10-15 16:36:19',
             ),
-            69 =>
+            68 =>
             array (
                 'id' => 75,
                 'parentid' => 6,
@@ -1559,7 +1537,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:06:31',
                 'updated_at' => '2025-10-15 11:20:36',
             ),
-            70 =>
+            69 =>
             array (
                 'id' => 76,
                 'parentid' => 6,
@@ -1581,7 +1559,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:07:43',
                 'updated_at' => '2025-10-14 10:56:55',
             ),
-            71 =>
+            70 =>
             array (
                 'id' => 77,
                 'parentid' => 6,
@@ -1603,7 +1581,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:10:01',
                 'updated_at' => '2025-10-14 16:21:35',
             ),
-            72 =>
+            71 =>
             array (
                 'id' => 78,
                 'parentid' => 6,
@@ -1625,7 +1603,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:34:48',
                 'updated_at' => '2025-10-14 16:21:49',
             ),
-            73 =>
+            72 =>
             array (
                 'id' => 79,
                 'parentid' => 6,
@@ -1647,7 +1625,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:37:55',
                 'updated_at' => '2025-10-14 16:21:57',
             ),
-            74 =>
+            73 =>
             array (
                 'id' => 80,
                 'parentid' => 6,
@@ -1669,7 +1647,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:41:21',
                 'updated_at' => '2025-10-14 16:22:02',
             ),
-            75 =>
+            74 =>
             array (
                 'id' => 81,
                 'parentid' => 6,
@@ -1691,7 +1669,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:43:39',
                 'updated_at' => '2025-10-14 16:22:09',
             ),
-            76 =>
+            75 =>
             array (
                 'id' => 82,
                 'parentid' => 6,
@@ -1713,7 +1691,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:48:33',
                 'updated_at' => '2025-10-15 09:40:44',
             ),
-            77 =>
+            76 =>
             array (
                 'id' => 83,
                 'parentid' => 6,
@@ -1735,7 +1713,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:51:21',
                 'updated_at' => '2025-10-15 09:41:46',
             ),
-            78 =>
+            77 =>
             array (
                 'id' => 84,
                 'parentid' => 6,
@@ -1757,7 +1735,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:52:29',
                 'updated_at' => '2025-10-15 09:41:59',
             ),
-            79 =>
+            78 =>
             array (
                 'id' => 85,
                 'parentid' => 6,
@@ -1779,7 +1757,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:53:22',
                 'updated_at' => '2025-10-15 09:58:25',
             ),
-            80 =>
+            79 =>
             array (
                 'id' => 86,
                 'parentid' => 6,
@@ -1801,7 +1779,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:56:15',
                 'updated_at' => '2025-10-15 11:18:26',
             ),
-            81 =>
+            80 =>
             array (
                 'id' => 87,
                 'parentid' => 6,
@@ -1823,7 +1801,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 04:58:18',
                 'updated_at' => '2025-10-15 11:18:36',
             ),
-            82 =>
+            81 =>
             array (
                 'id' => 88,
                 'parentid' => 6,
@@ -1845,7 +1823,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:00:10',
                 'updated_at' => '2025-10-15 11:18:40',
             ),
-            83 =>
+            82 =>
             array (
                 'id' => 89,
                 'parentid' => 6,
@@ -1867,7 +1845,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:01:43',
                 'updated_at' => '2025-10-15 11:18:45',
             ),
-            84 =>
+            83 =>
             array (
                 'id' => 90,
                 'parentid' => 6,
@@ -1889,7 +1867,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:06:52',
                 'updated_at' => '2025-10-15 11:18:49',
             ),
-            85 =>
+            84 =>
             array (
                 'id' => 91,
                 'parentid' => 6,
@@ -1911,7 +1889,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:08:13',
                 'updated_at' => '2025-10-15 11:18:56',
             ),
-            86 =>
+            85 =>
             array (
                 'id' => 92,
                 'parentid' => 6,
@@ -1933,7 +1911,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:08:59',
                 'updated_at' => '2025-10-15 11:19:44',
             ),
-            87 =>
+            86 =>
             array (
                 'id' => 93,
                 'parentid' => 6,
@@ -1955,7 +1933,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:09:58',
                 'updated_at' => '2025-10-15 15:27:44',
             ),
-            88 =>
+            87 =>
             array (
                 'id' => 94,
                 'parentid' => 6,
@@ -1977,7 +1955,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:10:19',
                 'updated_at' => '2025-10-15 11:19:58',
             ),
-            89 =>
+            88 =>
             array (
                 'id' => 97,
                 'parentid' => 6,
@@ -1999,7 +1977,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:26:28',
                 'updated_at' => '2025-10-15 11:20:21',
             ),
-            90 =>
+            89 =>
             array (
                 'id' => 98,
                 'parentid' => 6,
@@ -2021,7 +1999,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:29:01',
                 'updated_at' => '2025-10-15 11:20:26',
             ),
-            91 =>
+            90 =>
             array (
                 'id' => 99,
                 'parentid' => 6,
@@ -2043,7 +2021,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-08-12 05:29:41',
                 'updated_at' => '2025-10-15 11:20:31',
             ),
-            92 =>
+            91 =>
             array (
                 'id' => 100,
                 'parentid' => 50,
@@ -2065,7 +2043,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-09-19 23:15:34',
                 'updated_at' => '2025-10-16 05:22:18',
             ),
-            93 =>
+            92 =>
             array (
                 'id' => 101,
                 'parentid' => 100,
@@ -2087,7 +2065,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-09-19 23:22:38',
                 'updated_at' => '2025-10-16 05:22:23',
             ),
-            94 =>
+            93 =>
             array (
                 'id' => 102,
                 'parentid' => 100,
@@ -2109,7 +2087,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-09-19 23:39:00',
                 'updated_at' => '2025-10-16 05:22:27',
             ),
-            95 =>
+            94 =>
             array (
                 'id' => 103,
                 'parentid' => 100,
@@ -2131,7 +2109,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-09-19 23:46:00',
                 'updated_at' => '2025-10-16 05:22:31',
             ),
-            96 =>
+            95 =>
             array (
                 'id' => 104,
                 'parentid' => 18,
@@ -2153,7 +2131,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2024-10-12 17:55:01',
                 'updated_at' => '2025-10-16 05:25:51',
             ),
-            97 =>
+            96 =>
             array (
                 'id' => 105,
                 'parentid' => 17,
@@ -2175,7 +2153,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 14:38:42',
                 'updated_at' => '2025-10-16 05:25:19',
             ),
-            98 =>
+            97 =>
             array (
                 'id' => 106,
                 'parentid' => 105,
@@ -2197,7 +2175,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 14:43:03',
                 'updated_at' => '2025-10-16 05:26:25',
             ),
-            99 =>
+            98 =>
             array (
                 'id' => 107,
                 'parentid' => 105,
@@ -2219,7 +2197,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 14:48:45',
                 'updated_at' => '2025-10-16 05:26:29',
             ),
-            100 =>
+            99 =>
             array (
                 'id' => 108,
                 'parentid' => 17,
@@ -2241,7 +2219,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 14:51:24',
                 'updated_at' => '2025-10-16 05:25:23',
             ),
-            101 =>
+            100 =>
             array (
                 'id' => 109,
                 'parentid' => 108,
@@ -2263,7 +2241,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 14:54:19',
                 'updated_at' => '2025-10-16 05:26:35',
             ),
-            102 =>
+            101 =>
             array (
                 'id' => 110,
                 'parentid' => 108,
@@ -2285,7 +2263,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 15:12:22',
                 'updated_at' => '2025-10-16 05:26:38',
             ),
-            103 =>
+            102 =>
             array (
                 'id' => 111,
                 'parentid' => 108,
@@ -2307,7 +2285,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 15:16:16',
                 'updated_at' => '2025-10-16 05:26:41',
             ),
-            104 =>
+            103 =>
             array (
                 'id' => 112,
                 'parentid' => 108,
@@ -2329,7 +2307,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 15:20:23',
                 'updated_at' => '2025-10-16 05:26:44',
             ),
-            105 =>
+            104 =>
             array (
                 'id' => 113,
                 'parentid' => 17,
@@ -2351,7 +2329,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 15:30:49',
                 'updated_at' => '2025-10-16 05:25:27',
             ),
-            106 =>
+            105 =>
             array (
                 'id' => 114,
                 'parentid' => 113,
@@ -2373,7 +2351,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-25 15:33:31',
                 'updated_at' => '2025-10-16 05:26:52',
             ),
-            107 =>
+            106 =>
             array (
                 'id' => 115,
                 'parentid' => 0,
@@ -2395,7 +2373,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 17:33:52',
                 'updated_at' => '2025-01-29 18:08:07',
             ),
-            108 =>
+            107 =>
             array (
                 'id' => 116,
                 'parentid' => 0,
@@ -2417,7 +2395,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 17:57:29',
                 'updated_at' => '2025-01-29 19:00:05',
             ),
-            109 =>
+            108 =>
             array (
                 'id' => 117,
                 'parentid' => 0,
@@ -2439,7 +2417,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 17:58:21',
                 'updated_at' => '2025-01-29 19:03:21',
             ),
-            110 =>
+            109 =>
             array (
                 'id' => 118,
                 'parentid' => 0,
@@ -2461,7 +2439,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:06:04',
                 'updated_at' => '2025-01-30 08:35:41',
             ),
-            111 =>
+            110 =>
             array (
                 'id' => 119,
                 'parentid' => 0,
@@ -2483,7 +2461,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:06:55',
                 'updated_at' => '2025-01-30 08:41:29',
             ),
-            112 =>
+            111 =>
             array (
                 'id' => 120,
                 'parentid' => 115,
@@ -2505,7 +2483,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:08:07',
                 'updated_at' => '2025-01-29 18:55:07',
             ),
-            113 =>
+            112 =>
             array (
                 'id' => 121,
                 'parentid' => 115,
@@ -2527,7 +2505,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:54:47',
                 'updated_at' => '2025-01-29 18:54:47',
             ),
-            114 =>
+            113 =>
             array (
                 'id' => 122,
                 'parentid' => 115,
@@ -2549,7 +2527,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:55:57',
                 'updated_at' => '2025-01-29 18:55:57',
             ),
-            115 =>
+            114 =>
             array (
                 'id' => 123,
                 'parentid' => 115,
@@ -2571,7 +2549,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:58:14',
                 'updated_at' => '2025-01-29 18:58:24',
             ),
-            116 =>
+            115 =>
             array (
                 'id' => 124,
                 'parentid' => 115,
@@ -2593,7 +2571,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 18:59:04',
                 'updated_at' => '2025-01-29 18:59:04',
             ),
-            117 =>
+            116 =>
             array (
                 'id' => 125,
                 'parentid' => 116,
@@ -2615,7 +2593,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 19:00:05',
                 'updated_at' => '2025-01-29 19:01:08',
             ),
-            118 =>
+            117 =>
             array (
                 'id' => 126,
                 'parentid' => 116,
@@ -2637,7 +2615,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 19:00:55',
                 'updated_at' => '2025-01-29 19:00:55',
             ),
-            119 =>
+            118 =>
             array (
                 'id' => 127,
                 'parentid' => 116,
@@ -2659,7 +2637,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 19:01:47',
                 'updated_at' => '2025-01-29 19:02:33',
             ),
-            120 =>
+            119 =>
             array (
                 'id' => 128,
                 'parentid' => 116,
@@ -2681,7 +2659,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 19:02:26',
                 'updated_at' => '2025-01-29 19:02:26',
             ),
-            121 =>
+            120 =>
             array (
                 'id' => 129,
                 'parentid' => 117,
@@ -2703,7 +2681,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 19:03:21',
                 'updated_at' => '2025-01-29 19:03:21',
             ),
-            122 =>
+            121 =>
             array (
                 'id' => 130,
                 'parentid' => 117,
@@ -2725,7 +2703,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-29 19:04:14',
                 'updated_at' => '2025-01-29 19:04:14',
             ),
-            123 =>
+            122 =>
             array (
                 'id' => 131,
                 'parentid' => 118,
@@ -2747,7 +2725,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-30 08:35:41',
                 'updated_at' => '2025-01-30 08:35:41',
             ),
-            124 =>
+            123 =>
             array (
                 'id' => 132,
                 'parentid' => 118,
@@ -2769,7 +2747,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-30 08:39:58',
                 'updated_at' => '2025-01-30 08:39:58',
             ),
-            125 =>
+            124 =>
             array (
                 'id' => 133,
                 'parentid' => 118,
@@ -2791,7 +2769,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-30 08:40:31',
                 'updated_at' => '2025-01-30 08:40:31',
             ),
-            126 =>
+            125 =>
             array (
                 'id' => 134,
                 'parentid' => 119,
@@ -2813,7 +2791,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-01-30 08:41:29',
                 'updated_at' => '2025-01-30 08:41:29',
             ),
-            127 =>
+            126 =>
             array (
                 'id' => 135,
                 'parentid' => 43,
@@ -2835,7 +2813,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 09:51:03',
                 'updated_at' => '2025-10-16 05:20:00',
             ),
-            128 =>
+            127 =>
             array (
                 'id' => 136,
                 'parentid' => 43,
@@ -2857,7 +2835,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 09:53:05',
                 'updated_at' => '2025-10-16 05:20:04',
             ),
-            129 =>
+            128 =>
             array (
                 'id' => 137,
                 'parentid' => 43,
@@ -2879,7 +2857,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 09:56:05',
                 'updated_at' => '2025-10-16 05:20:07',
             ),
-            130 =>
+            129 =>
             array (
                 'id' => 138,
                 'parentid' => 43,
@@ -2901,7 +2879,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 10:07:13',
                 'updated_at' => '2025-10-16 05:20:11',
             ),
-            131 =>
+            130 =>
             array (
                 'id' => 139,
                 'parentid' => 43,
@@ -2923,7 +2901,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 10:08:51',
                 'updated_at' => '2025-10-16 05:20:14',
             ),
-            132 =>
+            131 =>
             array (
                 'id' => 140,
                 'parentid' => 43,
@@ -2945,7 +2923,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 10:10:57',
                 'updated_at' => '2025-10-16 05:20:17',
             ),
-            133 =>
+            132 =>
             array (
                 'id' => 141,
                 'parentid' => 43,
@@ -2967,7 +2945,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-04 10:12:14',
                 'updated_at' => '2025-10-16 05:20:20',
             ),
-            134 =>
+            133 =>
             array (
                 'id' => 142,
                 'parentid' => 67,
@@ -2989,7 +2967,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-11 05:26:07',
                 'updated_at' => '2025-10-15 16:35:33',
             ),
-            135 =>
+            134 =>
             array (
                 'id' => 143,
                 'parentid' => 67,
@@ -3011,7 +2989,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-11 05:27:37',
                 'updated_at' => '2025-10-15 16:35:43',
             ),
-            136 =>
+            135 =>
             array (
                 'id' => 144,
                 'parentid' => 42,
@@ -3033,7 +3011,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-11 20:27:50',
                 'updated_at' => '2025-10-16 05:19:44',
             ),
-            137 =>
+            136 =>
             array (
                 'id' => 145,
                 'parentid' => 144,
@@ -3055,7 +3033,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-11 20:32:00',
                 'updated_at' => '2025-10-16 05:20:31',
             ),
-            138 =>
+            137 =>
             array (
                 'id' => 146,
                 'parentid' => 144,
@@ -3077,7 +3055,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 08:51:47',
                 'updated_at' => '2025-10-16 05:20:37',
             ),
-            139 =>
+            138 =>
             array (
                 'id' => 147,
                 'parentid' => 144,
@@ -3099,7 +3077,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 08:55:08',
                 'updated_at' => '2025-10-16 05:21:40',
             ),
-            140 =>
+            139 =>
             array (
                 'id' => 148,
                 'parentid' => 144,
@@ -3121,7 +3099,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 08:57:39',
                 'updated_at' => '2025-10-16 05:21:44',
             ),
-            141 =>
+            140 =>
             array (
                 'id' => 149,
                 'parentid' => 144,
@@ -3143,7 +3121,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 09:05:25',
                 'updated_at' => '2025-10-16 05:21:47',
             ),
-            142 =>
+            141 =>
             array (
                 'id' => 150,
                 'parentid' => 144,
@@ -3165,7 +3143,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 09:07:58',
                 'updated_at' => '2025-10-16 05:21:50',
             ),
-            143 =>
+            142 =>
             array (
                 'id' => 151,
                 'parentid' => 144,
@@ -3187,7 +3165,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 09:12:39',
                 'updated_at' => '2025-10-16 05:21:53',
             ),
-            144 =>
+            143 =>
             array (
                 'id' => 152,
                 'parentid' => 144,
@@ -3209,7 +3187,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 09:14:19',
                 'updated_at' => '2025-10-16 05:21:56',
             ),
-            145 =>
+            144 =>
             array (
                 'id' => 153,
                 'parentid' => 144,
@@ -3231,7 +3209,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 09:18:53',
                 'updated_at' => '2025-10-16 05:22:00',
             ),
-            146 =>
+            145 =>
             array (
                 'id' => 154,
                 'parentid' => 144,
@@ -3253,7 +3231,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-02-12 09:22:41',
                 'updated_at' => '2025-10-16 05:22:03',
             ),
-            147 =>
+            146 =>
             array (
                 'id' => 155,
                 'parentid' => 18,
@@ -3275,7 +3253,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-03-15 07:24:57',
                 'updated_at' => '2025-10-16 05:25:41',
             ),
-            148 =>
+            147 =>
             array (
                 'id' => 156,
                 'parentid' => 18,
@@ -3297,7 +3275,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-03-15 07:35:01',
                 'updated_at' => '2025-10-16 05:25:45',
             ),
-            149 =>
+            148 =>
             array (
                 'id' => 157,
                 'parentid' => 18,
@@ -3319,7 +3297,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-03-15 07:38:54',
                 'updated_at' => '2025-10-16 05:25:48',
             ),
-            150 =>
+            149 =>
             array (
                 'id' => 158,
                 'parentid' => 26,
@@ -3341,7 +3319,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-05-02 10:34:47',
                 'updated_at' => '2025-10-16 05:27:36',
             ),
-            151 =>
+            150 =>
             array (
                 'id' => 159,
                 'parentid' => 26,
@@ -3363,7 +3341,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-05-02 13:12:16',
                 'updated_at' => '2025-10-16 05:27:29',
             ),
-            152 =>
+            151 =>
             array (
                 'id' => 160,
                 'parentid' => 26,
@@ -3385,7 +3363,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-05-02 14:02:37',
                 'updated_at' => '2025-10-16 05:27:33',
             ),
-            153 =>
+            152 =>
             array (
                 'id' => 161,
                 'parentid' => 5,
@@ -3407,7 +3385,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-06-10 11:31:45',
                 'updated_at' => '2025-10-16 04:59:56',
             ),
-            154 =>
+            153 =>
             array (
                 'id' => 162,
                 'parentid' => 10,
@@ -3429,7 +3407,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-23 09:15:05',
                 'updated_at' => '2025-10-16 05:23:13',
             ),
-            155 =>
+            154 =>
             array (
                 'id' => 163,
                 'parentid' => 162,
@@ -3451,7 +3429,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-23 09:18:26',
                 'updated_at' => '2025-10-16 05:24:32',
             ),
-            156 =>
+            155 =>
             array (
                 'id' => 164,
                 'parentid' => 162,
@@ -3473,7 +3451,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-23 09:23:41',
                 'updated_at' => '2025-10-16 05:24:41',
             ),
-            157 =>
+            156 =>
             array (
                 'id' => 165,
                 'parentid' => 162,
@@ -3495,7 +3473,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-23 09:26:17',
                 'updated_at' => '2025-10-16 05:24:49',
             ),
-            158 =>
+            157 =>
             array (
                 'id' => 166,
                 'parentid' => 162,
@@ -3517,7 +3495,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-23 09:38:25',
                 'updated_at' => '2025-10-16 05:24:53',
             ),
-            159 =>
+            158 =>
             array (
                 'id' => 167,
                 'parentid' => 162,
@@ -3539,7 +3517,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-23 09:39:41',
                 'updated_at' => '2025-10-16 05:24:56',
             ),
-            160 =>
+            159 =>
             array (
                 'id' => 168,
                 'parentid' => 10,
@@ -3561,7 +3539,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-31 21:22:17',
                 'updated_at' => '2025-10-16 05:23:04',
             ),
-            161 =>
+            160 =>
             array (
                 'id' => 169,
                 'parentid' => 168,
@@ -3583,7 +3561,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-07-31 21:24:29',
                 'updated_at' => '2025-10-16 05:23:50',
             ),
-            162 =>
+            161 =>
             array (
                 'id' => 170,
                 'parentid' => 168,
@@ -3605,7 +3583,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-01 12:49:17',
                 'updated_at' => '2025-10-16 05:23:53',
             ),
-            163 =>
+            162 =>
             array (
                 'id' => 171,
                 'parentid' => 168,
@@ -3627,7 +3605,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-01 12:51:54',
                 'updated_at' => '2025-10-16 05:23:47',
             ),
-            164 =>
+            163 =>
             array (
                 'id' => 172,
                 'parentid' => 168,
@@ -3649,7 +3627,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-01 12:54:15',
                 'updated_at' => '2025-10-16 05:23:43',
             ),
-            165 =>
+            164 =>
             array (
                 'id' => 173,
                 'parentid' => 168,
@@ -3671,7 +3649,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-01 12:55:33',
                 'updated_at' => '2025-10-16 05:23:40',
             ),
-            166 =>
+            165 =>
             array (
                 'id' => 174,
                 'parentid' => 168,
@@ -3693,7 +3671,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-01 12:56:58',
                 'updated_at' => '2025-10-16 05:23:36',
             ),
-            167 =>
+            166 =>
             array (
                 'id' => 175,
                 'parentid' => 30,
@@ -3715,7 +3693,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-11 07:39:42',
                 'updated_at' => '2025-10-16 05:28:04',
             ),
-            168 =>
+            167 =>
             array (
                 'id' => 176,
                 'parentid' => 25,
@@ -3737,7 +3715,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-24 06:33:29',
                 'updated_at' => '2025-10-16 05:27:12',
             ),
-            169 =>
+            168 =>
             array (
                 'id' => 177,
                 'parentid' => 176,
@@ -3759,7 +3737,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-24 06:38:58',
                 'updated_at' => '2025-10-16 05:28:11',
             ),
-            170 =>
+            169 =>
             array (
                 'id' => 178,
                 'parentid' => 176,
@@ -3781,7 +3759,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-24 06:40:10',
                 'updated_at' => '2025-10-16 05:28:14',
             ),
-            171 =>
+            170 =>
             array (
                 'id' => 179,
                 'parentid' => 176,
@@ -3803,7 +3781,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-24 09:14:35',
                 'updated_at' => '2025-10-16 05:28:17',
             ),
-            172 =>
+            171 =>
             array (
                 'id' => 180,
                 'parentid' => 176,
@@ -3825,7 +3803,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-27 18:50:55',
                 'updated_at' => '2025-10-16 05:28:20',
             ),
-            173 =>
+            172 =>
             array (
                 'id' => 181,
                 'parentid' => 26,
@@ -3847,7 +3825,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-08-29 00:09:03',
                 'updated_at' => '2025-10-16 05:27:42',
             ),
-            174 =>
+            173 =>
             array (
                 'id' => 182,
                 'parentid' => 26,
@@ -3869,7 +3847,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-09-07 03:03:24',
                 'updated_at' => '2025-10-16 05:27:39',
             ),
-            175 =>
+            174 =>
             array (
                 'id' => 183,
                 'parentid' => 67,
@@ -3891,7 +3869,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-09-17 16:10:33',
                 'updated_at' => '2025-10-15 16:36:24',
             ),
-            176 =>
+            175 =>
             array (
                 'id' => 184,
                 'parentid' => 26,
@@ -3913,7 +3891,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-10-04 15:26:26',
                 'updated_at' => '2025-10-16 05:27:45',
             ),
-            177 =>
+            176 =>
             array (
                 'id' => 185,
                 'parentid' => 1,
@@ -3933,16 +3911,16 @@ class MenusTableSeeder extends Seeder
                 'remark' => '预约管理',
                 'tree' => '0-1-185',
                 'created_at' => '2025-10-20 23:10:23',
-                'updated_at' => '2025-10-20 23:10:31',
+                'updated_at' => '2025-10-26 15:19:25',
             ),
-            178 =>
+            177 =>
             array (
                 'id' => 186,
                 'parentid' => 45,
                 'name' => NULL,
-                'title' => '新增分诊',
+                'title' => '分诊挂号',
                 'path' => '',
-                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"button","title":"\\u65b0\\u589e\\u5206\\u8bca","icon":"el-icon-folder-add","active":null,"color":null,"tag":null}',
+                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"button","title":"\\u5206\\u8bca\\u6302\\u53f7","icon":"el-icon-folder-add","active":null,"color":null,"tag":null}',
                 'component' => NULL,
                 'redirect' => NULL,
                 'type' => 'web',
@@ -3951,13 +3929,13 @@ class MenusTableSeeder extends Seeder
                 'permission' => 'reception.create',
                 'permission_scope' => '[]',
                 'order' => 1,
-                'keyword' => 'xinzengfenzhen,xzfz,新增分诊',
-                'remark' => '新增分诊操作',
+                'keyword' => 'fenzhenguahao,fzgh,分诊挂号',
+                'remark' => '新增分诊挂号操作',
                 'tree' => '0-1-45-186',
                 'created_at' => '2025-10-23 14:44:21',
-                'updated_at' => '2025-10-23 14:48:45',
+                'updated_at' => '2025-10-25 15:43:52',
             ),
-            179 =>
+            178 =>
             array (
                 'id' => 187,
                 'parentid' => 45,
@@ -3974,12 +3952,12 @@ class MenusTableSeeder extends Seeder
                 'permission_scope' => '[]',
                 'order' => 2,
                 'keyword' => 'xiugaifenzhen,xgfz,修改分诊',
-                'remark' => '更新分诊记录',
+                'remark' => '修改分诊挂号记录',
                 'tree' => '0-1-45-187',
                 'created_at' => '2025-10-23 14:44:59',
-                'updated_at' => '2025-10-23 14:48:51',
+                'updated_at' => '2025-10-25 16:04:22',
             ),
-            180 =>
+            179 =>
             array (
                 'id' => 188,
                 'parentid' => 45,
@@ -4001,7 +3979,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-10-23 14:45:56',
                 'updated_at' => '2025-10-23 14:48:56',
             ),
-            181 =>
+            180 =>
             array (
                 'id' => 189,
                 'parentid' => 45,
@@ -4023,7 +4001,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-10-23 14:47:08',
                 'updated_at' => '2025-10-23 14:47:08',
             ),
-            182 =>
+            181 =>
             array (
                 'id' => 190,
                 'parentid' => 45,
@@ -4045,7 +4023,7 @@ class MenusTableSeeder extends Seeder
                 'created_at' => '2025-10-23 14:48:32',
                 'updated_at' => '2025-10-23 14:49:53',
             ),
-            183 =>
+            182 =>
             array (
                 'id' => 191,
                 'parentid' => 45,
@@ -4066,6 +4044,94 @@ class MenusTableSeeder extends Seeder
                 'tree' => '0-1-45-191',
                 'created_at' => '2025-10-23 14:49:44',
                 'updated_at' => '2025-10-23 14:49:44',
+            ),
+            183 =>
+            array (
+                'id' => 192,
+                'parentid' => 1,
+                'name' => 'WorkbenchExpiry',
+                'title' => '过期预警',
+                'path' => '/workbench/expiry',
+                'meta' => '{"hidden":true,"hiddenBreadcrumb":false,"fullpage":false,"type":"menu","title":"\\u8fc7\\u671f\\u9884\\u8b66","icon":"el-icon-home-filled","active":null,"color":null,"tag":null}',
+                'component' => 'workbench/expiry',
+                'redirect' => NULL,
+                'type' => 'web',
+                'menu_type' => 'menu',
+                'child' => 0,
+                'permission' => 'workbench.expiry',
+                'permission_scope' => '[]',
+                'order' => 6,
+                'keyword' => 'guoqiyujing,gqyj,过期预警',
+                'remark' => '库存产品过期预警',
+                'tree' => '0-1-192',
+                'created_at' => '2025-10-24 17:02:36',
+                'updated_at' => '2025-10-24 17:07:25',
+            ),
+            184 =>
+            array (
+                'id' => 193,
+                'parentid' => 2,
+                'name' => NULL,
+                'title' => '到店',
+                'path' => '',
+                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"button","title":"\\u5230\\u5e97","icon":"el-icon-check","active":null,"color":null,"tag":null}',
+                'component' => NULL,
+                'redirect' => NULL,
+                'type' => 'web',
+                'menu_type' => 'button',
+                'child' => 0,
+                'permission' => 'workbench.today.arrival',
+                'permission_scope' => '[]',
+                'order' => 2,
+                'keyword' => 'daodian,dd,到店',
+                'remark' => '顾客预约到店操作',
+                'tree' => '0-1-2-193',
+                'created_at' => '2025-10-25 17:05:41',
+                'updated_at' => '2025-10-26 15:22:28',
+            ),
+            185 =>
+            array (
+                'id' => 194,
+                'parentid' => 2,
+                'name' => NULL,
+                'title' => '查看',
+                'path' => '',
+                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"button","title":"\\u67e5\\u770b","icon":"el-icon-view","active":null,"color":null,"tag":null}',
+                'component' => NULL,
+                'redirect' => NULL,
+                'type' => 'web',
+                'menu_type' => 'button',
+                'child' => 0,
+                'permission' => 'workbench.today.index',
+                'permission_scope' => '[]',
+                'order' => 1,
+                'keyword' => 'chakan,ck,查看',
+                'remark' => '查看今日工作数据',
+                'tree' => '0-1-2-194',
+                'created_at' => '2025-10-26 15:22:24',
+                'updated_at' => '2025-10-26 15:42:27',
+            ),
+            186 =>
+            array (
+                'id' => 195,
+                'parentid' => 2,
+                'name' => NULL,
+                'title' => '挂号',
+                'path' => '',
+                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"button","title":"\\u6302\\u53f7","icon":"el-icon-circle-plus-filled","active":null,"color":null,"tag":null}',
+                'component' => NULL,
+                'redirect' => NULL,
+                'type' => 'web',
+                'menu_type' => 'button',
+                'child' => 0,
+                'permission' => 'workbench.today.reception',
+                'permission_scope' => '[]',
+                'order' => 3,
+                'keyword' => 'guahao,gh,挂号',
+                'remark' => '分诊挂号',
+                'tree' => '0-1-2-195',
+                'created_at' => '2025-10-26 15:56:29',
+                'updated_at' => '2025-10-26 15:56:48',
             ),
         ));
 
