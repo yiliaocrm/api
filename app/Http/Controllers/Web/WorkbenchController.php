@@ -68,6 +68,8 @@ class WorkbenchController extends Controller
             ->orderBy($sort, $order)
             ->paginate($rows);
 
+        $query->append(['status_text', 'type_text']);
+
         return response_success([
             'rows'  => $query->items(),
             'total' => $query->total()
@@ -181,12 +183,16 @@ class WorkbenchController extends Controller
             ])
             ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
             ->queryConditions('WorkbenchAppointment')
+            ->whereBetween('appointments.created_at', [
+                Carbon::parse($request->input('created_at.0'))->startOfDay(),
+                Carbon::parse($request->input('created_at.1'))->endOfDay()
+            ])
             ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->when($request->has('status'), fn(Builder $query) => $query->where('status', $status))
             ->orderBy("appointments.{$sort}", $order)
             ->paginate($rows);
 
-        $query->append(['status_text']);
+        $query->append(['status_text', 'type_text']);
 
         return response_success([
             'rows'  => $query->items(),
