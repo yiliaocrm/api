@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Web;
 
+use App\Models\Goods;
 use App\Models\Reception;
 use App\Models\Appointment;
 use App\Rules\Web\SceneRule;
@@ -110,9 +111,32 @@ class WorkbenchRequest extends FormRequest
         $receptionManage = Reception::query()->whereDate('created_at', today())->count();
         return match ($permission) {
             'workbench.today' => $todayWorkbench,
+            'workbench.alarm' => $this->getInventoryAlarmCount(),
             'workbench.reception' => $receptionManage,
             default => 0,
         };
+    }
+
+    /**
+     * 获取库存预警数量（库存不足 + 库存过剩）
+     * @return int
+     */
+    private function getInventoryAlarmCount(): int
+    {
+        return Goods::query()
+            ->where(function (Builder $query) {
+                // 库存不足：min <> 0 且 min > inventory_number
+                $query->where(function (Builder $subQuery) {
+                    $subQuery->where('goods.min', '<>', 0)
+                        ->where('goods.min', '>', DB::raw('inventory_number'));
+                })
+                // 或者库存过剩：max <> 0 且 max < inventory_number
+                ->orWhere(function (Builder $subQuery) {
+                    $subQuery->where('goods.max', '<>', 0)
+                        ->where('goods.max', '<', DB::raw('inventory_number'));
+                });
+            })
+            ->count();
     }
 
     /**

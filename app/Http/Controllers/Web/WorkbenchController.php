@@ -221,7 +221,7 @@ class WorkbenchController extends Controller
         $warehouse_id = $request->input('warehouse_id');
 
         $query = Goods::query()
-            ->with(['type', 'units'])
+            ->with(['type', 'units.unit'])
             ->select(['goods.id', 'goods.type_id', 'goods.name', 'goods.specs'])
             // 合计预警
             ->when(!$warehouse_id, fn(Builder $query) => $query->addSelect(['goods.max', 'goods.min', 'goods.inventory_number']))
