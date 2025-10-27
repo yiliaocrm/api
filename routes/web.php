@@ -909,11 +909,6 @@ Route::controller(Web\ExecutionController::class)->prefix('execution')->group(fu
     Route::get('participants', 'participants');
 });
 
-Route::controller(Web\ReminderController::class)->prefix('reminder')->group(function () {
-    Route::post('inventory-alarm', 'inventoryAlarm');
-    Route::post('inventory-expiry', 'inventoryExpiry');
-});
-
 Route::controller(Web\DataMaintenanceController::class)->prefix('data-maintenance')->group(function () {
     Route::get('index', 'index');
     Route::get('receptions', 'receptions');
