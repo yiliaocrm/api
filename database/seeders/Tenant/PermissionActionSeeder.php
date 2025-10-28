@@ -105,6 +105,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'inventoryExpiry',
             ],
             [
+                'permission' => 'workbench.expiry.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'inventoryExpiry',
+            ],
+            [
                 'permission' => 'reservation.manage',
                 'controller' => 'App\Http\Controllers\Api\ReservationController',
                 'action'     => 'manage',
