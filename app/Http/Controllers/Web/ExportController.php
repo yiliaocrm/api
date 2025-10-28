@@ -277,12 +277,15 @@ class ExportController extends Controller
 
     /**
      * 导出[过期预警]
-     * @param Request $request
-     * @return InventoryExpiryExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function inventoryExpiry(Request $request): InventoryExpiryExport
+    public function inventoryExpiry(ExportRequest $request): JsonResponse
     {
-        return new InventoryExpiryExport($request);
+        $name = $request->input('fileName', '过期预警');
+        $task = $request->createExportTask($name);
+        dispatch(new InventoryExpiryExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**

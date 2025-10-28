@@ -306,6 +306,9 @@ class WorkbenchController extends Controller
         $warehouse_id = $request->input('warehouse_id');
 
         $query = InventoryBatchs::query()
+            ->with([
+                'warehouse:id,name'
+            ])
             ->select([
                 'inventory_batchs.id',
                 'goods.name',

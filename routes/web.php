@@ -861,7 +861,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::get('inventory/detail', 'inventoryDetail');
     Route::get('inventory/batch', 'inventoryBatch');
     Route::post('inventory/alarm', 'inventoryAlarm');
-    Route::get('inventory/expiry', 'inventoryExpiry');
+    Route::post('inventory/expiry', 'inventoryExpiry');
     Route::get('purchase/detail', 'purchaseDetail');
     Route::get('followup/statistic', 'followupStatistic');
     Route::post('consumable/detail', 'consumableDetail');
