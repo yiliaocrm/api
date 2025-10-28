@@ -6,6 +6,7 @@ use App\Models\Goods;
 use App\Models\Customer;
 use App\Models\Reception;
 use App\Models\Appointment;
+use App\Models\InventoryBatchs;
 use App\Rules\Web\SceneRule;
 use App\Models\ReceptionType;
 use Illuminate\Support\Collection;
@@ -138,6 +139,7 @@ class WorkbenchRequest extends FormRequest
         return match ($permission) {
             'workbench.today' => $todayWorkbench,
             'workbench.alarm' => $this->getInventoryAlarmCount(),
+            'workbench.expiry' => $this->getInventoryExpiryCount(),
             'workbench.birthday' => $this->getTodayBirthdayCount(),
             'workbench.reception' => $receptionManage,
             default => 0,
@@ -183,6 +185,33 @@ class WorkbenchRequest extends FormRequest
                 $query->where(function ($query) use ($ids) {
                     $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
                 });
+            })
+            ->count();
+    }
+
+    /**
+     * 获取过期预警数量（预警期内 + 已经过期）
+     * @return int
+     */
+    private function getInventoryExpiryCount(): int
+    {
+        return InventoryBatchs::query()
+            ->leftJoin('goods', 'goods.id', '=', 'inventory_batchs.goods_id')
+            ->where('inventory_batchs.number', '>', 0)
+            ->whereNotNull('inventory_batchs.expiry_date')
+            ->where(function (Builder $query) {
+                // 预警期内：warn_days <> 0 且当前日期在预警期内
+                $query->where(function (Builder $subQuery) {
+                    $subQuery->where('goods.warn_days', '<>', 0)
+                        ->whereBetween(DB::raw('curdate()'), [
+                            DB::raw('DATE_SUB(cy_inventory_batchs.expiry_date, INTERVAL cy_goods.warn_days DAY)'),
+                            DB::raw('cy_inventory_batchs.expiry_date')
+                        ]);
+                })
+                    // 或者已经过期
+                    ->orWhere(function (Builder $subQuery) {
+                        $subQuery->where('inventory_batchs.expiry_date', '<', DB::raw('curdate()'));
+                    });
             })
             ->count();
     }
