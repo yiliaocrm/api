@@ -134,14 +134,13 @@ class WorkbenchRequest extends FormRequest
      */
     public function getMenuCount(string $permission): int
     {
-        $todayWorkbench  = Appointment::query()->whereDate('date', today())->count();
-        $receptionManage = Reception::query()->whereDate('created_at', today())->count();
         return match ($permission) {
-            'workbench.today' => $todayWorkbench,
+            'workbench.today' => $this->getTodayWorkbenchCount(),
             'workbench.alarm' => $this->getInventoryAlarmCount(),
             'workbench.expiry' => $this->getInventoryExpiryCount(),
             'workbench.birthday' => $this->getTodayBirthdayCount(),
-            'workbench.reception' => $receptionManage,
+            'workbench.reception' => $this->getTodayReceptionCount(),
+            'workbench.appointment' => $this->getTodayAppointmentCount(),
             default => 0,
         };
     }
@@ -186,6 +185,39 @@ class WorkbenchRequest extends FormRequest
                     $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
                 });
             })
+            ->count();
+    }
+
+    /**
+     * 获取今日预约数量
+     * @return int
+     */
+    private function getTodayAppointmentCount(): int
+    {
+        return Appointment::query()
+            ->whereDate('created_at', today())
+            ->count();
+    }
+
+    /**
+     * 获取今日工作台数量（今日就诊）
+     * @return int
+     */
+    private function getTodayWorkbenchCount(): int
+    {
+        return Appointment::query()
+            ->whereDate('date', today())
+            ->count();
+    }
+
+    /**
+     * 获取今日分诊接待数量
+     * @return int
+     */
+    private function getTodayReceptionCount(): int
+    {
+        return Reception::query()
+            ->whereDate('created_at', today())
             ->count();
     }
 
