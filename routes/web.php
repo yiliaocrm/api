@@ -38,6 +38,7 @@ Route::controller(Web\WorkbenchController::class)->prefix('workbench')->group(fu
     Route::get('menu', 'menu');
     Route::get('today', 'today');
     Route::get('followup', 'followup');
+    Route::post('birthday', 'birthday');
     Route::post('reception', 'reception');
     Route::post('appointment', 'appointment');
     Route::post('inventory-alarm', 'inventoryAlarm');

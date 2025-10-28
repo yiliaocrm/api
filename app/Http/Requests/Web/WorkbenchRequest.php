@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Web;
 
 use App\Models\Goods;
+use App\Models\Customer;
 use App\Models\Reception;
 use App\Models\Appointment;
 use App\Rules\Web\SceneRule;
@@ -33,6 +34,7 @@ class WorkbenchRequest extends FormRequest
     public function rules(): array
     {
         return match (request()->route()->getActionMethod()) {
+            'birthday' => $this->getBirthdayRules(),
             'reception' => $this->getReceptionRules(),
             'appointment' => $this->getAppointmentRules(),
             default => [],
@@ -42,6 +44,7 @@ class WorkbenchRequest extends FormRequest
     public function messages(): array
     {
         return match (request()->route()->getActionMethod()) {
+            'birthday' => $this->getBirthdayMessages(),
             'reception' => $this->getReceptionMessages(),
             'appointment' => $this->getAppointmentMessages(),
             default => []
@@ -58,6 +61,29 @@ class WorkbenchRequest extends FormRequest
             ],
             'created_at'   => 'required|array|size:2',
             'created_at.*' => 'required|date|date_format:Y-m-d',
+        ];
+    }
+
+    private function getBirthdayRules(): array
+    {
+        return [
+            'keyword'    => 'nullable|string|max:255',
+            'birthday'   => 'required|array|size:2',
+            'birthday.*' => 'required|date|date_format:Y-m-d',
+        ];
+    }
+
+    private function getBirthdayMessages(): array
+    {
+        return [
+            'keyword.string'         => '[顾客信息]格式不正确',
+            'keyword.max'            => '[顾客信息]不能超过255个字符',
+            'birthday.required'      => '[生日范围]不能为空',
+            'birthday.array'         => '[生日范围]格式不正确',
+            'birthday.size'          => '[生日范围]必须包含开始和结束日期',
+            'birthday.*.required'    => '[生日范围]格式不正确',
+            'birthday.*.date'        => '[生日范围]格式不正确',
+            'birthday.*.date_format' => '[生日范围]格式必须为Y-m-d',
         ];
     }
 
@@ -112,6 +138,7 @@ class WorkbenchRequest extends FormRequest
         return match ($permission) {
             'workbench.today' => $todayWorkbench,
             'workbench.alarm' => $this->getInventoryAlarmCount(),
+            'workbench.birthday' => $this->getTodayBirthdayCount(),
             'workbench.reception' => $receptionManage,
             default => 0,
         };
@@ -130,10 +157,31 @@ class WorkbenchRequest extends FormRequest
                     $subQuery->where('goods.min', '<>', 0)
                         ->where('goods.min', '>', DB::raw('inventory_number'));
                 })
-                // 或者库存过剩：max <> 0 且 max < inventory_number
-                ->orWhere(function (Builder $subQuery) {
-                    $subQuery->where('goods.max', '<>', 0)
-                        ->where('goods.max', '<', DB::raw('inventory_number'));
+                    // 或者库存过剩：max <> 0 且 max < inventory_number
+                    ->orWhere(function (Builder $subQuery) {
+                        $subQuery->where('goods.max', '<>', 0)
+                            ->where('goods.max', '<', DB::raw('inventory_number'));
+                    });
+            })
+            ->count();
+    }
+
+    /**
+     * 获取今日生日顾客数量
+     * @return int
+     */
+    private function getTodayBirthdayCount(): int
+    {
+        $today = date('m-d');
+
+        return Customer::query()
+            ->whereNotNull('birthday')
+            ->where(DB::raw("DATE_FORMAT(birthday, '%m-%d')"), $today)
+            // 权限限制
+            ->when(!user()->hasAnyAccess(['superuser', 'customer.view.all']), function (Builder $query) {
+                $ids = user()->getCustomerViewUsersPermission();
+                $query->where(function ($query) use ($ids) {
+                    $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
                 });
             })
             ->count();

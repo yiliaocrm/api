@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Models\Menu;
 use App\Models\Goods;
+use App\Models\Customer;
 use App\Models\Followup;
 use App\Models\GoodsType;
 use App\Models\Reception;
@@ -98,6 +99,46 @@ class WorkbenchController extends Controller
                 'followupUserInfo:id,name',
             ])
             ->orderBy('followup.created_at', 'desc')
+            ->paginate($rows);
+
+        return response_success([
+            'rows'  => $query->items(),
+            'total' => $query->total()
+        ]);
+    }
+
+    /**
+     * 生日提醒
+     * @param WorkbenchRequest $request
+     * @return JsonResponse
+     */
+    public function birthday(WorkbenchRequest $request): JsonResponse
+    {
+        $rows     = $request->input('rows', 10);
+        $sort     = $request->input('sort', 'created_at');
+        $order    = $request->input('order', 'desc');
+        $keyword  = $request->input('keyword');
+        $birthday = $request->input('birthday');
+
+        $query = Customer::query()
+            ->with([
+                'consultantUser:id,name',
+                'ascriptionUser:id,name',
+            ])
+            ->whereNotNull('birthday')
+            ->when($keyword, fn(Builder $query) => $query->where('keyword', 'like', "%{$keyword}%"))
+            ->whereBetween(DB::raw("DATE_FORMAT(birthday, '%m-%d')"), [
+                date('m-d', strtotime($birthday[0])),
+                date('m-d', strtotime($birthday[1]))
+            ])
+            // 权限限制
+            ->when(!user()->hasAnyAccess(['superuser', 'customer.view.all']), function ($query) {
+                $ids = user()->getCustomerViewUsersPermission();
+                $query->where(function ($query) use ($ids) {
+                    $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
+                });
+            })
+            ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
