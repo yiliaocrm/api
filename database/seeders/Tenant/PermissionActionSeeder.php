@@ -321,11 +321,6 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'import',
             ],
             [
-                'permission' => 'customer.birthday',
-                'controller' => 'App\Http\Controllers\Web\CustomerController',
-                'action'     => 'birthday',
-            ],
-            [
                 'permission' => 'customer.job.manage',
                 'controller' => 'App\Http\Controllers\Web\CustomerJobController',
                 'action'     => '*',

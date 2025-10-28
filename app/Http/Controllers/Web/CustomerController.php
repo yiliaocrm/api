@@ -12,7 +12,6 @@ use App\Services\CustomerService;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerGroupCategory;
 use App\Http\Requests\Web\CustomerRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -364,45 +363,5 @@ class CustomerController extends Controller
     {
         (new CustomerImport)->import($request->file('excel'));
         return response_success();
-    }
-
-    /**
-     * 查询会员生日
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function birthday(Request $request): JsonResponse
-    {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'created_at');
-        $order = $request->input('order', 'desc');
-        $query = Customer::query()
-            ->when($request->input('birthday_start') && $request->input('birthday_end'), function (Builder $query) use ($request) {
-                $query->whereBetween(DB::raw("DATE_FORMAT( birthday, '%m-%d' )"), [
-                    $request->input('birthday_start'),
-                    $request->input('birthday_end')
-                ]);
-            })
-            ->whereNotNull('birthday')
-            // 权限限制
-            ->when(!user()->hasAnyAccess(['superuser', 'customer.view.all']), function ($query) {
-                $ids = user()->getCustomerViewUsersPermission();
-                if (count($ids) == 1) {
-                    $query->where(function ($query) use ($ids) {
-                        $query->where('ascription', $ids[0])->orWhere('consultant', $ids[0]);
-                    });
-                } else {
-                    $query->where(function ($query) use ($ids) {
-                        $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
-                    });
-                }
-            })
-            ->orderBy($sort, $order)
-            ->paginate($rows);
-
-        return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
-        ]);
     }
 }

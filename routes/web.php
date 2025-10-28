@@ -333,7 +333,6 @@ Route::controller(Web\MenuController::class)->prefix('menu')->group(function () 
 Route::controller(Web\CustomerController::class)->prefix('customer')->group(function () {
     Route::post('index', 'index');
     Route::post('create', 'create');
-    Route::post('birthday', 'birthday');
     Route::get('remove', 'remove');
     Route::post('merge', 'merge');
     Route::post('update', 'update');
