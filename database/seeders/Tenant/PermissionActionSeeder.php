@@ -85,6 +85,31 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'arrival',
             ],
             [
+                'permission' => 'workbench.appointment.index',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'appointment',
+            ],
+            [
+                'permission' => 'workbench.appointment.index',
+                'controller' => 'App\Http\Controllers\Web\AppointmentController',
+                'action'     => 'info',
+            ],
+            [
+                'permission' => 'workbench.appointment.create',
+                'controller' => 'App\Http\Controllers\Web\AppointmentController',
+                'action'     => 'create',
+            ],
+            [
+                'permission' => 'workbench.appointment.update',
+                'controller' => 'App\Http\Controllers\Web\AppointmentController',
+                'action'     => 'update',
+            ],
+            [
+                'permission' => 'workbench.appointment.remove',
+                'controller' => 'App\Http\Controllers\Web\AppointmentController',
+                'action'     => 'remove',
+            ],
+            [
                 'permission' => 'workbench.birthday',
                 'controller' => 'App\Http\Controllers\Web\WorkbenchController',
                 'action'     => 'birthday',
