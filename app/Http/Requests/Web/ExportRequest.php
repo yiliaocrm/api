@@ -35,6 +35,7 @@ class ExportRequest extends FormRequest
             'cashierRefund' => $this->getExportRules(),
             'customerGoods' => $this->getCustomerGoodsRules(),
             'inventoryBatch' => $this->getInventoryBatchRules(),
+            'inventoryAlarm' => $this->getInventoryAlarmRules(),
             'customerProduct' => $this->getCustomerProductRules(),
             'salesPerformance' => $this->getSalesPerformanceRules(),
             'purchaseDetail' => $this->getPurchaseDetailRules(),
@@ -54,6 +55,7 @@ class ExportRequest extends FormRequest
             'cashierRefund' => $this->getExportMessages(),
             'customerGoods' => $this->getCustomerGoodsMessages(),
             'inventoryBatch' => $this->getInventoryBatchMessages(),
+            'inventoryAlarm' => $this->getInventoryAlarmMessages(),
             'customerProduct' => $this->getCustomerProductMessages(),
             'salesPerformance' => $this->getSalesPerformanceMessages(),
             'purchaseDetail' => $this->getPurchaseDetailMessages(),
@@ -126,6 +128,36 @@ class ExportRequest extends FormRequest
     {
         return [
             'filters.array' => '筛选条件必须是数组',
+        ];
+    }
+
+    private function getInventoryAlarmRules(): array
+    {
+        return [
+            'warehouse_id' => 'nullable|integer|exists:warehouse,id',
+            'type_id'      => 'nullable|integer|exists:goods_type,id',
+            'name'         => 'nullable|string|max:200',
+            'status'       => 'nullable|string|in:normal,high,low',
+            'filterable'   => 'nullable|string|in:show,hide',
+            'fileName'     => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getInventoryAlarmMessages(): array
+    {
+        return [
+            'warehouse_id.integer' => '[仓库]格式错误',
+            'warehouse_id.exists'  => '[仓库]不存在',
+            'type_id.integer'      => '[物品分类]格式错误',
+            'type_id.exists'       => '[物品分类]不存在',
+            'name.string'          => '[物品名称]格式错误',
+            'name.max'             => '[物品名称]不能超过200个字符',
+            'status.string'        => '[预警状态]格式错误',
+            'status.in'            => '[预警状态]值无效',
+            'filterable.string'    => '[过滤库存]格式错误',
+            'filterable.in'        => '[过滤库存]值无效',
+            'fileName.string'      => '文件名称格式错误',
+            'fileName.max'         => '文件名称不能超过200个字符',
         ];
     }
 
@@ -406,6 +438,7 @@ class ExportRequest extends FormRequest
             'salesPerformance' => $this->only(['filters', 'created_at', 'keyword']),
             'customerIntegral' => $this->only(['created_at', 'type', 'keyword', 'expired']),
             'productRanking' => $this->only(['created_at', 'medium_id', 'type_id', 'sort', 'order']),
+            'inventoryAlarm' => $this->only(['warehouse_id', 'type_id', 'name', 'status', 'filterable']),
             'user' => $this->only(['keyword', 'roles', 'department_id']),
             default => []
         };

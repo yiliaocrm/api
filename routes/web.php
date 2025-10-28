@@ -860,7 +860,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::post('product/ranking', 'productRanking');
     Route::get('inventory/detail', 'inventoryDetail');
     Route::get('inventory/batch', 'inventoryBatch');
-    Route::get('inventory/alarm', 'inventoryAlarm');
+    Route::post('inventory/alarm', 'inventoryAlarm');
     Route::get('inventory/expiry', 'inventoryExpiry');
     Route::get('purchase/detail', 'purchaseDetail');
     Route::get('followup/statistic', 'followupStatistic');

@@ -90,6 +90,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'inventoryAlarm',
             ],
             [
+                'permission' => 'workbench.alarm.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'inventoryAlarm',
+            ],
+            [
                 'permission' => 'workbench.expiry',
                 'controller' => 'App\Http\Controllers\Web\WorkbenchController',
                 'action'     => 'inventoryExpiry',

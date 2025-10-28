@@ -264,12 +264,15 @@ class ExportController extends Controller
 
     /**
      * 导出[库存预警]
-     * @param Request $request
-     * @return InventoryAlarmExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function inventoryAlarm(Request $request): InventoryAlarmExport
+    public function inventoryAlarm(ExportRequest $request): JsonResponse
     {
-        return new InventoryAlarmExport($request);
+        $name = $request->input('fileName', '库存预警');
+        $task = $request->createExportTask($name);
+        dispatch(new InventoryAlarmExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**
