@@ -85,6 +85,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'arrival',
             ],
             [
+                'permission' => 'workbench.birthday',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'birthday',
+            ],
+            [
                 'permission' => 'workbench.alarm',
                 'controller' => 'App\Http\Controllers\Web\WorkbenchController',
                 'action'     => 'inventoryAlarm',
