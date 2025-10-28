@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Reception;
 use App\Models\Appointment;
 use App\Models\InventoryBatchs;
+use App\Enums\AppointmentStatus;
 use App\Rules\Web\SceneRule;
 use App\Models\ReceptionType;
 use Illuminate\Support\Collection;
@@ -271,6 +272,54 @@ class WorkbenchRequest extends FormRequest
                 'count' => $counts->get($type->id, 0)
             ];
         });
+    }
+
+    /**
+     * 获取预约统计数据
+     * @param Builder $builder
+     * @return array
+     */
+    public function getAppointmentDashboard(Builder $builder): array
+    {
+        $today = today();
+
+        // 克隆查询构建器，确保只统计今日数据
+        $todayBuilder = $builder->clone()
+            ->whereDate('appointments.date', $today)
+            ->reorder(); // 清除排序，避免影响统计
+
+        // 上午总数 (00:00 - 12:00)
+        $morningCount = $todayBuilder->clone()
+            ->whereTime('appointments.start', '<', '12:00:00')
+            ->count();
+
+        // 下午总数 (12:00 - 23:59)
+        $afternoonCount = $todayBuilder->clone()
+            ->whereTime('appointments.start', '>=', '12:00:00')
+            ->count();
+
+        // 已到店总数 (arrival_time 有值)
+        $arrivedCount = $todayBuilder->clone()
+            ->whereNotNull('appointments.arrival_time')
+            ->count();
+
+        // 待上门人数 (status = PENDING_ARRIVAL)
+        $pendingArrivalCount = $todayBuilder->clone()
+            ->where('appointments.status', AppointmentStatus::PENDING_ARRIVAL->value)
+            ->count();
+
+        // 取消人数 (status = CANCELLED)
+        $cancelledCount = $todayBuilder->clone()
+            ->where('appointments.status', AppointmentStatus::CANCELLED->value)
+            ->count();
+
+        return [
+            'morning_count'         => $morningCount,
+            'arrived_count'         => $arrivedCount,
+            'afternoon_count'       => $afternoonCount,
+            'cancelled_count'       => $cancelledCount,
+            'pending_arrival_count' => $pendingArrivalCount,
+        ];
     }
 
     /**

@@ -214,7 +214,7 @@ class WorkbenchController extends Controller
         $rows    = $request->input('rows', 10);
         $status  = $request->input('status');
         $keyword = $request->input('keyword');
-        $query   = Appointment::query()
+        $builder = Appointment::query()
             ->with([
                 'doctor:id,name',
                 'consultant:id,name',
@@ -234,14 +234,15 @@ class WorkbenchController extends Controller
             ])
             ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->when($request->has('status'), fn(Builder $query) => $query->where('status', $status))
-            ->orderBy("appointments.{$sort}", $order)
-            ->paginate($rows);
+            ->orderBy("appointments.{$sort}", $order);
 
+        $query = $builder->paginate($rows);
         $query->append(['status_text', 'type_text']);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows'      => $query->items(),
+            'total'     => $query->total(),
+            'dashboard' => $request->getAppointmentDashboard($builder)
         ]);
     }
 
