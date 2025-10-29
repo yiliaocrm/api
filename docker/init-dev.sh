@@ -9,13 +9,23 @@ set -e  # 遇到错误立即退出
 echo "🚀 开始初始化 Docker 开发环境..."
 echo ""
 
-# 1. 检查容器是否运行
-echo "📦 检查容器状态..."
-if ! docker-compose ps | grep -q "clinic-php.*Up"; then
-    echo "❌ 错误：PHP 容器未运行，请先执行 docker-compose up -d"
-    exit 1
+# 0. 准备环境变量文件
+if [ ! -f .env ]; then
+    echo "📋 复制环境配置文件..."
+    cp docker/.env.docker .env
+    echo "✅ 环境文件创建完成"
+    echo ""
 fi
-echo "✅ 容器运行正常"
+
+# 1. 启动容器
+echo "📦 启动容器..."
+docker-compose up -d
+echo "✅ 容器启动完成"
+echo ""
+
+# 等待容器完全启动
+echo "⏳ 等待容器启动..."
+sleep 5
 echo ""
 
 # 2. 安装 Composer 依赖

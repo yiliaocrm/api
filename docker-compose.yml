@@ -189,21 +189,6 @@ services:
     networks:
       - clinic-network
 
-  # ============================================
-  # Vite 服务（前端开发，可选）
-  # ============================================
-  vite:
-    image: node:20-alpine
-    container_name: clinic-vite
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
-    ports:
-      - "${DOCKER_VITE_PORT:-5173}:5173"
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    networks:
-      - clinic-network
-
 # ============================================
 # 数据卷
 # ============================================

@@ -162,13 +162,51 @@ yarn config set registry https://registry.npmmirror.com
 
 **所有平台使用同一个配置文件** `docker-compose.yml`，只是初始化脚本根据操作系统不同：
 
-只需 **4 步** 完成部署：
+### 方式一：使用 Makefile（推荐 - Linux/macOS）
 
-### Linux / macOS
+只需 **1 行命令** 完成所有初始化：
+
+```bash
+make init
+```
+
+该命令会自动完成：
+- ✅ 复制环境配置文件（如果不存在）
+- ✅ 启动所有容器
+- ✅ 安装 Composer 依赖
+- ✅ 创建必要目录
+- ✅ 修复文件权限
+- ✅ 生成应用密钥
+- ✅ 重启服务
+
+**部署前端资源**：
+
+```bash
+make deploy-frontend
+```
+
+**其他常用命令**：
+
+```bash
+make help            # 查看所有可用命令
+make up              # 启动容器
+make down            # 停止容器
+make logs            # 查看日志
+make shell           # 进入 PHP 容器
+make cache-clear     # 清理缓存
+```
+
+> 详细命令列表请运行 `make help` 查看。
+
+---
+
+### 方式二：手动执行脚本
+
+#### Linux / macOS
 
 ```bash
 # 1. 准备环境变量
-cp .env.docker .env
+cp docker/.env.docker .env
 
 # 2. 启动容器
 docker-compose up -d
@@ -180,11 +218,11 @@ docker-compose up -d
 ./docker/deploy-frontend.sh
 ```
 
-### Windows (CMD / PowerShell)
+#### Windows (CMD / PowerShell)
 
 ```powershell
 # 1. 准备环境变量
-copy .env.docker .env
+copy docker\.env.docker .env
 
 # 2. 启动容器
 docker-compose up -d
@@ -196,7 +234,7 @@ docker\init-dev.bat
 docker\deploy-frontend.bat
 ```
 
-### Windows (Git Bash)
+#### Windows (Git Bash)
 
 ```bash
 # 与 Linux/macOS 相同
@@ -216,10 +254,10 @@ bash ./docker/deploy-frontend.sh
 
 ```bash
 # 复制 Docker 专用配置
-cp .env.docker .env
+cp docker/.env.docker .env
 ```
 
-> **提示**：`.env.docker` 已预配置好数据库连接等信息，开发环境无需修改。
+> **提示**：`docker/.env.docker` 已预配置好数据库连接等信息，开发环境无需修改。
 
 **如果遇到端口冲突**，可以修改 `.env` 文件：
 
@@ -371,7 +409,7 @@ docker-compose exec -u root php rm -rf /tmp/frontend
 
 ```bash
 # 基于 Docker 配置创建生产配置
-cp .env.docker .env.production
+cp docker/.env.docker .env.production
 
 # 编辑配置（必改项）
 nano .env.production
@@ -437,13 +475,11 @@ sudo certbot --nginx -d yourdomain.com
 | redis | - | 6379 | ❌ | Redis 缓存（可选启用，通过 FORWARD_REDIS_PORT 配置） |
 | queue | - | - | ❌ | 队列处理 |
 | scheduler | - | - | ❌ | 定时任务 |
-| vite | 5173 (dev) | 5173 | ✅ | 前端开发服务器（通过 DOCKER_VITE_PORT 配置） |
 
 ### 端口配置说明
 
 **默认对外暴露**：
 - Nginx (8080) - 必需，用户访问应用
-- Vite (5173) - 仅开发环境，前端热更新
 
 **默认不暴露**（安全 + 避免冲突）：
 - MySQL (3306) - 如需图形化工具，参考"数据库访问"章节启用
@@ -455,7 +491,43 @@ sudo certbot --nginx -d yourdomain.com
 
 ## 常用命令
 
-### 容器管理
+### 使用 Makefile（推荐 - Linux/macOS）
+
+```bash
+# 查看所有可用命令
+make help
+
+# 容器管理
+make up              # 启动容器
+make down            # 停止容器
+make restart         # 重启容器
+make ps              # 查看容器状态
+make logs            # 查看所有日志
+make logs-php        # 查看 PHP 日志
+
+# 进入容器
+make shell           # 进入 PHP 容器
+make shell-root      # 以 root 进入 PHP 容器
+make shell-mysql     # 进入 MySQL
+make shell-redis     # 进入 Redis
+
+# Composer & Artisan
+make composer-install    # 安装依赖
+make artisan CMD="..."   # 执行 Artisan 命令
+make migrate             # 数据库迁移
+make cache-clear         # 清理缓存
+
+# 数据库
+make db-backup           # 备份数据库
+make db-restore FILE=... # 还原数据库
+
+# 测试
+make test                # 运行测试
+```
+
+### 使用 docker-compose（所有平台通用）
+
+#### 容器管理
 
 ```bash
 # 启动
@@ -474,7 +546,7 @@ docker-compose logs -f [服务名]
 docker-compose exec php sh
 ```
 
-### Laravel 命令
+#### Laravel 命令
 
 ```bash
 # 进入容器后执行
@@ -492,7 +564,7 @@ php artisan tenants:migrate
 php artisan queue:restart
 ```
 
-### 数据库备份
+#### 数据库备份
 
 ```bash
 # 备份
@@ -502,11 +574,11 @@ docker-compose exec mysql mysqldump -u clinic -pclinic_password clinic_central >
 docker-compose exec -T mysql mysql -u clinic -pclinic_password clinic_central < backup.sql
 ```
 
-### 数据库访问
+#### 数据库访问
 
 **默认情况**：为了安全和避免端口冲突，MySQL 和 Redis 端口默认不映射到宿主机。
 
-#### 方式 1：进入容器使用命令行（推荐）
+**方式 1：进入容器使用命令行（推荐）**
 
 ```bash
 # 访问 MySQL
@@ -516,7 +588,7 @@ docker-compose exec mysql mysql -u root -proot_password clinic_central
 docker-compose exec redis redis-cli
 ```
 
-#### 方式 2：启用端口映射（使用图形化工具）
+**方式 2：启用端口映射（使用图形化工具）**
 
 如果需要使用 Navicat、Redis Desktop Manager 等图形化工具：
 
