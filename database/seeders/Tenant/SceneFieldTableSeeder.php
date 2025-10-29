@@ -2,6 +2,8 @@
 
 namespace Database\Seeders\Tenant;
 
+use App\Enums\AppointmentType;
+use App\Enums\AppointmentStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -1299,6 +1301,44 @@ class SceneFieldTableSeeder extends Seeder
     private function getWorkbenchAppointmentConfig(): array
     {
         return [
+            [
+                'page'             => 'WorkbenchAppointment',
+                'name'             => '预约类型',
+                'table'            => 'appointments',
+                'field'            => 'type',
+                'field_type'       => 'varchar',
+                'component'        => 'select',
+                'component_params' => json_encode([
+                    'props'   => [
+                        'multiple'  => true,
+                        'clearable' => true,
+                    ],
+                    'options' => collect(AppointmentType::options())->map(fn($label, $value) => ['label' => $label, 'value' => $value])->values()->all()
+                ]),
+                'operators'        => json_encode([
+                    ['text' => '等于', 'value' => 'in'],
+                    ['text' => '不等于', 'value' => 'not in']
+                ])
+            ],
+            [
+                'page'             => 'WorkbenchAppointment',
+                'name'             => '预约状态',
+                'table'            => 'appointments',
+                'field'            => 'status',
+                'field_type'       => 'tinyint',
+                'component'        => 'select',
+                'component_params' => json_encode([
+                    'props'   => [
+                        'multiple'  => true,
+                        'clearable' => true,
+                    ],
+                    'options' => collect(AppointmentStatus::options())->map(fn($label, $value) => ['label' => $label, 'value' => $value])->values()->all()
+                ]),
+                'operators'        => json_encode([
+                    ['text' => '等于', 'value' => 'in'],
+                    ['text' => '不等于', 'value' => 'not in']
+                ])
+            ],
             [
                 'page'             => 'WorkbenchAppointment',
                 'name'             => '预约科室',
