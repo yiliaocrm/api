@@ -429,17 +429,27 @@ sudo certbot --nginx -d yourdomain.com
 
 ## 服务说明
 
-| 服务 | 对外端口 | 内部端口 | 说明 |
-|------|---------|---------|------|
-| nginx | 8080 (dev) / 80 (prod) | 80 | Web 服务器（唯一对外暴露的服务） |
-| php | - | 9000 | PHP-FPM（仅内部访问） |
-| mysql | - | 3306 | MySQL 8.0（仅内部访问，安全考虑） |
-| redis | - | 6379 | Redis 缓存（仅内部访问，安全考虑） |
-| queue | - | - | 队列处理 |
-| scheduler | - | - | 定时任务 |
-| vite | 5173 (dev) | 5173 | 前端开发服务器（仅开发环境） |
+| 服务 | 对外端口 | 内部端口 | 默认映射 | 说明 |
+|------|---------|---------|---------|------|
+| nginx | 8080 (dev) / 80 (prod) | 80 | ✅ | Web 服务器（通过 DOCKER_NGINX_PORT 配置） |
+| php | - | 9000 | ❌ | PHP-FPM（仅内部访问） |
+| mysql | - | 3306 | ❌ | MySQL 8.0（可选启用，通过 FORWARD_DB_PORT 配置） |
+| redis | - | 6379 | ❌ | Redis 缓存（可选启用，通过 FORWARD_REDIS_PORT 配置） |
+| queue | - | - | ❌ | 队列处理 |
+| scheduler | - | - | ❌ | 定时任务 |
+| vite | 5173 (dev) | 5173 | ✅ | 前端开发服务器（通过 DOCKER_VITE_PORT 配置） |
 
-> **安全说明**：MySQL 和 Redis 端口未映射到宿主机，只能通过 Docker 内部网络访问，提升安全性并避免端口冲突。
+### 端口配置说明
+
+**默认对外暴露**：
+- Nginx (8080) - 必需，用户访问应用
+- Vite (5173) - 仅开发环境，前端热更新
+
+**默认不暴露**（安全 + 避免冲突）：
+- MySQL (3306) - 如需图形化工具，参考"数据库访问"章节启用
+- Redis (6379) - 如需图形化工具，参考"数据库访问"章节启用
+
+**所有端口均可配置**：通过 `.env` 文件调整，避免端口冲突
 
 ---
 
@@ -494,9 +504,9 @@ docker-compose exec -T mysql mysql -u clinic -pclinic_password clinic_central < 
 
 ### 数据库访问
 
-**注意**：为了安全，MySQL 和 Redis 端口未映射到宿主机，需要通过容器访问。
+**默认情况**：为了安全和避免端口冲突，MySQL 和 Redis 端口默认不映射到宿主机。
 
-#### 方式 1：进入容器使用命令行
+#### 方式 1：进入容器使用命令行（推荐）
 
 ```bash
 # 访问 MySQL
@@ -506,26 +516,51 @@ docker-compose exec mysql mysql -u root -proot_password clinic_central
 docker-compose exec redis redis-cli
 ```
 
-#### 方式 2：临时映射端口（开发调试用）
+#### 方式 2：启用端口映射（使用图形化工具）
 
-如果需要使用图形化工具（如 Navicat），可以临时修改 docker-compose.yml 添加端口映射：
+如果需要使用 Navicat、Redis Desktop Manager 等图形化工具：
+
+**步骤 1**：编辑 `.env` 文件，取消注释：
+
+```bash
+# 数据库和缓存端口（可选）
+FORWARD_DB_PORT=3306
+FORWARD_REDIS_PORT=6379
+```
+
+**步骤 2**：编辑 `docker-compose.yml`，取消端口映射的注释：
 
 ```yaml
 mysql:
   ports:
-    - "3306:3306"  # 临时添加此行
+    - "${FORWARD_DB_PORT:-3306}:3306"
 
 redis:
   ports:
-    - "6379:6379"  # 临时添加此行
+    - "${FORWARD_REDIS_PORT:-6379}:6379"
 ```
 
-然后重启容器：
+**步骤 3**：重启容器
+
 ```bash
-docker-compose restart mysql redis
+docker-compose down
+docker-compose up -d
 ```
 
-使用完毕后建议移除端口映射并重启。
+**步骤 4**：使用图形化工具连接
+
+```
+主机：localhost（或 127.0.0.1）
+端口：3306（MySQL）/ 6379（Redis）
+用户名：root / clinic
+密码：root_password / clinic_password
+```
+
+> **注意**：如果宿主机端口被占用，修改 `.env` 中的端口号：
+> ```bash
+> FORWARD_DB_PORT=33060  # 改为其他端口
+> FORWARD_REDIS_PORT=63790
+> ```
 
 ---
 

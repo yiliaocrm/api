@@ -83,6 +83,10 @@ services:
     image: mysql:8.0
     container_name: clinic-mysql-prod
     restart: always
+    # ports:
+    #   # 生产环境默认不暴露端口（安全考虑）
+    #   # 如需临时访问，取消注释并配置 FORWARD_DB_PORT
+    #   - "${FORWARD_DB_PORT:-3306}:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE:-clinic_central}
@@ -116,6 +120,10 @@ services:
     image: redis:7-alpine
     container_name: clinic-redis-prod
     restart: always
+    # ports:
+    #   # 生产环境默认不暴露端口（安全考虑）
+    #   # 如需临时访问，取消注释并配置 FORWARD_REDIS_PORT
+    #   - "${FORWARD_REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
     command: >
