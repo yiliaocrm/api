@@ -110,6 +110,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'remove',
             ],
             [
+                'permission' => 'workbench.appointment.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'appointment',
+            ],
+            [
                 'permission' => 'workbench.birthday',
                 'controller' => 'App\Http\Controllers\Web\WorkbenchController',
                 'action'     => 'birthday',
