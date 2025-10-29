@@ -11,11 +11,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
-      # 挂载代码目录（开发环境实时同步）
+      # 直接挂载代码目录（所有系统统一）
       - .:/var/www/html
-      # 排除 vendor 目录，使用容器内的
-      - /var/www/html/vendor
-      - /var/www/html/node_modules
     environment:
       # Laravel 环境变量
       APP_ENV: local
@@ -50,7 +47,7 @@ services:
     container_name: clinic-nginx
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "${DOCKER_NGINX_PORT:-8080}:80"
     volumes:
       # 挂载代码目录（主要是 public 静态资源）
       - .:/var/www/html:ro
@@ -66,8 +63,6 @@ services:
     image: mysql:8.0
     container_name: clinic-mysql
     restart: unless-stopped
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: clinic_central
@@ -97,8 +92,6 @@ services:
     image: redis:7-alpine
     container_name: clinic-redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
@@ -123,8 +116,6 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
-      - /var/www/html/vendor
-      - /var/www/html/node_modules
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
@@ -146,6 +137,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      php:
+        condition: service_started
     networks:
       - clinic-network
 
@@ -162,8 +155,6 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
-      - /var/www/html/vendor
-      - /var/www/html/node_modules
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
@@ -185,6 +176,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      php:
+        condition: service_started
     networks:
       - clinic-network
 
@@ -197,9 +190,8 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
-      - /var/www/html/node_modules
     ports:
-      - "5173:5173"
+      - "${DOCKER_VITE_PORT:-5173}:5173"
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     networks:
       - clinic-network

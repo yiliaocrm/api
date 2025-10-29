@@ -83,9 +83,6 @@ services:
     image: mysql:8.0
     container_name: clinic-mysql-prod
     restart: always
-    ports:
-      # 生产环境建议不暴露端口，或使用防火墙限制
-      - "127.0.0.1:3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE:-clinic_central}
@@ -119,9 +116,6 @@ services:
     image: redis:7-alpine
     container_name: clinic-redis-prod
     restart: always
-    ports:
-      # 生产环境建议不暴露端口
-      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
     command: >

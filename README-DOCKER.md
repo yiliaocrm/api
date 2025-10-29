@@ -160,7 +160,11 @@ yarn config set registry https://registry.npmmirror.com
 
 ## 快速开始（开发环境）
 
+**所有平台使用同一个配置文件** `docker-compose.yml`，只是初始化脚本根据操作系统不同：
+
 只需 **4 步** 完成部署：
+
+### Linux / macOS
 
 ```bash
 # 1. 准备环境变量
@@ -174,6 +178,32 @@ docker-compose up -d
 
 # 4. 部署前端（可选）
 ./docker/deploy-frontend.sh
+```
+
+### Windows (CMD / PowerShell)
+
+```powershell
+# 1. 准备环境变量
+copy .env.docker .env
+
+# 2. 启动容器
+docker-compose up -d
+
+# 3. 一键初始化
+docker\init-dev.bat
+
+# 4. 部署前端（可选）
+docker\deploy-frontend.bat
+```
+
+### Windows (Git Bash)
+
+```bash
+# 与 Linux/macOS 相同
+cp .env.docker .env
+docker-compose up -d
+bash ./docker/init-dev.sh
+bash ./docker/deploy-frontend.sh
 ```
 
 然后访问 http://localhost:8080 完成安装向导。
@@ -191,6 +221,18 @@ cp .env.docker .env
 
 > **提示**：`.env.docker` 已预配置好数据库连接等信息，开发环境无需修改。
 
+**如果遇到端口冲突**，可以修改 `.env` 文件：
+
+```bash
+# 默认端口
+DOCKER_NGINX_PORT=8080
+
+# 如果 8080 端口被占用，改为其他端口
+DOCKER_NGINX_PORT=8888
+```
+
+修改后访问地址也要相应修改：`http://localhost:8888`
+
 ### 2. 启动容器
 
 ```bash
@@ -205,9 +247,14 @@ docker-compose ps
 
 **方式一：一键初始化（推荐）**
 
+Linux / macOS / Git Bash:
 ```bash
-# 执行自动初始化脚本
 ./docker/init-dev.sh
+```
+
+Windows (CMD / PowerShell):
+```powershell
+docker\init-dev.bat
 ```
 
 脚本会自动完成：
@@ -252,9 +299,14 @@ docker-compose restart php nginx
 
 **方式一：一键部署（推荐）**
 
+Linux / macOS / Git Bash:
 ```bash
-# 执行自动部署脚本
 ./docker/deploy-frontend.sh
+```
+
+Windows (CMD / PowerShell):
+```powershell
+docker\deploy-frontend.bat
 ```
 
 **方式二：手动部署**
@@ -377,15 +429,17 @@ sudo certbot --nginx -d yourdomain.com
 
 ## 服务说明
 
-| 服务 | 端口 | 说明 |
-|------|------|------|
-| nginx | 8080 (dev) / 80 (prod) | Web 服务器 |
-| php | 9000 | PHP-FPM |
-| mysql | 3306 | MySQL 8.0 |
-| redis | 6379 | Redis 缓存 |
-| queue | - | 队列处理 |
-| scheduler | - | 定时任务 |
-| vite | 5173 (dev) | 前端开发服务器 |
+| 服务 | 对外端口 | 内部端口 | 说明 |
+|------|---------|---------|------|
+| nginx | 8080 (dev) / 80 (prod) | 80 | Web 服务器（唯一对外暴露的服务） |
+| php | - | 9000 | PHP-FPM（仅内部访问） |
+| mysql | - | 3306 | MySQL 8.0（仅内部访问，安全考虑） |
+| redis | - | 6379 | Redis 缓存（仅内部访问，安全考虑） |
+| queue | - | - | 队列处理 |
+| scheduler | - | - | 定时任务 |
+| vite | 5173 (dev) | 5173 | 前端开发服务器（仅开发环境） |
+
+> **安全说明**：MySQL 和 Redis 端口未映射到宿主机，只能通过 Docker 内部网络访问，提升安全性并避免端口冲突。
 
 ---
 
@@ -432,11 +486,46 @@ php artisan queue:restart
 
 ```bash
 # 备份
-docker-compose exec mysql mysqldump -u clinic -p clinic_central > backup.sql
+docker-compose exec mysql mysqldump -u clinic -pclinic_password clinic_central > backup.sql
 
 # 还原
-docker-compose exec -T mysql mysql -u clinic -p clinic_central < backup.sql
+docker-compose exec -T mysql mysql -u clinic -pclinic_password clinic_central < backup.sql
 ```
+
+### 数据库访问
+
+**注意**：为了安全，MySQL 和 Redis 端口未映射到宿主机，需要通过容器访问。
+
+#### 方式 1：进入容器使用命令行
+
+```bash
+# 访问 MySQL
+docker-compose exec mysql mysql -u root -proot_password clinic_central
+
+# 访问 Redis
+docker-compose exec redis redis-cli
+```
+
+#### 方式 2：临时映射端口（开发调试用）
+
+如果需要使用图形化工具（如 Navicat），可以临时修改 docker-compose.yml 添加端口映射：
+
+```yaml
+mysql:
+  ports:
+    - "3306:3306"  # 临时添加此行
+
+redis:
+  ports:
+    - "6379:6379"  # 临时添加此行
+```
+
+然后重启容器：
+```bash
+docker-compose restart mysql redis
+```
+
+使用完毕后建议移除端口映射并重启。
 
 ---
 
@@ -462,6 +551,42 @@ docker-compose exec -T mysql mysql -u clinic -p clinic_central < backup.sql
 ---
 
 ## 故障排查
+
+### 端口冲突
+
+**问题**：启动时报错 `port is already allocated` 或 `bind: address already in use`
+
+**原因**：宿主机端口被占用（如 8080 端口已被其他服务使用）
+
+**解决方案**：
+
+**方式 1：修改端口号（推荐）**
+
+编辑 `.env` 文件：
+```bash
+# 修改为未被占用的端口
+DOCKER_NGINX_PORT=8888
+```
+
+重启容器：
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+访问地址改为：`http://localhost:8888`
+
+**方式 2：停止占用端口的服务**
+
+```bash
+# 查看 8080 端口占用
+lsof -i :8080  # macOS/Linux
+netstat -ano | findstr :8080  # Windows
+
+# 停止占用端口的进程
+kill -9 <PID>  # macOS/Linux
+taskkill /PID <PID> /F  # Windows
+```
 
 ### 容器无法启动
 
