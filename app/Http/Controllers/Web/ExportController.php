@@ -8,6 +8,7 @@ use App\Exports\CashierExport;
 use App\Exports\CustomerExport;
 use App\Exports\InventoryExport;
 use App\Exports\CashierPayExport;
+use App\Exports\AppointmentExport;
 use App\Exports\CustomerLogExport;
 use App\Exports\ErkaiDetailExport;
 use App\Exports\CouponDetailExport;
@@ -366,6 +367,19 @@ class ExportController extends Controller
         $name = $request->input('fileName', '员工列表');
         $task = $request->createExportTask($name);
         dispatch(new UserExport($request->all(), $task, user()->id));
+        return response_success();
+    }
+
+    /**
+     * 预约记录导出
+     * @param ExportRequest $request
+     * @return JsonResponse
+     */
+    public function appointment(ExportRequest $request): JsonResponse
+    {
+        $name = $request->input('fileName', '预约记录表');
+        $task = $request->createExportTask($name);
+        dispatch(new AppointmentExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 }

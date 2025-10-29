@@ -2,113 +2,225 @@
 
 namespace App\Exports;
 
+use Throwable;
 use Carbon\Carbon;
+use Vtiful\Kernel\Excel;
 use App\Models\Appointment;
-use Illuminate\Http\Request;
+use App\Models\ExportTask;
+use Illuminate\Bus\Queueable;
+use App\Events\Web\ExportCompleted;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
-// excel
-use Maatwebsite\Excel\Events\AfterSheet;
-use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\Exportable;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Illuminate\Contracts\Support\Responsable;
-use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
-
-class AppointmentExport implements Responsable, WithEvents, WithHeadings, FromQuery, WithMapping, WithStrictNullComparison
+class AppointmentExport implements ShouldQueue
 {
-    use Exportable;
+    use Queueable;
 
-    private string $fileName = '预约记录表.xlsx';
+    protected ExportTask $task;
+    protected array $request;
+    protected int $user_id;
+    protected string $tenant_id;
 
-    protected Request $request;
+    /**
+     * 分批处理数据的大小
+     * @var int
+     */
+    protected int $chunkSize = 1000;
 
-    public function __construct(Request $request)
+    /**
+     * 设置任务超时时间
+     * @var int
+     */
+    public int $timeout = 1200;
+
+    public function __construct(array $request, ExportTask $task, string $tenant_id, int $user_id)
     {
-        $this->request = $request;
+        $this->task      = $task;
+        $this->request   = $request;
+        $this->user_id   = $user_id;
+        $this->tenant_id = $tenant_id;
     }
 
-    public function query()
+    public function handle(): void
     {
-        return Appointment::query()
-            ->select('appointments.*', 'customer.name as customer_name')
-            ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
-            ->when($this->request->input('date_start') && $this->request->input('date_end'), function (Builder $query) {
-                $query->whereBetween('appointments.date', [
-                    $this->request->input('date_start'),
-                    $this->request->input('date_end')
-                ]);
-            })
-            ->when($this->request->input('created_at_start') && $this->request->input('created_at_end'), function (Builder $query) {
-                $query->whereBetween('appointments.created_at', [
-                    Carbon::parse($this->request->input('created_at_start')),
-                    Carbon::parse($this->request->input('created_at_end'))->endOfDay()
-                ]);
-            })
-            // 顾客信息
-            ->when($this->request->input('customer_keyword'), function ($query) {
-                $query->where('customer.keyword', 'like', '%' . $this->request->input('customer_keyword') . '%');
-            })
-            // 项目名称
-            ->when($this->request->input('items_name'), function ($query) {
-                $query->where('appointments.items_name', 'like', '%' . $this->request->input('items_name') . '%');
-            })
-            // 预约状态
-            ->when($this->request->input('status') !== null, function ($query) {
-                $query->where('appointments.status', $this->request->input('status'));
-            })
-            ->when($this->request->input('department_id'), function ($query) {
-                $query->where('appointments.department_id', $this->request->input('department_id'));
-            })
-            ->when($this->request->input('doctor_id'), function ($query) {
-                $query->where('appointments.doctor_id', $this->request->input('doctor_id'));
-            });
-    }
+        try {
 
-    public function map($row): array
-    {
-        return [
-            $row->status,
-            $row->customer_name,
-            $row->date,
-            $row->start,
-            $row->end,
-            $row->duration,
-            $row->department_id,
-            $row->doctor_id,
-            $row->items_name,
-            $row->remark,
-            $row->user_id,
-            $row->created_at,
-        ];
-    }
+            // 更新任务状态为处理中
+            $this->task->update([
+                'status'     => 'processing',
+                'started_at' => now(),
+            ]);
 
-    public function headings(): array
-    {
-        return [
-            '预约状态',
-            '顾客姓名',
-            '预约日期',
-            '预约时间',
-            '结束时间',
-            '持续时间(分)',
-            '预约科室',
-            '预约医生',
-            '预约项目',
-            '预约备注',
-            '录单人员',
-            '创建时间',
-        ];
-    }
+            // 获取存储路径
+            $path = Storage::disk('public')->path(dirname($this->task->file_path));
 
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet $event) {
-                $event->sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(15);
+            // 确保目录存在
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
             }
-        ];
+
+            // 初始化 xlswriter
+            $excel = new Excel(['path' => $path]);
+
+            // 设置导出文件名
+            $sheet = $excel->constMemory(basename($this->task->file_path), 'Sheet1', false);
+
+            // 设置表头
+            $headers = [
+                '预约类型',
+                '预约状态',
+                '顾客姓名',
+                '顾客卡号',
+                '预约日期',
+                '预约时间段',
+                '持续时间',
+                '预约科室',
+                '预约顾问',
+                '预约医生',
+                '预约项目',
+                '预约备注',
+                '录单人员',
+                '创建时间',
+            ];
+            $sheet->header($headers);
+
+            // 设置列宽
+            $sheet->setColumn('B:B', 10);
+            $sheet->setColumn('C:C', 12);
+            $sheet->setColumn('D:D', 15);
+            $sheet->setColumn('E:E', 12);
+            $sheet->setColumn('F:F', 15);
+            $sheet->setColumn('G:G', 15);
+            $sheet->setColumn('I:I', 15);
+            $sheet->setColumn('J:J', 25);
+            $sheet->setColumn('K:K', 20);
+            $sheet->setColumn('L:L', 30);
+            $sheet->setColumn('M:M', 15);
+            $sheet->setColumn('N:N', 20);
+
+            // 查询数据
+            $query = $this->getQuery();
+
+            // 分批处理数据并直接写入
+            $query->chunk($this->chunkSize, function ($records) use ($sheet) {
+                $batchData = [];
+                foreach ($records as $row) {
+                    $batchData[] = [
+                        $row->type_text ?? '',
+                        $row->status_text ?? '',
+                        $row->customer->name,
+                        $row->customer->idcard,
+                        $row->date,
+                        substr(explode(' ', $row->start)[1], 0, 5) . ' ~ ' . substr(explode(' ', $row->end)[1], 0, 5),
+                        $row->duration > 60 ? floor($row->duration / 60) . '小时' . ($row->duration % 60) . '分钟' : $row->duration . '分钟',
+                        $row->department?->name ?? '',
+                        $row->consultant?->name ?? '',
+                        $row->doctor?->name ?? '',
+                        $row->items_name ?? '',
+                        $row->remark ?? '',
+                        $row->createUser?->name ?? '',
+                        $row->created_at ? $row->created_at->format('Y-m-d H:i:s') : '',
+                    ];
+                }
+                // 每一批数据直接写入文件
+                if (!empty($batchData)) {
+                    $sheet->data($batchData);
+                }
+            });
+
+            // 导出文件
+            $sheet->output();
+
+            // 关闭文件
+            $excel->close();
+
+            // 上传到云端存储
+            $this->uploadToCloudAndDeleteLocalFile();
+
+            // 更新任务状态为完成
+            $this->task->update([
+                'status'       => 'completed',
+                'completed_at' => now(),
+            ]);
+
+            // 触发导出完成事件,通知前端
+            ExportCompleted::dispatch($this->task, $this->tenant_id, $this->user_id);
+
+        } catch (Throwable $exception) {
+            $this->task->update([
+                'status'        => 'failed',
+                'failed_at'     => now(),
+                'error_message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    protected function getQuery(): Builder
+    {
+        $keyword    = $this->request['keyword'] ?? null;
+        $filters    = $this->request['filters'] ?? [];
+        $created_at = $this->request['created_at'];
+
+        return Appointment::query()
+            ->select([
+                'appointments.*'
+            ])
+            ->with([
+                'doctor:id,name',
+                'consultant:id,name',
+                'technician:id,name',
+                'customer:id,name,idcard',
+                'department:id,name',
+                'createUser:id,name'
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
+            ->queryConditions('WorkbenchAppointment', $filters)
+            ->whereBetween('appointments.created_at', [
+                Carbon::parse($created_at[0])->startOfDay(),
+                Carbon::parse($created_at[1])->endOfDay()
+            ])
+            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
+            ->orderBy('appointments.id');
+    }
+
+    /**
+     * 任务失败时调用
+     * @param Throwable $exception
+     * @return void
+     */
+    public function failed(Throwable $exception): void
+    {
+        $this->task->update([
+            'status'        => 'failed',
+            'failed_at'     => now(),
+            'error_message' => '导出任务执行失败: ' . $exception->getMessage(),
+        ]);
+    }
+
+    /**
+     * 如果不是本地存储,则上传到云端并删除本地文件
+     */
+    protected function uploadToCloudAndDeleteLocalFile(): void
+    {
+        // 如果使用的是本地存储,则不需要上传和删除
+        if (Storage::getAdapter() instanceof LocalFilesystemAdapter) {
+            return;
+        }
+
+        // 从本地 public 盘获取文件流
+        $stream = Storage::disk('public')->readStream($this->task->file_path);
+
+        // 将文件流式上传到默认的云存储
+        Storage::put($this->task->file_path, $stream);
+
+        // 关闭文件流
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
+        // 删除本地文件
+        Storage::disk('public')->delete($this->task->file_path);
     }
 }

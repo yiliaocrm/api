@@ -840,6 +840,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::get('user', 'user');
     Route::post('goods', 'goods');
     Route::post('customer', 'customer');
+    Route::post('appointment', 'appointment');
     Route::post('goods/inventory', 'inventory');
     Route::post('customer/goods', 'customerGoods');
     Route::post('customer/product', 'customerProduct');

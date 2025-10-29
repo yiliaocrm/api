@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Models\Appointment;
-use Illuminate\Http\Request;
 use App\Enums\AppointmentStatus;
 use Illuminate\Http\JsonResponse;
-use App\Exports\AppointmentExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Requests\Web\AppointmentRequest;
@@ -148,16 +146,6 @@ class AppointmentController extends Controller
             ->when($request->input('id'), fn(Builder $query) => $query->where('id', '!=', $request->input('id')))
             ->get();
         return response_success($appointment);
-    }
-
-    /**
-     * 导出[预约记录]
-     * @param Request $request
-     * @return AppointmentExport
-     */
-    public function export(Request $request): AppointmentExport
-    {
-        return new AppointmentExport($request);
     }
 
     /**

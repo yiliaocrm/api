@@ -233,7 +233,6 @@ class WorkbenchController extends Controller
                 Carbon::parse($request->input('created_at.1'))->endOfDay()
             ])
             ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
-            ->when($request->has('status'), fn(Builder $query) => $query->where('status', $status))
             ->orderBy("appointments.{$sort}", $order);
 
         $query = $builder->paginate($rows);
