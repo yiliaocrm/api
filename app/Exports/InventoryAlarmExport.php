@@ -232,7 +232,8 @@ class InventoryAlarmExport implements ShouldQueue
                 $warehouse_id
                     ? $query->where('inventory.number', '>', 0)
                     : $query->where('goods.inventory_number', '>', 0);
-            });
+            })
+            ->orderBy('goods.id');
     }
 
     /**
