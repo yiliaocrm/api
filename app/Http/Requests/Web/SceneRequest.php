@@ -209,13 +209,24 @@ class SceneRequest extends FormRequest
         $operatorText  = $operator['text'];
         $operatorValue = $operator['value'];
 
+        // 处理 in 和 not in 操作符
+        if (in_array($operatorValue, ['in', 'not in']) && is_array($filter['value'])) {
+            $values = array_map(function ($value) use ($field, $operatorValue) {
+                return $this->formatterTextValue($field, $operatorValue, $value);
+            }, $filter['value']);
+            return "{$fieldName} {$operatorText} " . implode('、', $values);
+        }
+
         // 级联选择器 渲染最后一级的值
         if (is_array($filter['value']) && $field->component == 'cascader') {
             return "{$fieldName} {$operatorText} {$this->formatterTextValue($field, $operatorValue, end($filter['value']))}";
         }
+
+        // between 区间操作符
         if (is_array($filter['value'])) {
             return "{$fieldName} {$operatorText} {$this->formatterTextValue($field, $operatorValue, $filter['value'][0])} ~ {$this->formatterTextValue($field, $operatorValue, $filter['value'][1])}";
         }
+
         return "{$fieldName} {$operatorText} {$this->formatterTextValue($field, $operatorValue, $filter['value'])}";
     }
 
