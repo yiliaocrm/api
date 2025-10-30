@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->tinyInteger('status')->default(1)->comment('回访状态(1:未回访、2:已回访)');
             $table->tinyInteger('tool')->nullable()->comment('回访工具');
             $table->string('title')->comment('回访标题');
-            $table->date('date')->index()->comment('回访日期(将来时)');
+            $table->date('date')->index()->comment('计划回访日期');
             $table->dateTime('time')->index()->nullable()->comment('回访时间(执行时间)');
             $table->text('remark')->nullable()->comment('备注');
             $table->integer('followup_user')->index()->comment('提醒人员');
