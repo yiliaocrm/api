@@ -431,11 +431,6 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'sms',
             ],
             [
-                'permission' => 'followup.manage',
-                'controller' => 'App\Http\Controllers\Web\FollowupController',
-                'action'     => '*',
-            ],
-            [
                 'permission' => 'followup.remove',
                 'controller' => 'App\Http\Controllers\Web\FollowupController',
                 'action'     => 'remove',

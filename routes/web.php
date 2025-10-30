@@ -540,7 +540,6 @@ Route::controller(Web\CashierInvoiceController::class)->prefix('cashier-invoice'
 
 Route::controller(Web\FollowupController::class)->prefix('followup')->group(function () {
     Route::get('info', 'info');
-    Route::post('manage', 'manage');
     Route::post('create', 'create');
     Route::post('update', 'update');
     Route::get('remove', 'remove');
