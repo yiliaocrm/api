@@ -212,7 +212,6 @@ class WorkbenchController extends Controller
         $sort    = $request->input('sort', 'created_at');
         $order   = $request->input('order', 'desc');
         $rows    = $request->input('rows', 10);
-        $status  = $request->input('status');
         $keyword = $request->input('keyword');
         $builder = Appointment::query()
             ->with([
