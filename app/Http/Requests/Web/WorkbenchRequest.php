@@ -345,6 +345,7 @@ class WorkbenchRequest extends FormRequest
             return [
                 'id'    => $type->id,
                 'name'  => $type->name,
+                'icon'  => $type->icon,
                 'count' => $counts->get($type->id, 0)
             ];
         });
