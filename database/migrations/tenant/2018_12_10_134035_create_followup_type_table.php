@@ -14,8 +14,9 @@ return new class extends Migration {
     {
         Schema::create('followup_type', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('remark')->nullable()->default(null);
+            $table->string('name')->comment('回访类型名称');
+            $table->string('icon')->nullable()->comment('图标');
+            $table->string('remark')->nullable()->comment('备注');
             $table->timestamps();
             $table->comment('回访类型表');
         });

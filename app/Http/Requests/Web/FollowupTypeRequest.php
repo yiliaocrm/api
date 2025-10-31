@@ -116,6 +116,7 @@ class FollowupTypeRequest extends FormRequest
     {
         return [
             'name'   => $this->input('name'),
+            'icon'   => $this->input('icon'),
             'remark' => $this->input('remark')
         ];
     }
