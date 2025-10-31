@@ -115,6 +115,21 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'appointment',
             ],
             [
+                'permission' => 'workbench.followup.index',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'followup',
+            ],
+            [
+                'permission' => 'workbench.followup.execute',
+                'controller' => 'App\Http\Controllers\Web\FollowupController',
+                'action'     => 'execute',
+            ],
+            [
+                'permission' => 'workbench.followup.remove',
+                'controller' => 'App\Http\Controllers\Web\FollowupController',
+                'action'     => 'remove',
+            ],
+            [
                 'permission' => 'workbench.birthday',
                 'controller' => 'App\Http\Controllers\Web\WorkbenchController',
                 'action'     => 'birthday',

@@ -83,13 +83,16 @@ class WorkbenchController extends Controller
 
     /**
      * 回访提醒
-     * @param Request $request
+     * @param WorkbenchRequest $request
      * @return JsonResponse
      */
-    public function followup(Request $request): JsonResponse
+    public function followup(WorkbenchRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
-        $query = Followup::query()
+        $rows    = $request->input('rows', 10);
+        $status  = $request->input('status');
+        $keyword = $request->input('keyword');
+
+        $builder = Followup::query()
             ->with([
                 'customer:id,idcard,name',
                 'user:id,name',
@@ -98,12 +101,29 @@ class WorkbenchController extends Controller
                 'executeUserInfo:id,name',
                 'followupUserInfo:id,name',
             ])
-            ->orderBy('followup.created_at', 'desc')
-            ->paginate($rows);
+            ->select('followup.*')
+            ->leftJoin('customer', 'customer.id', '=', 'followup.customer_id')
+            ->queryConditions('WorkbenchFollowup')
+            ->whereBetween('followup.date', [
+                Carbon::parse($request->input('date.0'))->startOfDay(),
+                Carbon::parse($request->input('date.1'))->endOfDay()
+            ])
+            ->when($status, fn(Builder $query) => $query->where('followup.status', $status))
+            ->when($keyword, fn(Builder $query) => $query->whereLike('customer.keyword', "%{$keyword}%"))
+            // 权限限制
+            ->when(!user()->hasAnyAccess(['superuser', 'followup.view.all']), function (Builder $query) {
+                $query->where('followup.followup_user', user()->id);
+            })
+            ->orderBy('followup.created_at', 'desc');
+
+        // 执行分页
+        $query = $builder->paginate($rows);
+        $query->append(['status_text']);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows'      => $query->items(),
+            'total'     => $query->total(),
+            'dashboard' => $request->getFollowupDashboard($builder)
         ]);
     }
 

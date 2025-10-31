@@ -4,8 +4,10 @@ namespace App\Http\Requests\Web;
 
 use App\Models\Goods;
 use App\Models\Customer;
+use App\Models\Followup;
 use App\Models\Reception;
 use App\Models\Appointment;
+use App\Models\FollowupType;
 use App\Models\InventoryBatchs;
 use App\Enums\AppointmentStatus;
 use App\Rules\Web\SceneRule;
@@ -36,6 +38,7 @@ class WorkbenchRequest extends FormRequest
     public function rules(): array
     {
         return match (request()->route()->getActionMethod()) {
+            'followup' => $this->getFollowupRules(),
             'birthday' => $this->getBirthdayRules(),
             'reception' => $this->getReceptionRules(),
             'appointment' => $this->getAppointmentRules(),
@@ -46,11 +49,43 @@ class WorkbenchRequest extends FormRequest
     public function messages(): array
     {
         return match (request()->route()->getActionMethod()) {
+            'followup' => $this->getFollowupMessages(),
             'birthday' => $this->getBirthdayMessages(),
             'reception' => $this->getReceptionMessages(),
             'appointment' => $this->getAppointmentMessages(),
             default => []
         };
+    }
+
+    private function getFollowupRules(): array
+    {
+        return [
+            'filters' => [
+                'nullable',
+                'array',
+                new SceneRule('WorkbenchFollowup')
+            ],
+            'date'    => 'required|array|size:2',
+            'date.*'  => 'required|date|date_format:Y-m-d',
+            'status'  => 'nullable|integer',
+            'keyword' => 'nullable|string|max:255',
+        ];
+    }
+
+    private function getFollowupMessages(): array
+    {
+        return [
+            'filters.array'      => '[场景化筛选条件]格式不正确',
+            'date.required'      => '[回访日期]不能为空',
+            'date.array'         => '[回访日期]格式不正确',
+            'date.size'          => '[回访日期]必须包含开始和结束日期',
+            'date.*.required'    => '[回访日期]格式不正确',
+            'date.*.date'        => '[回访日期]格式不正确',
+            'date.*.date_format' => '[回访日期]格式必须为Y-m-d',
+            'status.integer'     => '[回访状态]格式不正确',
+            'keyword.string'     => '[搜索关键词]格式不正确',
+            'keyword.max'        => '[搜索关键词]不能超过255个字符',
+        ];
     }
 
     private function getReceptionRules(): array
@@ -140,6 +175,7 @@ class WorkbenchRequest extends FormRequest
             'workbench.alarm' => $this->getInventoryAlarmCount(),
             'workbench.expiry' => $this->getInventoryExpiryCount(),
             'workbench.birthday' => $this->getTodayBirthdayCount(),
+            'workbench.followup' => $this->getTodayFollowupCount(),
             'workbench.reception' => $this->getTodayReceptionCount(),
             'workbench.appointment' => $this->getTodayAppointmentCount(),
             default => 0,
@@ -212,6 +248,21 @@ class WorkbenchRequest extends FormRequest
     }
 
     /**
+     * 获取今日回访数量
+     * @return int
+     */
+    private function getTodayFollowupCount(): int
+    {
+        return Followup::query()
+            ->whereDate('date', today())
+            // 权限限制
+            ->when(!user()->hasAnyAccess(['superuser', 'followup.view.all']), function (Builder $query) {
+                $query->where('followup.followup_user', user()->id);
+            })
+            ->count();
+    }
+
+    /**
      * 获取今日分诊接待数量
      * @return int
      */
@@ -262,6 +313,31 @@ class WorkbenchRequest extends FormRequest
             ->select('reception.type')
             ->selectRaw('COUNT(*) as count')
             ->groupBy('reception.type')
+            ->reorder() // 清除排序，避免影响groupBy
+            ->pluck('count', 'type');
+
+        return $types->map(function ($type) use ($counts) {
+            return [
+                'id'    => $type->id,
+                'name'  => $type->name,
+                'count' => $counts->get($type->id, 0)
+            ];
+        });
+    }
+
+    /**
+     * 获取回访类型统计
+     * @param Builder $builder
+     * @return Collection
+     */
+    public function getFollowupDashboard(Builder $builder): Collection
+    {
+        // 获取回访类型统计
+        $types  = FollowupType::query()->orderBy('id')->get();
+        $counts = $builder->clone()
+            ->select('followup.type')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('followup.type')
             ->reorder() // 清除排序，避免影响groupBy
             ->pluck('count', 'type');
 

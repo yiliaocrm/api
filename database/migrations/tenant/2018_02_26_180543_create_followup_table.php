@@ -23,8 +23,8 @@ return new class extends Migration {
             $table->dateTime('time')->index()->nullable()->comment('实际回访时间');
             $table->text('remark')->nullable()->comment('备注');
             $table->integer('followup_user')->index()->comment('提醒人员');
-            $table->integer('execute_user')->index()->nullable()->comment('执行人员');
-            $table->integer('user_id')->index()->comment('录单人员');
+            $table->integer('execute_user')->index()->nullable()->comment('实际执行人员');
+            $table->integer('user_id')->index()->comment('创建人员');
             $table->string('callid')->nullable()->comment('呼叫id');
             $table->uuid('cc_cdr_id')->nullable()->comment('关联通话记录id');
             $table->timestamps();
