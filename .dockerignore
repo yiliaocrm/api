@@ -1,0 +1,71 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# Docker 相关（只排除不需要打包的文件）
+docker-compose*.yml
+.dockerignore
+# 注意：不要排除 docker/ 目录，因为里面有构建镜像需要的配置文件
+
+# 环境配置
+.env
+.env.*
+!.env.example
+!.env.docker
+
+# 依赖目录
+node_modules/
+vendor/
+
+# 构建产物
+/public/hot
+/public/storage
+/public/build
+
+# 存储目录
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# 缓存目录
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# IDE 相关
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# 测试相关
+/tests/
+.phpunit.result.cache
+phpunit.xml
+coverage/
+
+# 文档和说明
+README.md
+CLAUDE.md
+*.md
+!README-DOCKER.md
+readme/
+
+# 其他
+.editorconfig
+.cursor/
+.cursorrules
+.github/

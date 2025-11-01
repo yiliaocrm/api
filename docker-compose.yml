@@ -1,0 +1,206 @@
+services:
+  # ============================================
+  # PHP-FPM 服务
+  # ============================================
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: clinic-php
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      # 直接挂载代码目录（所有系统统一）
+      - .:/var/www/html
+    environment:
+      # Laravel 环境变量
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: central
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: clinic_central
+      DB_USERNAME: clinic
+      DB_PASSWORD: clinic_password
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Nginx 服务
+  # ============================================
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: clinic-nginx
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_NGINX_PORT:-8080}:80"
+    volumes:
+      # 挂载代码目录（主要是 public 静态资源）
+      - .:/var/www/html:ro
+    depends_on:
+      - php
+    networks:
+      - clinic-network
+
+  # ============================================
+  # MySQL 服务
+  # ============================================
+  mysql:
+    image: mysql:8.0
+    container_name: clinic-mysql
+    restart: unless-stopped
+    # ports:
+    #   # 默认不映射端口（避免与宿主机 MySQL 冲突）
+    #   # 如需使用图形化工具，取消下面的注释并在 .env 中配置 FORWARD_DB_PORT
+    #   - "${FORWARD_DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: clinic_central
+      MYSQL_USER: clinic
+      MYSQL_PASSWORD: clinic_password
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "clinic", "-pclinic_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Redis 服务
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: clinic-redis
+    restart: unless-stopped
+    # ports:
+    #   # 默认不映射端口（避免与宿主机 Redis 冲突）
+    #   # 如需使用图形化工具，取消下面的注释并在 .env 中配置 FORWARD_REDIS_PORT
+    #   - "${FORWARD_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Queue Worker 服务（队列处理）
+  # ============================================
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: clinic-queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: central
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: clinic_central
+      DB_USERNAME: clinic
+      DB_PASSWORD: clinic_password
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
+    command: php artisan queue:work --tries=3 --timeout=300 --sleep=3
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      php:
+        condition: service_started
+    networks:
+      - clinic-network
+
+  # ============================================
+  # Scheduler 服务（定时任务）
+  # ============================================
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: clinic-scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: central
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: clinic_central
+      DB_USERNAME: clinic
+      DB_PASSWORD: clinic_password
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      php:
+        condition: service_started
+    networks:
+      - clinic-network
+
+# ============================================
+# 数据卷
+# ============================================
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+
+# ============================================
+# 网络
+# ============================================
+networks:
+  clinic-network:
+    driver: bridge
