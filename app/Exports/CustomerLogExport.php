@@ -20,14 +20,8 @@ class CustomerLogExport implements ShouldQueue
 
     protected ExportTask $task;
     protected array $request;
-    protected ?int $user_id;
+    protected int $user_id;
     protected string $tenant_id;
-
-    /**
-     * 存储文件系统配置
-     * @var string
-     */
-    protected string $disk = 'public';
 
     /**
      * 分批处理数据的大小
@@ -59,13 +53,11 @@ class CustomerLogExport implements ShouldQueue
             ]);
 
             // 获取存储路径
-            $path = Storage::disk($this->disk)->path(dirname($this->task->file_path));
+            $path = Storage::disk('public')->path(dirname($this->task->file_path));
 
-            // 检查并创建目录（仅本地存储需要）
-            if ($this->isLocalStorage()) {
-                if (!is_dir($path)) {
-                    mkdir($path, 0755, true);
-                }
+            // 确保目录存在
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
             }
 
             // 初始化 xlswriter
@@ -131,14 +123,17 @@ class CustomerLogExport implements ShouldQueue
             // 关闭文件
             $excel->close();
 
+            // 上传到云端存储
+            $this->uploadToCloudAndDeleteLocalFile();
+
             // 更新任务状态为完成
             $this->task->update([
                 'status'       => 'completed',
                 'completed_at' => now(),
             ]);
 
-            // 触发导出完成事件
-            event(new ExportCompleted($this->task, $this->tenant_id, $this->user_id));
+            // 触发导出完成事件，通知前端
+            ExportCompleted::dispatch($this->task, $this->tenant_id, $this->user_id);
 
         } catch (Throwable $exception) {
             $this->task->update([
@@ -196,11 +191,27 @@ class CustomerLogExport implements ShouldQueue
     }
 
     /**
-     * 判断当前存储是否为本地存储
-     * @return bool
+     * 如果不是本地存储，则上传到云端并删除本地文件
      */
-    protected function isLocalStorage(): bool
+    protected function uploadToCloudAndDeleteLocalFile(): void
     {
-        return Storage::disk($this->disk)->getAdapter() instanceof LocalFilesystemAdapter;
+        // 如果使用的是本地存储，则不需要上传和删除
+        if (Storage::getAdapter() instanceof LocalFilesystemAdapter) {
+            return;
+        }
+
+        // 从本地 public 盘获取文件流
+        $stream = Storage::disk('public')->readStream($this->task->file_path);
+
+        // 将文件流式上传到默认的云存储
+        Storage::put($this->task->file_path, $stream);
+
+        // 关闭文件流
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
+        // 删除本地文件
+        Storage::disk('public')->delete($this->task->file_path);
     }
 }
