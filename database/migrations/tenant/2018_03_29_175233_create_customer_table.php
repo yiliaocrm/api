@@ -14,19 +14,19 @@ return new class extends Migration {
     {
         Schema::create('customer', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->string('idcard')->nullable();
+            $table->string('idcard')->nullable()->comment('卡号');
             $table->string('file_number')->nullable()->comment('档案号');
-            $table->string('name');
+            $table->string('name')->comment('姓名');
             $table->string('qq', 20)->nullable()->comment('QQ号码');
             $table->string('wechat', 30)->nullable()->comment('微信号码');
             $table->string('sfz', 30)->nullable()->comment('身份证');
             $table->integer('job_id')->nullable()->comment('职业信息');
             $table->integer('economic_id')->nullable()->comment('经济能力');
             $table->integer('marital')->nullable()->comment('婚姻状况(1:未知,2:未婚,3:已婚)');
-            $table->tinyInteger('sex');
-            $table->date('birthday')->nullable();
-            $table->integer('age')->nullable();
-            $table->integer('address_id');
+            $table->tinyInteger('sex')->comment('性别(1:男,2:女)');
+            $table->date('birthday')->nullable()->comment('生日');
+            $table->integer('age')->nullable()->comment('年龄');
+            $table->integer('address_id')->comment('联系地址');
             $table->integer('level_id')->default(1)->comment('会员等级');
             $table->integer('medium_id')->index()->nullable()->comment('首次来源');
             $table->unsignedInteger('referrer_user_id')->nullable()->comment('推荐员工id');
@@ -47,7 +47,7 @@ return new class extends Migration {
             $table->integer('service_id')->nullable()->comment('专属客服');
             $table->integer('doctor_id')->nullable()->comment('主治医生');
             $table->integer('user_id')->comment('创建人员');
-            $table->string('keyword');
+            $table->string('keyword')->comment('搜索关键词');
             $table->text('remark')->nullable()->comment('备注');
             $table->timestamps();
             $table->index(['consultant', 'ascription']);
