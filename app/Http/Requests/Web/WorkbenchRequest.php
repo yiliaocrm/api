@@ -67,7 +67,7 @@ class WorkbenchRequest extends FormRequest
             ],
             'date'    => 'required|array|size:2',
             'date.*'  => 'required|date|date_format:Y-m-d',
-            'status'  => 'nullable|integer',
+            'type_id' => 'nullable|integer|exists:followup_type,id',
             'keyword' => 'nullable|string|max:255',
         ];
     }
@@ -82,7 +82,8 @@ class WorkbenchRequest extends FormRequest
             'date.*.required'    => '[回访日期]格式不正确',
             'date.*.date'        => '[回访日期]格式不正确',
             'date.*.date_format' => '[回访日期]格式必须为Y-m-d',
-            'status.integer'     => '[回访状态]格式不正确',
+            'type_id.integer'    => '[回访类型]格式不正确',
+            'type_id.exists'     => '[回访类型]不存在',
             'keyword.string'     => '[搜索关键词]格式不正确',
             'keyword.max'        => '[搜索关键词]不能超过255个字符',
         ];

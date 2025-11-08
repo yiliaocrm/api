@@ -90,17 +90,11 @@ class WorkbenchController extends Controller
     {
         $rows    = $request->input('rows', 10);
         $status  = $request->input('status');
+        $type_id = $request->input('type_id');
         $keyword = $request->input('keyword');
 
-        $builder = Followup::query()
-            ->with([
-                'customer:id,idcard,name',
-                'user:id,name',
-                'followupType',
-                'followupTool',
-                'executeUserInfo:id,name',
-                'followupUserInfo:id,name',
-            ])
+        // 基础查询构建器（不包含 type_id 筛选，用于 dashboard 统计）
+        $baseBuilder = Followup::query()
             ->select('followup.*')
             ->leftJoin('customer', 'customer.id', '=', 'followup.customer_id')
             ->queryConditions('WorkbenchFollowup')
@@ -113,17 +107,28 @@ class WorkbenchController extends Controller
             // 权限限制
             ->when(!user()->hasAnyAccess(['superuser', 'followup.view.all']), function (Builder $query) {
                 $query->where('followup.followup_user', user()->id);
-            })
-            ->orderBy('followup.created_at', 'desc');
+            });
 
-        // 执行分页
-        $query = $builder->paginate($rows);
+        // 执行分页（包含 type_id 筛选）
+        $query = $baseBuilder->clone()
+            ->with([
+                'customer:id,idcard,name',
+                'user:id,name',
+                'followupType',
+                'followupTool',
+                'executeUserInfo:id,name',
+                'followupUserInfo:id,name',
+            ])
+            ->when($type_id, fn(Builder $query) => $query->where('followup.type', $type_id))
+            ->orderBy('followup.created_at', 'desc')
+            ->paginate($rows);
+
         $query->append(['status_text']);
 
         return response_success([
             'rows'      => $query->items(),
             'total'     => $query->total(),
-            'dashboard' => $request->getFollowupDashboard($builder)
+            'dashboard' => $request->getFollowupDashboard($baseBuilder)
         ]);
     }
 
