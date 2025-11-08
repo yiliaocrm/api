@@ -25,6 +25,7 @@ return new class extends Migration {
 
             $table->text('original')->nullable()->comment('变动字段更新前数据');
             $table->text('dirty')->nullable()->comment('变动字段更新后数据');
+            $table->longText('remark')->nullable()->comment('操作日志');
 
             $table->timestamp('created_at', 0)->nullable()->index();
             $table->timestamp('updated_at', 0)->nullable();
