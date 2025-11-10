@@ -115,6 +115,31 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'appointment',
             ],
             [
+                'permission' => 'workbench.reception.create',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'create',
+            ],
+            [
+                'permission' => 'workbench.reception.update',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'update',
+            ],
+            [
+                'permission' => 'workbench.reception.remove',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'remove',
+            ],
+            [
+                'permission' => 'workbench.reception.dispatch.doctor',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'dispatchDoctor',
+            ],
+            [
+                'permission' => 'workbench.reception.dispatch.consultant',
+                'controller' => 'App\Http\Controllers\Web\ReceptionController',
+                'action'     => 'dispatchConsultant',
+            ],
+            [
                 'permission' => 'workbench.followup.index',
                 'controller' => 'App\Http\Controllers\Web\WorkbenchController',
                 'action'     => 'followup',
@@ -643,31 +668,6 @@ class PermissionActionSeeder extends Seeder
                 'permission' => 'purchase.type.manage',
                 'controller' => 'App\Http\Controllers\Web\PurchaseTypeController',
                 'action'     => '*',
-            ],
-            [
-                'permission' => 'reception.create',
-                'controller' => 'App\Http\Controllers\Web\ReceptionController',
-                'action'     => 'create',
-            ],
-            [
-                'permission' => 'reception.update',
-                'controller' => 'App\Http\Controllers\Web\ReceptionController',
-                'action'     => 'update',
-            ],
-            [
-                'permission' => 'reception.remove',
-                'controller' => 'App\Http\Controllers\Web\ReceptionController',
-                'action'     => 'remove',
-            ],
-            [
-                'permission' => 'reception.dispatch.doctor',
-                'controller' => 'App\Http\Controllers\Web\ReceptionController',
-                'action'     => 'dispatchDoctor',
-            ],
-            [
-                'permission' => 'reception.dispatch.consultant',
-                'controller' => 'App\Http\Controllers\Web\ReceptionController',
-                'action'     => 'dispatchConsultant',
             ],
             [
                 'permission' => 'product.manage',
