@@ -107,8 +107,8 @@
       <img src="readme/login.png" alt="登录界面" />
     </td>
     <td width="50%">
-      <h3>首页仪表盘</h3>
-      <img src="readme/home.png" alt="首页仪表盘" />
+      <h3>工作台</h3>
+      <img src="readme/home.png" alt="工作台" />
     </td>
   </tr>
   <tr>
