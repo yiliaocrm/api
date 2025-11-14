@@ -66,6 +66,34 @@ class AppointmentController extends Controller
     }
 
     /**
+     * 拖拽更新预约时间或人员
+     * @param AppointmentRequest $request
+     * @return JsonResponse
+     */
+    public function drag(AppointmentRequest $request): JsonResponse
+    {
+        $appointment = Appointment::query()->find(
+            $request->input('id')
+        );
+
+        $appointment->update(
+            $request->dragData()
+        );
+
+        // 重新加载关联关系
+        $appointment->load([
+            'doctor:id,name',
+            'customer:id,name,idcard',
+            'consultant:id,name',
+            'technician:id,name',
+            'department:id,name',
+            'room:id,name'
+        ]);
+
+        return response_success($appointment);
+    }
+
+    /**
      * 查看预约记录
      * @param AppointmentRequest $request
      * @return JsonResponse

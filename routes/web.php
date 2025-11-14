@@ -592,6 +592,7 @@ Route::controller(Web\ScheduleController::class)->prefix('schedule')->group(func
 
 Route::controller(Web\AppointmentController::class)->prefix('appointment')->group(function () {
     Route::get('info', 'info');
+    Route::get('drag', 'drag');
     Route::get('config', 'getConfig');
     Route::post('create', 'create');
     Route::post('config', 'saveConfig');

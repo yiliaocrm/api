@@ -40,6 +40,7 @@ class AppointmentRequest extends FormRequest
             'history' => $this->getHistoryRule(),
             'getSchedule' => $this->getScheduleRule(),
             'saveConfig' => $this->getSaveConfigRule(),
+            'drag' => $this->getDragRule(),
         };
     }
 
@@ -54,6 +55,7 @@ class AppointmentRequest extends FormRequest
             'remove' => $this->getRemoveMessage(),
             'history' => $this->getHistoryMessage(),
             'saveConfig' => $this->getSaveConfigMessage(),
+            'drag' => $this->getDragMessage(),
         };
     }
 
@@ -639,5 +641,95 @@ class AppointmentRequest extends FormRequest
         }
 
         return $data;
+    }
+
+    /**
+     * 拖拽更新预约验证规则
+     * @return array
+     */
+    protected function getDragRule(): array
+    {
+        $rules = [
+            'id'          => 'required|exists:appointments,id',
+            'start'       => 'required|date_format:H:i',
+            'end'         => 'required|date_format:H:i',
+            'date'        => 'nullable|date_format:Y-m-d',
+            'resource_id' => 'required|string|in:consultant_id,doctor_id,technician_id,department_id,room_id',
+            'target_id'   => 'required|numeric',
+        ];
+
+        // 根据 resource_id 的值，对 target_id 进行对应的存在性验证
+        $resourceId = $this->input('resource_id');
+        if ($resourceId === 'department_id') {
+            $rules['target_id'] = 'required|numeric|exists:department,id';
+        } elseif ($resourceId === 'room_id') {
+            $rules['target_id'] = 'required|numeric|exists:room,id';
+        } elseif (in_array($resourceId, ['consultant_id', 'doctor_id', 'technician_id'])) {
+            $rules['target_id'] = 'required|numeric|exists:users,id';
+        }
+
+        return $rules;
+    }
+
+    /**
+     * 拖拽更新预约验证消息
+     * @return array
+     */
+    protected function getDragMessage(): array
+    {
+        return [
+            'id.required'          => '[预约记录]参数不能为空!',
+            'id.exists'            => '[预约记录]不存在!',
+            'start.required'       => '[开始时间]不能为空!',
+            'start.date_format'    => '[开始时间]格式错误,应为HH:MM格式!',
+            'end.required'         => '[结束时间]不能为空!',
+            'end.date_format'      => '[结束时间]格式错误,应为HH:MM格式!',
+            'date.date_format'     => '[预约日期]格式错误!',
+            'resource_id.required' => '[资源类型]参数不能为空!',
+            'resource_id.string'   => '[资源类型]参数错误!',
+            'resource_id.in'       => '[资源类型]参数必须是consultant_id、doctor_id、technician_id、department_id或room_id!',
+            'target_id.required'   => '[目标ID]参数不能为空!',
+            'target_id.numeric'    => '[目标ID]参数错误!',
+            'target_id.exists'     => '[目标资源]不存在!',
+        ];
+    }
+
+    /**
+     * 组装拖拽更新数据
+     * @return array
+     */
+    public function dragData(): array
+    {
+        // 获取原预约记录
+        $appointment = Appointment::query()->find($this->input('id'));
+
+        // 如果传入了日期参数则使用，否则使用原预约的日期
+        $date = $this->input('date', $appointment->date);
+
+        // 组装完整的开始和结束时间
+        $startTime = $this->input('start');
+        $endTime   = $this->input('end');
+
+        $start = Carbon::parse($date . ' ' . $startTime);
+        $end   = Carbon::parse($date . ' ' . $endTime);
+
+        // 计算预约时长（分钟）
+        $duration = $start->diffInMinutes($end);
+
+        // 更新数据
+        $updateData = [
+            'date'     => $start->format('Y-m-d'),
+            'start'    => $start->format('Y-m-d H:i:s'),
+            'end'      => $end->format('Y-m-d H:i:s'),
+            'duration' => $duration,
+        ];
+
+        // 根据 resource_id 更新对应的资源字段
+        $resourceId = $this->input('resource_id');
+        $targetId   = $this->input('target_id');
+
+        $updateData[$resourceId] = $targetId;
+
+        return $updateData;
     }
 }
