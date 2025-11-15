@@ -94,6 +94,15 @@ class FollowupController extends Controller
             'last_followup' => Carbon::now()->toDateTimeString()
         ]);
 
+        $followup->load([
+            'customer:id,idcard,name',
+            'user:id,name',
+            'followupType',
+            'followupTool',
+            'executeUserInfo:id,name',
+            'followupUserInfo:id,name',
+        ]);
+
         return response_success($followup);
     }
 
