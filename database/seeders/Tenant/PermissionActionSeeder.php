@@ -150,6 +150,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'execute',
             ],
             [
+                'permission' => 'workbench.followup.update',
+                'controller' => 'App\Http\Controllers\Web\FollowupController',
+                'action'     => 'update',
+            ],
+            [
                 'permission' => 'workbench.followup.remove',
                 'controller' => 'App\Http\Controllers\Web\FollowupController',
                 'action'     => 'remove',
@@ -469,11 +474,6 @@ class PermissionActionSeeder extends Seeder
                 'permission' => 'customer.batch.sms',
                 'controller' => 'App\Http\Controllers\Web\CustomerBatchController',
                 'action'     => 'sms',
-            ],
-            [
-                'permission' => 'followup.remove',
-                'controller' => 'App\Http\Controllers\Web\FollowupController',
-                'action'     => 'remove',
             ],
             [
                 'permission' => 'failure.manage',
