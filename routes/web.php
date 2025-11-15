@@ -441,8 +441,8 @@ Route::controller(Web\ConsultantRemarkTemplateController::class)->prefix('consul
 
 Route::controller(Web\ReceptionController::class)->prefix('reception')->group(function () {
     Route::get('info', 'info');
-    Route::get('remove', 'remove');
     Route::get('fill', 'fill');
+    Route::get('remove', 'remove');
     Route::post('create', 'create');
     Route::post('update', 'update');
     Route::post('dispatch-consultant', 'dispatchConsultant');

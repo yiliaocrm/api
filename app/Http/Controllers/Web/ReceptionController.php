@@ -4,13 +4,11 @@ namespace App\Http\Controllers\Web;
 
 use Exception;
 use Throwable;
-use Carbon\Carbon;
 use App\Models\Customer;
 use App\Models\Reception;
 use App\Exceptions\HisException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\ReceptionRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -21,39 +19,52 @@ class ReceptionController extends Controller
      * 1、读取最后一条未上门的网电记录
      * 2、读取上次分诊记录
      * 3、读取顾客基本信息
-     * @param Request $request
+     * @param ReceptionRequest $request
      * @return JsonResponse
      */
-    public function fill(Request $request): JsonResponse
+    public function fill(ReceptionRequest $request): JsonResponse
     {
-        $data        = [];
-        $customer    = Customer::query()->find($request->input('customer_id'));
-        $reception   = $customer->receptions()->orderBy('created_at', 'desc')->first();
-        $reservation = $customer->reservations()->whereNull('cometime')->orderBy('created_at', 'desc')->first();
+        $customer = Customer::query()
+            ->with([
+                'consultantUser:id,name',
+                'ascriptionUser:id,name',
+            ])
+            ->find($request->input('customer_id'));
 
-        $data['consultant'] = $customer->consultant;
-        $data['type']       = 1; // 接诊类型:初诊
-        $data['medium_id']  = $customer->medium_id;
-        $data['reception']  = user()->id;   // 接待人员
+        // 创建一个未保存的Reception实例
+        $reception = new Reception();
 
+        // 默认值
+        $reception->type       = 1; // 默认为初诊
+        $reception->medium_id  = $customer->medium_id;
+        $reception->reception  = user()->id; // 接待人员为当前用户
+        $reception->consultant = $customer->consultant; // 归属咨询
+
+        // 尝试从最新的未上门预约记录中获取信息
+        $reservation = $customer->reservations()->whereNull('cometime')->latest()->first();
         if ($reservation) {
-            $data['department_id'] = $reservation->department_id;
-            $data['medium_id']     = $reservation->medium_id;
-            $data['items']         = $reservation->items;
+            $reception->department_id = $reservation->department_id;
+            $reception->medium_id     = $reservation->medium_id;
+            $reception->items         = $reservation->items;
         }
 
-        if ($reception) {
-            $data['department_id'] = $reception->department_id;
-            $data['type']          = 2;
-            $data['medium_id']     = $reception->medium_id;
+        // 尝试从最后一次分诊记录中获取信息（会覆盖预约记录的信息）
+        $lastReception = $customer->receptions()->latest()->first();
+        if ($lastReception) {
+            $reception->department_id = $lastReception->department_id;
+            $reception->medium_id     = $lastReception->medium_id;
+            $reception->type          = 2; // 有历史分诊记录，默认为复诊
 
-            // 最后一次[分诊记录]是今天
-            if ($reception->created_at->startOfDay()->diffInDays(Carbon::now()->startOfDay()) == 0) {
-                $data['type'] = $reception->type;
+            // 如果最后一次分诊是今天，则沿用其接诊类型
+            if ($lastReception->created_at->isToday()) {
+                $reception->type = $lastReception->type;
             }
         }
 
-        return response_success($data);
+        // 附加顾客信息
+        $reception->customer = $customer;
+
+        return response_success($reception);
     }
 
     /**
@@ -66,6 +77,11 @@ class ReceptionController extends Controller
         $reception = Reception::query()->find(
             $request->input('id')
         );
+        $reception->load([
+            'customer:id,name,sex,idcard,ascription,consultant',
+            'customer.consultantUser:id,name',
+            'customer.ascriptionUser:id,name',
+        ]);
         return response_success($reception);
     }
 
