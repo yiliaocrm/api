@@ -174,7 +174,7 @@ class FollowupRequest extends FormRequest
     private function getOriginateRules(): array
     {
         return [
-            'phone' => [
+            'phone_id' => [
                 'required',
                 'string',
                 'exists:customer_phones,id',
@@ -187,10 +187,6 @@ class FollowupRequest extends FormRequest
                         $fail('呼叫中心接口地址没有配置!');
                         return;
                     }
-                    if (!user()->extension) {
-                        $fail('您没有绑定分机,无法呼叫!');
-                        return;
-                    }
                 }
             ]
         ];
@@ -199,8 +195,8 @@ class FollowupRequest extends FormRequest
     private function getOriginateMessages(): array
     {
         return [
-            'phone.required' => '缺少phone参数!',
-            'phone.exists'   => '没有找到电话号码',
+            'phone_id.required' => '缺少phone_id参数!',
+            'phone_id.exists'   => '没有找到电话号码',
         ];
     }
 
