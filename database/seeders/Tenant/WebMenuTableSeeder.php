@@ -40,61 +40,291 @@ class WebMenuTableSeeder extends Seeder
 
         $menu = WebMenu::query()->create([
             'parentid'   => $root->id,
-            'name'       => '今日提醒',
-            'icon'       => 'iconfont if-bell',
-            'route'      => 'ReminderIndex',
-            'path'       => '/workbench/reminder',
-            'component'  => 'reminder/index',
-            'remark'     => '信息提醒',
+            'name'       => '今日工作',
+            'path'       => '/workbench/today',
+            'component'  => '',
+            'url'        => '/new#/workbench/today',
             'meta'       => [
-                'title' => '今日提醒'
+                'title' => '今日工作'
             ],
-            'permission' => 'reminder.index',
+            'icon'       => 'iconfont if-home',
+            'route'      => 'WorkbenchToday',
+            'remark'     => '工作台数据汇总',
+            'permission' => 'workbench.today'
         ]);
 
         WebMenu::query()->create([
             'parentid'   => $menu->id,
-            'name'       => '回访提醒',
+            'name'       => '查看',
+            'remark'     => '查看今日工作数据',
+            'display'    => false,
+            'permission' => 'workbench.today.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '到店',
+            'remark'     => '顾客预约到店操作',
+            'display'    => false,
+            'permission' => 'workbench.today.arrival',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '挂号',
+            'remark'     => '分诊挂号',
+            'display'    => false,
+            'permission' => 'workbench.today.reception',
+        ]);
+
+        $menu = WebMenu::query()->create([
+            'parentid'   => $root->id,
+            'name'       => '预约管理',
+            'path'       => '/workbench/appointment',
+            'component'  => '',
+            'url'        => '/new#/workbench/appointment',
+            'meta'       => [
+                'title' => '预约管理'
+            ],
+            'icon'       => 'iconfont if-appointment',
+            'route'      => 'WorkbenchAppointment',
+            'remark'     => '预约管理',
+            'permission' => 'workbench.appointment'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看预约记录',
+            'display'    => false,
+            'permission' => 'workbench.appointment.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '新增',
+            'remark'     => '添加预约',
+            'display'    => false,
+            'permission' => 'workbench.appointment.create',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '编辑',
+            'remark'     => '更新预约记录',
+            'display'    => false,
+            'permission' => 'workbench.appointment.update',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '删除',
+            'remark'     => '删除预约记录',
+            'display'    => false,
+            'permission' => 'workbench.appointment.remove',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '导出',
+            'remark'     => '导出预约记录',
+            'display'    => false,
+            'permission' => 'workbench.appointment.export',
+        ]);
+
+        $menu = WebMenu::query()->create([
+            'parentid'   => $root->id,
+            'name'       => '分诊接待',
+            'path'       => '/workbench/reception',
+            'component'  => '',
+            'url'        => '/new#/workbench/reception',
+            'meta'       => [
+                'title' => '分诊接待'
+            ],
+            'icon'       => 'iconfont if-reception',
+            'route'      => 'WorkbenchReception',
+            'remark'     => '前台接待',
+            'permission' => 'workbench.reception'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看记录',
+            'remark'     => '查看分诊接待记录',
+            'display'    => false,
+            'permission' => 'workbench.reception.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '分诊挂号',
+            'remark'     => '新增分诊挂号操作',
+            'display'    => false,
+            'permission' => 'workbench.reception.create',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '修改分诊',
+            'remark'     => '修改分诊挂号记录',
+            'display'    => false,
+            'permission' => 'workbench.reception.update',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '删除分诊',
+            'remark'     => '删除分诊(已接诊的无法操作)',
+            'display'    => false,
+            'permission' => 'workbench.reception.remove',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '历史记录',
+            'remark'     => '查看历史分诊记录(默认只能看当天)',
+            'display'    => false,
+            'permission' => 'workbench.reception.history',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '改派咨询',
+            'remark'     => '重新分配顾问',
+            'display'    => false,
+            'permission' => 'workbench.reception.dispatch.consultant',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '改派医生',
+            'remark'     => '重新分配医生',
+            'display'    => false,
+            'permission' => 'workbench.reception.dispatch.doctor',
+        ]);
+
+        $menu = WebMenu::query()->create([
+            'parentid'   => $root->id,
+            'name'       => '回访管理',
+            'path'       => '/workbench/followup',
+            'component'  => '',
+            'url'        => '/new#/workbench/followup',
+            'meta'       => [
+                'title' => '分诊接待'
+            ],
             'icon'       => 'iconfont if-followup',
+            'route'      => 'WorkbenchFollowup',
             'remark'     => '回访管理',
-            'display'    => false,
-            'permission' => 'followup.manage',
+            'permission' => 'workbench.followup'
         ]);
 
         WebMenu::query()->create([
             'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看回访记录',
+            'display'    => false,
+            'permission' => 'workbench.followup.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '回访',
+            'remark'     => '执行回访',
+            'display'    => false,
+            'permission' => 'workbench.followup.execute',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '更新',
+            'remark'     => '更新回访记录',
+            'display'    => false,
+            'permission' => 'workbench.followup.update',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '删除',
+            'remark'     => '删除回访记录',
+            'display'    => false,
+            'permission' => 'workbench.followup.remove',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $root->id,
             'name'       => '生日提醒',
+            'path'       => '/workbench/birthday',
+            'component'  => '',
+            'url'        => '/new#/workbench/birthday',
+            'meta'       => [
+                'title' => '生日提醒'
+            ],
             'icon'       => 'iconfont if-birthday',
-            'remark'     => '查询会员生日',
-            'display'    => false,
-            'permission' => 'customer.birthday'
+            'route'      => 'WorkbenchBirthday',
+            'remark'     => '生日提醒',
+            'permission' => 'workbench.birthday'
         ]);
 
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '网电预约',
-            'icon'       => 'iconfont if-calendar-clock',
-            'remark'     => '根据预约时间,显示将要上门顾客信息!',
-            'display'    => false,
-            'permission' => 'reservation.reminder'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
+        $menu = WebMenu::query()->create([
+            'parentid'   => $root->id,
             'name'       => '库存预警',
+            'path'       => '/workbench/alarm',
+            'component'  => '',
+            'url'        => '/new#/workbench/alarm',
+            'meta'       => [
+                'title' => '库存预警'
+            ],
             'icon'       => 'iconfont if-inventory-alarm',
-            'remark'     => '库存上下限预警!',
-            'display'    => false,
-            'permission' => 'reminder.inventory.alarm'
+            'route'      => 'WorkbenchAlarm',
+            'remark'     => '库存上下限预警',
+            'permission' => 'workbench.alarm'
         ]);
 
         WebMenu::query()->create([
             'parentid'   => $menu->id,
-            'name'       => '过期预警',
-            'icon'       => 'iconfont if-inventory-expiry',
-            'remark'     => '库存产品过期预警!',
+            'name'       => '查看',
+            'remark'     => '查看库存预警数据',
             'display'    => false,
-            'permission' => 'reminder.inventory.expiry'
+            'permission' => 'workbench.alarm.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '导出',
+            'remark'     => '导出库存预警数据',
+            'display'    => false,
+            'permission' => 'workbench.alarm.export',
+        ]);
+
+        $menu = WebMenu::query()->create([
+            'parentid'   => $root->id,
+            'name'       => '过期预警',
+            'path'       => '/workbench/expiry',
+            'component'  => '',
+            'url'        => '/new#/workbench/expiry',
+            'meta'       => [
+                'title' => '过期预警'
+            ],
+            'icon'       => 'iconfont if-inventory-expiry',
+            'route'      => 'WorkbenchExpiry',
+            'remark'     => '库存上下限预警',
+            'permission' => 'workbench.expiry'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看库存过期预警',
+            'display'    => false,
+            'permission' => 'workbench.expiry.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '导出',
+            'remark'     => '导出库存过期提醒',
+            'display'    => false,
+            'permission' => 'workbench.expiry.export',
         ]);
 
         $menu = WebMenu::query()->create([
@@ -145,73 +375,6 @@ class WebMenuTableSeeder extends Seeder
             'remark'     => '查询已上门顾客信息',
             'display'    => false,
             'permission' => 'reservation.reception',
-        ]);
-
-        $menu = WebMenu::query()->create([
-            'parentid'   => $root->id,
-            'name'       => '分诊接待',
-            'path'       => '/workbench/reception',
-            'component'  => 'reception/index',
-            'url'        => '/new#/workbench/reception',
-            'meta'       => [
-                'title' => '分诊接待'
-            ],
-            'icon'       => 'iconfont if-reception',
-            'route'      => 'WorkbenchReception',
-            'remark'     => '前台接待',
-            'permission' => 'workbench.reception'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '新增分诊',
-            'icon'       => 'icon-add',
-            'remark'     => '新增分诊操作',
-            'display'    => false,
-            'permission' => 'reception.create'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '历史记录',
-            'icon'       => 'icon-history',
-            'remark'     => '查看历史分诊记录(默认只能看当天)',
-            'display'    => false,
-            'permission' => 'reception.history'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '修改记录',
-            'icon'       => 'icon-edit',
-            'remark'     => '修改分诊记录(接诊后无法修改)',
-            'display'    => false,
-            'permission' => 'reception.update'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '改派咨询',
-            'remark'     => '重新分配顾问',
-            'display'    => false,
-            'permission' => 'reception.dispatch.consultant'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '改派医生',
-            'remark'     => '重新分配医生',
-            'display'    => false,
-            'permission' => 'reception.dispatch.doctor'
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '删除分诊',
-            'icon'       => 'icon-remove',
-            'remark'     => '删除分诊(已接诊的无法操作)',
-            'display'    => false,
-            'permission' => 'reception.remove'
         ]);
 
         $menu = WebMenu::query()->create([
@@ -2143,20 +2306,6 @@ class WebMenuTableSeeder extends Seeder
             'route'      => 'YuyueDashboard',
             'component'  => 'yuyue/dashboard',
             'permission' => 'appointment.dashboard',
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $root->id,
-            'name'       => '预约列表',
-            'icon'       => 'iconfont if-record',
-            'url'        => '/new#/appointment/index',
-            'path'       => '/yuyue/index',
-            'meta'       => [
-                'title' => '预约列表'
-            ],
-            'route'      => 'YuyueIndex',
-            'component'  => 'yuyue/index',
-            'permission' => 'appointment.index',
         ]);
 
         WebMenu::query()->create([

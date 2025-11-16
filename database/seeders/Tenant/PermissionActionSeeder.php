@@ -115,6 +115,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'appointment',
             ],
             [
+                'permission' => 'workbench.reception.index',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action'     => 'reception',
+            ],
+            [
                 'permission' => 'workbench.reception.create',
                 'controller' => 'App\Http\Controllers\Web\ReceptionController',
                 'action'     => 'create',
