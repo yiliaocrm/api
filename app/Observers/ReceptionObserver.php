@@ -3,6 +3,8 @@
 namespace App\Observers;
 
 use App\Models\Reception;
+use App\Enums\AppointmentType;
+use App\Enums\AppointmentStatus;
 use Illuminate\Support\Carbon;
 
 class ReceptionObserver
@@ -58,7 +60,12 @@ class ReceptionObserver
 
         // 没有预约记录,同步创建一条
         if ($reception->customer->appointments()->where('date', Carbon::now()->toDateString())->doesntExist()) {
-            $store = store();
+            $store      = store();
+            $items_name = [];
+
+            foreach ($reception->items as $item) {
+                $items_name[] = get_item_name($item);
+            }
             $reception->appointment()->create([
                 'customer_id'    => $reception->customer_id,
                 'reception_id'   => $reception->id,
@@ -68,8 +75,15 @@ class ReceptionObserver
                 'duration'       => $store->slot_duration,
                 'reception_time' => $reception->created_at,
                 'arrival_time'   => $reception->created_at,
-                'status'         => 2, // 已到店
-                'type'           => 'coming',
+                'status'         => AppointmentStatus::ARRIVED,
+                'type'           => AppointmentType::COMING,
+                'items'          => $reception->items,
+                'items_name'     => implode(',', $items_name),
+                'department_id'  => $reception->department_id,
+                'technician_id'  => 0, // 未指定技师
+                'room_id'        => 0,  // 未指定诊室
+                'doctor_id'      => $reception->doctor,
+                'consultant_id'  => $reception->consultant,
                 'create_user_id' => $reception->user_id,
                 'remark'         => '前台分诊自动生成预约记录',
             ]);

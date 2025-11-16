@@ -25,8 +25,9 @@ class Reception extends BaseModel
     protected function casts(): array
     {
         return [
-            'items'  => 'array',
-            'status' => ReceptionStatus::class,
+            'items'       => 'array',
+            'status'      => ReceptionStatus::class,
+            'receptioned' => 'boolean',
         ];
     }
 
