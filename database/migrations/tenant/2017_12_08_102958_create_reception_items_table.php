@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->uuid('reception_id')->index();
             $table->integer('item_id');
             $table->tinyInteger('successful')->unsigned()->default(0)->comment('是否成交');
+            $table->comment('分诊接待项目表');
         });
     }
 
