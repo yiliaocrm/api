@@ -209,6 +209,11 @@ class SceneRequest extends FormRequest
         $operatorText  = $operator['text'];
         $operatorValue = $operator['value'];
 
+        // 处理 is null 和 is not null 操作符（无需 value）
+        if (in_array($operatorValue, ['is null', 'is not null'])) {
+            return "{$fieldName} {$operatorText}";
+        }
+
         // 处理 in 和 not in 操作符
         if (in_array($operatorValue, ['in', 'not in']) && is_array($filter['value'])) {
             $values = array_map(function ($value) use ($field, $operatorValue) {

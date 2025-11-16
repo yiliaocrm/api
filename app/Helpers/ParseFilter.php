@@ -29,7 +29,7 @@ class ParseFilter
 
         foreach ($filters as $filter) {
             $field       = $filter['field'];
-            $value       = $filter['value'];
+            $value       = $filter['value'] ?? null;
             $operator    = $filter['operator'];
             $fieldConfig = $fields->where('field', $field)->first();
             $column      = "{$fieldConfig->table}.{$field}";
