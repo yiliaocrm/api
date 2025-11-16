@@ -4,8 +4,14 @@ namespace App\Enums;
 
 enum ReceptionStatus: int
 {
-    case FAILED = 1;        // 未成交
-    case COMPLETED = 2;     // 成交
+    /**
+     * 未成交
+     */
+    case FAILED = 1;
+    /**
+     * 成交
+     */
+    case COMPLETED = 2;
 
     public function getLabel(): string
     {
