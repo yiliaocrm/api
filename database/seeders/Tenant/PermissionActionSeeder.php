@@ -717,16 +717,6 @@ class PermissionActionSeeder extends Seeder
                 'except'     => 'choose',
             ],
             [
-                'permission' => 'reminder.inventory.alarm',
-                'controller' => 'App\Http\Controllers\Web\ReminderController',
-                'action'     => 'inventoryAlarm',
-            ],
-            [
-                'permission' => 'reminder.inventory.expiry',
-                'controller' => 'App\Http\Controllers\Web\ReminderController',
-                'action'     => 'inventoryExpiry',
-            ],
-            [
                 'permission' => 'product.manage',
                 'controller' => 'App\Http\Controllers\Web\ProductTypeController',
                 'action'     => '*',
