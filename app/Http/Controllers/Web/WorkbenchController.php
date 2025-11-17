@@ -252,9 +252,9 @@ class WorkbenchController extends Controller
             ])
             ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
             ->queryConditions('WorkbenchAppointment')
-            ->whereBetween('appointments.created_at', [
-                Carbon::parse($request->input('created_at.0'))->startOfDay(),
-                Carbon::parse($request->input('created_at.1'))->endOfDay()
+            ->whereBetween('appointments.date', [
+                $request->input('created_at.0'),
+                $request->input('created_at.1')
             ])
             ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->orderBy("appointments.{$sort}", $order);
