@@ -103,6 +103,8 @@ class FollowupController extends Controller
             'followupUserInfo:id,name',
         ]);
 
+        $followup->append(['status_text']);
+
         return response_success($followup);
     }
 
