@@ -233,7 +233,7 @@ class WorkbenchRequest extends FormRequest
     private function getTodayAppointmentCount(): int
     {
         return Appointment::query()
-            ->whereDate('created_at', today())
+            ->whereDate('date', today())
             ->count();
     }
 
