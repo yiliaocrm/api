@@ -166,12 +166,6 @@ class ParametersTableSeeder extends Seeder
                 'remark' => '强制启用登录动态口令（没有动态口令无法登录！）',
             ],
             [
-                'name'   => 'cywebos_reminder_autoload',
-                'value'  => 'false',
-                'type'   => 'boolean',
-                'remark' => '登录自动打开"今日提醒"',
-            ],
-            [
                 'name'   => 'cywebos_enable_whitelist',
                 'value'  => 'false',
                 'type'   => 'boolean',

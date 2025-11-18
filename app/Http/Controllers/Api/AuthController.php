@@ -90,10 +90,9 @@ class AuthController extends Controller
     public function config(): JsonResponse
     {
         $data = [
-            'cywebos_hospital_name'                     => parameter('cywebos_hospital_name') . ' - 美业冠佳',
+            'cywebos_hospital_name'                     => parameter('cywebos_hospital_name'),
             'consultant_allow_reception'                => parameter('consultant_allow_reception'),
             'cywebos_apps_autoload'                     => parameter('cywebos_apps_autoload'),
-            'cywebos_reminder_autoload'                 => parameter('cywebos_reminder_autoload'),
             'cashier_allow_modify'                      => parameter('cashier_allow_modify'),
             'cywebos_force_enable_google_authenticator' => parameter('cywebos_force_enable_google_authenticator'),
         ];
