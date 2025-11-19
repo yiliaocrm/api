@@ -131,15 +131,10 @@ class ReceptionRequest extends FormRequest
                 'required',
                 'exists:reception',
                 function ($attribute, $value, $fail) {
-                    $reception = Reception::find($value);
-
+                    $reception = Reception::query()->find($value);
                     if ($reception->receptioned) {
                         $fail('现场咨询接待后无法修改。');
                         return;
-                    }
-
-                    if (!user()->hasAnyAccess(['superuser', 'reception.update'])) {
-                        $fail('您没有权限修改分诊信息!');
                     }
                 }
             ],
