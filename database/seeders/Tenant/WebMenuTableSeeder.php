@@ -2002,17 +2002,42 @@ class WebMenuTableSeeder extends Seeder
             'permission' => 'cashier.refund',
         ]);
 
-        WebMenu::query()->create([
+        $menu = WebMenu::query()->create([
             'parentid'   => $root->id,
             'name'       => '账户流水',
             'icon'       => 'icon-inv-search',
             'path'       => '/cashier-pay/index',
+            'url'        => '/new#/cashier/pay/index',
             'meta'       => [
                 'title' => '账户流水'
             ],
             'route'      => 'CashierPayIndex',
             'component'  => 'cashier-pay/index',
             'permission' => 'cashier.pay',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看账户流水详情',
+            'display'    => false,
+            'permission' => 'cashier.pay.index'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '更新',
+            'remark'     => '更新支付方式信息',
+            'display'    => false,
+            'permission' => 'cashier.pay.update'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '导出',
+            'remark'     => '导出流水明细表',
+            'display'    => false,
+            'permission' => 'cashier.pay.export'
         ]);
 
         WebMenu::query()->create([
