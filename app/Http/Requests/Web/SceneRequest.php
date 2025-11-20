@@ -259,6 +259,7 @@ class SceneRequest extends FormRequest
             '/cache/tags'                 => 'tags',
             '/cache/items'                => 'item',
             '/cache/mediums'              => 'medium',
+            '/cache/accounts'             => 'accounts',
             '/cache/warehouse'            => 'warehouse',
             '/cache/departments'          => 'department',
             '/cache/goods-type'           => 'goods_type',
