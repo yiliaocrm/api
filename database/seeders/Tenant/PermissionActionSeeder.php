@@ -226,8 +226,8 @@ class PermissionActionSeeder extends Seeder
             ],
             [
                 'permission' => 'cashier.pay.export',
-                'controller' => 'App\Http\Controllers\Web\CashierPayController',
-                'action'     => 'export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'cashierPay',
             ],
             [
                 'permission' => 'cashier.arrearage',
