@@ -143,8 +143,9 @@ class CashierPayExport implements ShouldQueue
 
     protected function getQuery(): Builder
     {
-        $sort  = $this->request['sort'] ?? 'cashier_pay.created_at';
-        $order = $this->request['order'] ?? 'desc';
+        $sort    = $this->request['sort'] ?? 'cashier_pay.created_at';
+        $order   = $this->request['order'] ?? 'desc';
+        $keyword = $this->request['keyword'] ?? null;
 
         return CashierPay::query()
             ->with([
@@ -160,6 +161,7 @@ class CashierPayExport implements ShouldQueue
                     Carbon::parse($this->request['date'][1])->endOfDay()
                 ]);
             })
+            ->when($keyword, fn(Builder $query) => $query->whereLike('customer.keyword', '%' . $keyword . '%'))
             ->queryConditions('CashierPayIndex', $this->request['filters'] ?? [])
             ->orderBy($sort, $order);
     }

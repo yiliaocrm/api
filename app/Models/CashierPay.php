@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 class CashierPay extends BaseModel
 {
-    use hasUuids;
+    use hasUuids, QueryConditionsTrait;
 
     protected $table = 'cashier_pay';
-    protected $keyType = 'string';
-    public $incrementing = false;
 
     protected function casts(): array
     {
@@ -37,5 +36,14 @@ class CashierPay extends BaseModel
     public function account(): BelongsTo
     {
         return $this->belongsTo(Accounts::class, 'accounts_id');
+    }
+
+    /**
+     * 收银员
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

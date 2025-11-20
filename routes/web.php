@@ -496,7 +496,7 @@ Route::controller(Web\CashierController::class)->prefix('cashier')->group(functi
 });
 
 Route::controller(Web\CashierPayController::class)->prefix('cashier-pay')->group(function () {
-    Route::post('manage', 'manage');
+    Route::post('index', 'index');
     Route::post('update', 'update');
 });
 

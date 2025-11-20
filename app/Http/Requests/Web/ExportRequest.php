@@ -536,7 +536,7 @@ class ExportRequest extends FormRequest
             'customer' => $this->only(['filters', 'keyword', 'group_id']),
             'customerLog' => $this->only(['created_at', 'customer_id', 'action', 'user_id']),
             'customerGoods', 'customerProduct', 'cashierRefund', 'purchaseDetail', 'departmentPickingDetail', 'consumableDetail' => $this->only(['filters', 'keyword']),
-            'cashierPay' => $this->only(['filters', 'date']),
+            'cashierPay' => $this->only(['filters', 'date', 'keyword']),
             'salesPerformance' => $this->only(['filters', 'created_at', 'keyword']),
             'customerIntegral' => $this->only(['created_at', 'type', 'keyword', 'expired']),
             'productRanking' => $this->only(['created_at', 'medium_id', 'type_id', 'sort', 'order']),
