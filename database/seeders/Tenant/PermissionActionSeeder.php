@@ -215,9 +215,14 @@ class PermissionActionSeeder extends Seeder
                 'action'     => '*',
             ],
             [
-                'permission' => 'cashier.pay',
+                'permission' => 'cashier.pay.index',
                 'controller' => 'App\Http\Controllers\Web\CashierPayController',
-                'action'     => '*',
+                'action'     => 'index',
+            ],
+            [
+                'permission' => 'cashier.pay.update',
+                'controller' => 'App\Http\Controllers\Web\CashierPayController',
+                'action'     => 'update',
             ],
             [
                 'permission' => 'cashier.arrearage',
