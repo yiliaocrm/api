@@ -23,7 +23,7 @@ class CashierPayController extends Controller
         $rows    = $request->input('rows', 10);
         $keyword = $request->input('keyword');
 
-        $query = CashierPay::query()
+        $builder = CashierPay::query()
             ->with([
                 'user:id,name',
                 'account:id,name',
@@ -37,12 +37,24 @@ class CashierPayController extends Controller
             ])
             ->when($keyword, fn(Builder $query) => $query->whereLike('customer.keyword', '%' . $keyword . '%'))
             ->queryConditions('CashierPayIndex')
-            ->orderBy($sort, $order)
-            ->paginate($rows);
+            ->orderBy($sort, $order);
+
+        $query  = $builder->clone()->paginate($rows);
+        $footer = [
+            [
+                'customer_idcard' => '页小计:',
+                'income'          => collect($query->items())->sum('income'),
+            ],
+            [
+                'customer_idcard' => '总合计:',
+                'income'          => floatval($builder->clone()->sum('cashier_pay.income')),
+            ]
+        ];
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total(),
+            'rows'   => $query->items(),
+            'total'  => $query->total(),
+            'footer' => $footer
         ]);
     }
 
