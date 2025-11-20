@@ -156,12 +156,15 @@ class ExportController extends Controller
 
     /**
      * 导出[账户流水]
-     * @param Request $request
-     * @return CashierPayExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function cashierPay(Request $request): CashierPayExport
+    public function cashierPay(ExportRequest $request): JsonResponse
     {
-        return new CashierPayExport($request);
+        $name = $request->input('fileName', '账户流水');
+        $task = $request->createExportTask($name);
+        dispatch(new CashierPayExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**
