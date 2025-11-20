@@ -266,9 +266,14 @@ class PermissionActionSeeder extends Seeder
                 'action'     => '*',
             ],
             [
-                'permission' => 'cashier.detail',
+                'permission' => 'cashier.detail.index',
                 'controller' => 'App\Http\Controllers\Web\CashierDetailController',
-                'action'     => '*',
+                'action'     => 'index',
+            ],
+            [
+                'permission' => 'cashier.detail.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'cashierDetail',
             ],
             [
                 'permission' => 'cashier.list',
