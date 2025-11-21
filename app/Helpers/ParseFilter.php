@@ -99,6 +99,9 @@ class ParseFilter
             case 'like':
                 $query->where($column, 'like', '%' . $value . '%');
                 break;
+            case 'not like':
+                $query->where($column, 'not like', '%' . $value . '%');
+                break;
             case 'is null':
                 $query->whereNull($column);
                 break;
