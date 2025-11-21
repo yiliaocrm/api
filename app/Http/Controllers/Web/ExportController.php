@@ -146,12 +146,15 @@ class ExportController extends Controller
 
     /**
      * 导出[营收明细]
-     * @param Request $request
-     * @return CashierDetailExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function cashierDetail(Request $request): CashierDetailExport
+    public function cashierDetail(ExportRequest $request): JsonResponse
     {
-        return new CashierDetailExport($request);
+        $name = $request->input('fileName', '营收明细');
+        $task = $request->createExportTask($name);
+        dispatch(new CashierDetailExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**
