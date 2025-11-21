@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Web;
 
+use App\Rules\Web\SceneRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CashierPayRequest extends FormRequest
@@ -26,11 +27,16 @@ class CashierPayRequest extends FormRequest
     private function getIndexRules(): array
     {
         return [
-            'date'   => 'required|array|size:2',
-            'date.*' => 'required|date|date_format:Y-m-d',
-            'sort'   => 'nullable|string|max:255',
-            'order'  => 'nullable|string|in:asc,desc',
-            'rows'   => 'nullable|integer|min:1|max:1000',
+            'date'    => 'required|array|size:2',
+            'date.*'  => 'required|date|date_format:Y-m-d',
+            'sort'    => 'nullable|string|max:255',
+            'order'   => 'nullable|string|in:asc,desc',
+            'rows'    => 'nullable|integer|min:1|max:1000',
+            'filters' => [
+                'nullable',
+                'array',
+                new SceneRule('CashierPayIndex')
+            ],
         ];
     }
 
