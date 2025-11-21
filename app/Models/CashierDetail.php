@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use Ramsey\Uuid\Uuid;
 use App\Models\Product;
 use App\Models\Recharge;
 use App\Models\Integral;
@@ -15,15 +13,16 @@ use App\Models\CustomerProduct;
 use App\Models\CashierArrearage;
 use App\Models\SalesPerformance;
 use App\Models\CashierRetailDetail;
+use App\Traits\QueryConditionsTrait;
 use App\Models\OutpatientPrescriptionDetail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 
 class CashierDetail extends BaseModel
 {
+    use HasUuids, QueryConditionsTrait;
+
     protected $table = 'cashier_detail';
-    protected $keyType = 'string';
-    public $incrementing = false;
 
     protected function casts(): array
     {
@@ -40,11 +39,6 @@ class CashierDetail extends BaseModel
     public static function boot(): void
     {
         parent::boot();
-
-        static::creating(function ($detail) {
-            $detail->id = Uuid::uuid7()->toString();
-        });
-
         static::created(function ($detail) {
             // 医生门诊
             if ($detail->cashierable_type == 'App\Models\Outpatient') {
@@ -510,5 +504,32 @@ class CashierDetail extends BaseModel
     public function customerGoods(): BelongsTo
     {
         return $this->belongsTo(CustomerGoods::class, 'table_id');
+    }
+
+    /**
+     * 计量单位信息
+     * @return BelongsTo
+     */
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class);
+    }
+
+    /**
+     * 收银员
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 结算科室
+     * @return BelongsTo
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 }
