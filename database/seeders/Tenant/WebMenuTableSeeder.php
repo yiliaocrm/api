@@ -1948,17 +1948,33 @@ class WebMenuTableSeeder extends Seeder
             'permission' => 'cashier.list',
         ]);
 
-        WebMenu::query()->create([
+        $menu = WebMenu::query()->create([
             'parentid'   => $root->id,
             'name'       => '营收明细',
             'icon'       => 'icon-paper-pay',
+            'url'        => '/new#/cashier/detail/index',
             'path'       => '/cashier-detail/index',
             'meta'       => [
                 'title' => '营收明细'
             ],
             'route'      => 'CashierDetailIndex',
-            'component'  => 'cashier-detail/index',
             'permission' => 'cashier.detail',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看营收明细详情',
+            'display'    => false,
+            'permission' => 'cashier.detail.index'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '导出',
+            'remark'     => '导出营收明细详情',
+            'display'    => false,
+            'permission' => 'cashier.detail.export'
         ]);
 
         WebMenu::query()->create([
