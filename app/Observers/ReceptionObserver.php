@@ -123,6 +123,9 @@ class ReceptionObserver
 
         // 更新[顾客信息]
         $this->updateCustomerByDeleted($reception);
+
+        // 删除关联预约
+        $reception->appointment()->delete();
     }
 
     /**
