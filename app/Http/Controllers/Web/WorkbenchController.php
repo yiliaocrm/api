@@ -70,6 +70,7 @@ class WorkbenchController extends Controller
             ->when($request->input('arrival') && $request->input('arrival') === 'false', fn($query) => $query->whereNull('arrival_time'))
             ->when($request->input('status'), fn($query) => $query->where('status', $request->input('status')))
             ->where('date', $request->input('date', date('Y-m-d')))
+            ->queryConditions('WorkbenchToday')
             ->orderBy($sort, $order)
             ->paginate($rows);
 
