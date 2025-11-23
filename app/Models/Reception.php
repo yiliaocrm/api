@@ -7,7 +7,6 @@ use App\Traits\QueryConditionsTrait;
 use App\Observers\ReceptionObserver;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -176,6 +175,15 @@ class Reception extends BaseModel
     }
 
     /**
+     * 预约记录
+     * @return BelongsTo
+     */
+    public function appointment(): BelongsTo
+    {
+        return $this->belongsTo(Appointment::class);
+    }
+
+    /**
      * 二开人员
      * @return BelongsTo
      */
@@ -191,16 +199,6 @@ class Reception extends BaseModel
     public function doctorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'doctor', 'id');
-    }
-
-
-    /**
-     * 预约记录
-     * @return HasOne
-     */
-    public function appointment(): HasOne
-    {
-        return $this->hasOne(Appointment::class);
     }
 
     /**

@@ -15,6 +15,7 @@ return new class extends Migration {
         Schema::create('reception', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('customer_id')->index()->comment('顾客id');
+            $table->uuid('appointment_id')->nullable()->index()->comment('预约id');
             $table->integer('department_id')->comment('分诊科室');
             $table->string('items')->comment('咨询项目');
             $table->tinyInteger('type')->comment('接诊类型');

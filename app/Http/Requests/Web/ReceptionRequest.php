@@ -4,7 +4,7 @@ namespace App\Http\Requests\Web;
 
 use App\Models\Customer;
 use App\Models\Reception;
-use Illuminate\Support\Carbon;
+use App\Enums\ReceptionStatus;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ReceptionRequest extends FormRequest
@@ -79,9 +79,10 @@ class ReceptionRequest extends FormRequest
     private function getCreateRules(): array
     {
         return [
-            'consultant'  => 'required|integer|exists:users,id',
-            'medium_id'   => 'required|integer|exists:medium,id',
-            'items'       => [
+            'appointment_id' => 'nullable|string|exists:appointments,id',
+            'consultant'     => 'required|integer|exists:users,id',
+            'medium_id'      => 'required|integer|exists:medium,id',
+            'items'          => [
                 'required',
                 'array',
                 'exists:item,id',
@@ -91,9 +92,9 @@ class ReceptionRequest extends FormRequest
                     }
                 }
             ],
-            'reception'   => 'required|integer|exists:users,id',
-            'doctor'      => 'nullable|integer|exists:users,id',
-            'customer_id' => [
+            'reception'      => 'required|integer|exists:users,id',
+            'doctor'         => 'nullable|integer|exists:users,id',
+            'customer_id'    => [
                 'required',
                 function ($attribute, $value, $fail) {
                     $customer = Customer::query()->find($value);
@@ -113,14 +114,19 @@ class ReceptionRequest extends FormRequest
     private function getCreateMessages(): array
     {
         return [
-            'consultant.exists'  => '[咨询人员]不能为空!',
-            'medium_id.required' => '[媒介来源]不能为空!',
-            'medium_id.exists'   => '[媒介来源]不存在!',
-            'items.required'     => '[咨询项目]不能为空!',
-            'items.exists'       => '[咨询项目]不存在!',
-            'reception.required' => '[接待人员]不能为空!',
-            'reception.exists'   => '[接待人员]不存在!',
-            'doctor.exists'      => '[接诊医生]不存在!',
+            'appointment_id.string' => '[预约id]格式不正确!',
+            'appointment_id.exists' => '[预约id]不存在!',
+            'consultant.required'   => '[咨询人员]不能为空!',
+            'consultant.integer'    => '[咨询人员]格式不正确!',
+            'consultant.exists'     => '[咨询人员]不能为空!',
+            'medium_id.required'    => '[媒介来源]不能为空!',
+            'medium_id.integer'     => '[媒介来源]格式不正确!',
+            'medium_id.exists'      => '[媒介来源]不存在!',
+            'items.required'        => '[咨询项目]不能为空!',
+            'items.exists'          => '[咨询项目]不存在!',
+            'reception.required'    => '[接待人员]不能为空!',
+            'reception.exists'      => '[接待人员]不存在!',
+            'doctor.exists'         => '[接诊医生]不存在!',
         ];
     }
 
@@ -205,12 +211,13 @@ class ReceptionRequest extends FormRequest
 
         // 新增
         if (request()->route()->getActionMethod() === 'create') {
-            $data['status']      = 1;   // 未成交
-            $data['doctor']      = $this->input('doctor');
-            $data['user_id']     = user()->id;
-            $data['consultant']  = $this->input('consultant');
-            $data['customer_id'] = $this->input('customer_id');
-            $data['receptioned'] = 0;
+            $data['status']         = ReceptionStatus::FAILED;   // 未成交
+            $data['doctor']         = $this->input('doctor');
+            $data['user_id']        = user()->id;
+            $data['consultant']     = $this->input('consultant');
+            $data['customer_id']    = $this->input('customer_id');
+            $data['receptioned']    = 0;
+            $data['appointment_id'] = $this->input('appointment_id');
         }
 
         return $data;

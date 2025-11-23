@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Reception;
+use App\Models\Appointment;
 use App\Enums\AppointmentType;
 use App\Enums\AppointmentStatus;
 use Illuminate\Support\Carbon;
@@ -51,42 +52,15 @@ class ReceptionObserver
         // 更新[顾客信息]
         $this->updateCustomerByCreated($reception);
 
-        // 更新[顾客今日预约]状态为已上门
-        $reception->customer->appointments()->where('status', 1)->where('date', Carbon::now()->toDateString())->update([
-            'status'         => 2, // 上门
-            'reception_id'   => $reception->id,
-            'reception_time' => $reception->created_at
-        ]);
-
-        // 没有预约记录,同步创建一条
-        if ($reception->customer->appointments()->where('date', Carbon::now()->toDateString())->doesntExist()) {
-            $store      = store();
-            $items_name = [];
-
-            foreach ($reception->items as $item) {
-                $items_name[] = get_item_name($item);
-            }
-            $reception->appointment()->create([
-                'customer_id'    => $reception->customer_id,
-                'reception_id'   => $reception->id,
-                'date'           => date('Y-m-d'),
-                'start'          => $reception->created_at,
-                'end'            => Carbon::now()->addMinutes($store->slot_duration)->format('Y-m-d H:i:s'),
-                'duration'       => $store->slot_duration,
-                'reception_time' => $reception->created_at,
-                'arrival_time'   => $reception->created_at,
-                'status'         => AppointmentStatus::ARRIVED,
-                'type'           => AppointmentType::COMING,
-                'items'          => $reception->items,
-                'items_name'     => implode(',', $items_name),
-                'department_id'  => $reception->department_id,
-                'technician_id'  => 0, // 未指定技师
-                'room_id'        => 0,  // 未指定诊室
-                'doctor_id'      => $reception->doctor,
-                'consultant_id'  => $reception->consultant,
-                'create_user_id' => $reception->user_id,
-                'remark'         => '前台分诊自动生成预约记录',
-            ]);
+        // [更新]或[创建]预约记录
+        $appointment = Appointment::query()->updateOrCreate(
+            ['id' => $reception->appointment_id],
+            $this->getAppointmentData($reception)
+        );
+        // 静默更新分诊记录的预约id
+        if (!$reception->appointment_id) {
+            $reception->appointment_id = $appointment->id;
+            $reception->saveQuietly();
         }
     }
 
@@ -224,5 +198,54 @@ class ReceptionObserver
         }
 
         $customer->update($update);
+    }
+
+    /**
+     * 准备用于创建或更新预约记录的数据
+     * @param Reception $reception
+     * @return array
+     */
+    private function getAppointmentData(Reception $reception): array
+    {
+        if ($reception->appointment_id) {
+            $appointment = Appointment::query()->find(
+                $reception->appointment_id
+            );
+            $data        = [
+                'status'         => AppointmentStatus::ARRIVED,
+                'reception_id'   => $reception->id,
+                'reception_time' => Carbon::now(),
+            ];
+
+            if (!$appointment->arrival_time) {
+                $data['arrival_time'] = Carbon::now();
+            }
+            return $data;
+        }
+
+        $store      = store();
+        $items_name = collect($reception->items)->map(fn($item) => get_item_name($item))->implode(',');
+
+        return [
+            'customer_id'    => $reception->customer_id,
+            'reception_id'   => $reception->id,
+            'date'           => date('Y-m-d'),
+            'start'          => $reception->created_at,
+            'end'            => Carbon::now()->addMinutes($store->slot_duration)->format('Y-m-d H:i:s'),
+            'duration'       => $store->slot_duration,
+            'reception_time' => $reception->created_at,
+            'arrival_time'   => $reception->created_at,
+            'status'         => AppointmentStatus::ARRIVED,
+            'type'           => AppointmentType::COMING,
+            'items'          => $reception->items,
+            'items_name'     => $items_name,
+            'department_id'  => $reception->department_id,
+            'technician_id'  => 0,
+            'room_id'        => 0,
+            'doctor_id'      => $reception->doctor,
+            'consultant_id'  => $reception->consultant,
+            'create_user_id' => $reception->user_id,
+            'remark'         => '前台分诊自动生成预约记录',
+        ];
     }
 }
