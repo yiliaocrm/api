@@ -113,12 +113,15 @@ class ExportController extends Controller
 
     /**
      * 预收账款变动明细表
-     * @param Request $request
-     * @return CustomerDepositDetailExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function customerDepositDetail(Request $request): CustomerDepositDetailExport
+    public function customerDepositDetail(ExportRequest $request): JsonResponse
     {
-        return new CustomerDepositDetailExport($request);
+        $name = $request->input('fileName', '预收账款明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new CustomerDepositDetailExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**

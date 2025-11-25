@@ -39,6 +39,7 @@ class ExportRequest extends FormRequest
             'inventoryAlarm' => $this->getInventoryAlarmRules(),
             'inventoryExpiry' => $this->getInventoryExpiryRules(),
             'customerProduct' => $this->getCustomerProductRules(),
+            'customerDepositDetail' => $this->getCustomerDepositDetailRules(),
             'salesPerformance' => $this->getSalesPerformanceRules(),
             'purchaseDetail' => $this->getPurchaseDetailRules(),
             'departmentPickingDetail' => $this->getDepartmentPickingDetailRules(),
@@ -62,6 +63,7 @@ class ExportRequest extends FormRequest
             'inventoryAlarm' => $this->getInventoryAlarmMessages(),
             'inventoryExpiry' => $this->getInventoryExpiryMessages(),
             'customerProduct' => $this->getCustomerProductMessages(),
+            'customerDepositDetail' => $this->getCustomerDepositDetailMessages(),
             'salesPerformance' => $this->getSalesPerformanceMessages(),
             'purchaseDetail' => $this->getPurchaseDetailMessages(),
             'departmentPickingDetail' => $this->getDepartmentPickingDetailMessages(),
@@ -523,6 +525,33 @@ class ExportRequest extends FormRequest
         ];
     }
 
+    private function getCustomerDepositDetailRules(): array
+    {
+        return [
+            'date'              => 'required|array|size:2',
+            'date.*'            => 'required|date',
+            'keyword'           => 'nullable|string|max:200',
+            'cashierable_type'  => 'nullable|string',
+            'fileName'          => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getCustomerDepositDetailMessages(): array
+    {
+        return [
+            'date.required'        => '[查询日期]不能为空',
+            'date.array'           => '[查询日期]格式错误',
+            'date.size'            => '[查询日期]必须包含开始和结束日期',
+            'date.*.required'      => '[查询日期]不能为空',
+            'date.*.date'          => '[查询日期]格式错误',
+            'keyword.string'       => '关键字格式错误',
+            'keyword.max'          => '关键字不能超过200个字符',
+            'cashierable_type.string' => '业务类型格式错误',
+            'fileName.string'      => '文件名称格式错误',
+            'fileName.max'         => '文件名称不能超过200个字符',
+        ];
+    }
+
     /**
      * 获取导出请求参数
      * @return array
@@ -537,6 +566,7 @@ class ExportRequest extends FormRequest
             'customerLog' => $this->only(['created_at', 'customer_id', 'action', 'user_id']),
             'customerGoods', 'customerProduct', 'cashierRefund', 'purchaseDetail', 'departmentPickingDetail', 'consumableDetail' => $this->only(['filters', 'keyword']),
             'cashierPay', 'cashierDetail' => $this->only(['filters', 'date', 'keyword']),
+            'customerDepositDetail' => $this->only(['date', 'keyword', 'cashierable_type']),
             'salesPerformance' => $this->only(['filters', 'created_at', 'keyword']),
             'customerIntegral' => $this->only(['created_at', 'type', 'keyword', 'expired']),
             'productRanking' => $this->only(['created_at', 'medium_id', 'type_id', 'sort', 'order']),

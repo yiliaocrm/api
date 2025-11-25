@@ -148,7 +148,7 @@ class ReportCashierController extends Controller
             ->from('customer_deposit_details', 'a')
             ->where('a.customer_id', '=', DB::raw("{$prefix}c.customer_id"))
             ->whereBetween('a.created_at', [
-                Carbon::parse($request->input('date.0')),
+                Carbon::parse($request->input('date.0'))->startOfDay(),
                 Carbon::parse($request->input('date.1'))->endOfDay()
             ])
             ->orderBy('a.id')
@@ -160,7 +160,7 @@ class ReportCashierController extends Controller
             ->from('customer_deposit_details', 'b')
             ->where('b.customer_id', '=', DB::raw("{$prefix}c.customer_id"))
             ->whereBetween('b.created_at', [
-                Carbon::parse($request->input('date.0')),
+                Carbon::parse($request->input('date.0'))->startOfDay(),
                 Carbon::parse($request->input('date.1'))->endOfDay()
             ])
             ->orderByDesc('b.id')
@@ -181,7 +181,7 @@ class ReportCashierController extends Controller
             ->from('customer_deposit_details', 'c')
             ->leftJoin('customer', 'customer.id', '=', 'c.customer_id')
             ->whereBetween('c.created_at', [
-                Carbon::parse($request->input('date.0')),
+                Carbon::parse($request->input('date.0'))->startOfDay(),
                 Carbon::parse($request->input('date.1'))->endOfDay()
             ])
             ->when($keyword, fn(Builder $query) => $query->whereLike('customer.name', "%{$keyword}%"))
@@ -218,6 +218,51 @@ class ReportCashierController extends Controller
             'rows'   => $query->items(),
             'total'  => $query->total(),
             'footer' => $footer
+        ]);
+    }
+
+    /**
+     * 预收款项变动明细表
+     * @param ReportCashierRequest $request
+     * @return JsonResponse
+     */
+    public function depositReceivedDetail(ReportCashierRequest $request): JsonResponse
+    {
+        $sort             = $request->input('sort', 'customer_deposit_details.created_at');
+        $rows             = $request->input('rows', 10);
+        $order            = $request->input('order', 'desc');
+        $keyword          = $request->input('keyword');
+        $cashierable_type = $request->input('cashierable_type');
+
+        $query = CustomerDepositDetail::query()
+            ->select([
+                'customer.id as customer_id',
+                'customer.name as customer_name',
+                'customer.idcard',
+                'customer_deposit_details.id',
+                'customer_deposit_details.cashier_id',
+                'customer_deposit_details.cashierable_type',
+                'customer_deposit_details.product_name',
+                'customer_deposit_details.goods_name',
+                'customer_deposit_details.before',
+                'customer_deposit_details.balance',
+                'customer_deposit_details.after',
+                'customer_deposit_details.created_at',
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'customer_deposit_details.customer_id')
+            ->whereBetween('customer_deposit_details.created_at', [
+                Carbon::parse($request->input('date.0'))->startOfDay(),
+                Carbon::parse($request->input('date.1'))->endOfDay()
+            ])
+            ->when($keyword, fn(Builder $query) => $query->whereLike('customer.name', "%{$keyword}%"))
+            ->when($cashierable_type, fn(Builder $query) => $query->where('customer_deposit_details.cashierable_type', $cashierable_type))
+            ->orderBy('customer_deposit_details.id', 'desc')
+            ->orderBy($sort, $order)
+            ->paginate($rows);
+
+        return response_success([
+            'rows'  => $query->items(),
+            'total' => $query->total()
         ]);
     }
 }

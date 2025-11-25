@@ -83,19 +83,6 @@ class ReportController extends Controller
     }
 
     /**
-     * 预收款项变动明细表
-     * @param CashierRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function cashierDepositDetail(CashierRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->cashierDepositDetail($request)
-        );
-    }
-
-    /**
      * 现场咨询明细表
      * @param ConsultantRepository $report
      * @param Request $request
