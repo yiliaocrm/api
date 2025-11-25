@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Web;
 
 use App\Models\Accounts;
 use App\Models\Department;
+use App\Models\CustomerDepositDetail;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\ReportCashierRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Database\Query\JoinClause;
-use App\Http\Requests\Web\ReportCashierRequest;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReportCashierController extends Controller
 {
@@ -125,6 +127,95 @@ class ReportCashierController extends Controller
 
         return response_success([
             'rows'   => $data,
+            'footer' => $footer
+        ]);
+    }
+
+    /**
+     * 预收账款表
+     * @param ReportCashierRequest $request
+     * @return JsonResponse
+     */
+    public function depositReceived(ReportCashierRequest $request): JsonResponse
+    {
+        $rows    = $request->input('rows', 10);
+        $prefix  = DB::getTablePrefix();
+        $keyword = $request->input('keyword');
+
+        // 期初
+        $before = CustomerDepositDetail::query()
+            ->select('before')
+            ->from('customer_deposit_details', 'a')
+            ->where('a.customer_id', '=', DB::raw("{$prefix}c.customer_id"))
+            ->whereBetween('a.created_at', [
+                Carbon::parse($request->input('date.0')),
+                Carbon::parse($request->input('date.1'))->endOfDay()
+            ])
+            ->orderBy('a.id')
+            ->limit(1);
+
+        // 期末
+        $after = CustomerDepositDetail::query()
+            ->select('after')
+            ->from('customer_deposit_details', 'b')
+            ->where('b.customer_id', '=', DB::raw("{$prefix}c.customer_id"))
+            ->whereBetween('b.created_at', [
+                Carbon::parse($request->input('date.0')),
+                Carbon::parse($request->input('date.1'))->endOfDay()
+            ])
+            ->orderByDesc('b.id')
+            ->limit(1);
+
+        $builder = CustomerDepositDetail::query()
+            ->select([
+                'customer.name as customer_name',
+                'customer.idcard',
+            ])
+            ->selectRaw("any_value ( {$prefix}c.id ) AS id")
+            ->selectSub($before, 'before')
+            ->selectSub($after, 'after')
+            ->addSelect(DB::raw("SUM( CASE WHEN {$prefix}c.balance > 0 THEN {$prefix}c.balance ELSE 0 END ) AS 'recharge'"))
+            ->addSelect(DB::raw("ABS(SUM( CASE WHEN {$prefix}c.balance < 0 AND {$prefix}c.cashierable_type <> 'App\\\\Models\\\\CashierRefund' THEN {$prefix}c.balance ELSE 0 END )) AS 'used'"))
+            ->addSelect(DB::raw("ABS(SUM( CASE WHEN {$prefix}c.balance < 0 AND {$prefix}c.cashierable_type = 'App\\\\Models\\\\CashierRefund' THEN {$prefix}c.balance ELSE 0 END )) AS 'refund'"))
+            ->from('customer_deposit_details', 'c')
+            ->leftJoin('customer', 'customer.id', '=', 'c.customer_id')
+            ->whereBetween('c.created_at', [
+                Carbon::parse($request->input('date.0')),
+                Carbon::parse($request->input('date.1'))->endOfDay()
+            ])
+            ->when($keyword, fn(Builder $query) => $query->whereLike('customer.name', "%{$keyword}%"))
+            ->groupBy('c.customer_id')
+            ->orderByDesc('id');
+
+        // 查询
+        $query = $builder->clone()->paginate($rows);
+
+        // 合计
+        $items = collect($query->items());
+        $table = DB::query()->fromSub($builder->clone(), 'sub');
+
+        $footer = [
+            [
+                'idcard'   => '页小计:',
+                'before'   => floatval($items->sum('before')),
+                'after'    => floatval($items->sum('after')),
+                'used'     => floatval($items->sum('used')),
+                'refund'   => floatval($items->sum('refund')),
+                'recharge' => floatval($items->sum('recharge')),
+            ],
+            [
+                'idcard'   => '总合计:',
+                'before'   => floatval($table->sum('before')),
+                'after'    => floatval($table->sum('after')),
+                'used'     => floatval($table->sum('used')),
+                'refund'   => floatval($table->sum('refund')),
+                'recharge' => floatval($table->sum('recharge')),
+            ]
+        ];
+
+        return response_success([
+            'rows'   => $query->items(),
+            'total'  => $query->total(),
             'footer' => $footer
         ]);
     }

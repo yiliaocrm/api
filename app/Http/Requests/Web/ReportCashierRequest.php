@@ -20,6 +20,7 @@ class ReportCashierRequest extends FormRequest
             default => [],
             'collect' => $this->getCollectRules(),
             'department' => $this->getDepartmentRules(),
+            'depositReceived' => $this->getDepositReceivedRules(),
         };
     }
 
@@ -29,6 +30,7 @@ class ReportCashierRequest extends FormRequest
             default => [],
             'collect' => $this->getCollectMessages(),
             'department' => $this->getDepartmentMessages(),
+            'depositReceived' => $this->getDepositReceivedMessages(),
         };
     }
 
@@ -68,6 +70,34 @@ class ReportCashierRequest extends FormRequest
             'created_at.*.date_format' => '[收款日期范围] Y-m-d',
             'user_id.integer'          => '[收费员]格式错误',
             'user_id.exists'           => '[收费员]不存在',
+        ];
+    }
+
+    private function getDepositReceivedRules(): array
+    {
+        return [
+            'page'    => 'nullable|integer|min:1',
+            'rows'    => 'nullable|integer|min:1|max:100',
+            'date'    => 'required|array|size:2',
+            'date.*'  => 'date_format:Y-m-d',
+            'keyword' => 'nullable|string|max:255',
+        ];
+    }
+
+    private function getDepositReceivedMessages(): array
+    {
+        return [
+            'page.integer'       => '[页码]必须是整数',
+            'page.min'           => '[页码]必须大于0',
+            'rows.integer'       => '[每页条数]必须是整数',
+            'rows.min'           => '[每页条数]必须大于0',
+            'rows.max'           => '[每页条数]不能超过100',
+            'date.required'      => '[日期范围]不能为空',
+            'date.array'         => '[日期范围]格式错误',
+            'date.size'          => '[日期范围]必须包含开始和结束日期',
+            'date.*.date_format' => '[日期范围]格式必须为 Y-m-d',
+            'keyword.string'     => '[关键词]必须是字符串',
+            'keyword.max'        => '[关键词]最多255个字符',
         ];
     }
 }

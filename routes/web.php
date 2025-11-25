@@ -825,7 +825,7 @@ Route::prefix('report')->group(function () {
     Route::post('cashier/list', [Web\ReportController::class, 'cashierList']);
     Route::get('cashier/collect', [Web\ReportCashierController::class, 'collect']);
     Route::post('cashier/deposit-detail', [Web\ReportController::class, 'cashierDepositDetail']);
-    Route::post('cashier/deposit-received', [Web\ReportController::class, 'cashierDepositReceived']);
+    Route::post('cashier/deposit-received', [Web\ReportCashierController::class, 'depositReceived']);
     Route::post('retail-outbound/detail', [Web\ReportController::class, 'retailOutboundDetail']);
     Route::post('treatment/detail', [Web\ReportController::class, 'treatmentDetail']);
     Route::post('erkai/detail', [Web\ReportController::class, 'erkaiDetail']);
