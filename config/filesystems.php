@@ -47,6 +47,15 @@ return [
             'report' => false,
         ],
 
+        // 导入文件保存
+        'import' => [
+            'driver' => 'local',
+            'root' => storage_path('app/imports'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
