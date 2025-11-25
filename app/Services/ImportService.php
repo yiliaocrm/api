@@ -1,14 +1,14 @@
 <?php
 namespace App\Services;
 
-use App\Imports\BaseImport;
 use App\Jobs\ImportJob;
+use App\Imports\BaseImport;
 use App\Models\ImportHistory;
 use App\Models\ImportTemplate;
 
 class ImportService
 {
-    public function import($historyId)
+    public function import($historyId): void
     {
         //
         $history = ImportHistory::query()->where('id', $historyId)->first();

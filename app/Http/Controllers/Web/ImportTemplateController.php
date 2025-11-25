@@ -8,6 +8,7 @@ use App\Services\ImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ImportTemplateController extends Controller
 {
@@ -85,15 +86,14 @@ class ImportTemplateController extends Controller
 
     /**
      * @param $id
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * @return BinaryFileResponse
      */
-    public function download($id)
+    public function download($id): BinaryFileResponse
     {
         $template = $this->importTemplateModel->where('id', $id)->value('template');
 
         return Response::download(Storage::disk('import')->path($template));
     }
-
 
     public function import($id, Request $request, ImportService $importService)
     {

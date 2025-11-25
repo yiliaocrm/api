@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property $id
@@ -21,32 +21,21 @@ use Illuminate\Database\Eloquent\Model;
  * @property $created_at
  * @property $updated_at
  */
-class ImportHistory extends Model
+class ImportHistory extends BaseModel
 {
-    //
     protected $table = 'import_history';
-
-    protected $fillable = [
-        'id',
-        'template_id',
-        'import_header',
-        'file_name',
-        'file_path',
-        'file_size',
-        'file_type',
-        'status',
-        'total_rows',
-        'success_rows',
-        'fail_rows',
-        'create_user_id',
-        'created_at',
-        'updated_at'
-    ];
-
 
     const int UN_START = 0;
     const int SUCCESS = 1;
     const int FAIL = 2;
+
+    /**
+     * 关联导入模板
+     */
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(ImportTemplate::class);
+    }
 
     public function importHeader(): Attribute
     {

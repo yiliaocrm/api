@@ -47,6 +47,13 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     protected string $file;
 
     /**
+     * 原始文件名
+     *
+     * @var string
+     */
+    protected string $originalFileName;
+
+    /**
      * 历史记录 ID
      *
      * @var int
@@ -144,10 +151,11 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
             }
             $this->filesize = filesize($file);
             $this->file = $file;
+            $this->originalFileName = pathinfo($file, PATHINFO_BASENAME);
         } else {
             $this->filesize = $file->getSize();
+            $this->originalFileName = $file->getClientOriginalName();
             $path = Storage::disk('import')->putFile(date('Y-m-d'), $file);
-
             $this->file = Storage::disk('import')->path($path);
         }
     }
@@ -243,7 +251,7 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
         $history->template_id = $this->templateId;
         $history->file_size = $this->filesize;
         $history->import_header = json_encode(new HeadingRowImport()->toCollection($this->file)->first()->first());
-        $history->file_name = pathinfo($this->file, PATHINFO_BASENAME);
+        $history->file_name = $this->originalFileName;
         $history->file_path = $this->file;
         $history->file_type = pathinfo($this->file, PATHINFO_EXTENSION);
         $history->status = ImportHistory::UN_START;

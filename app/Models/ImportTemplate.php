@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @property $id
@@ -17,7 +16,7 @@ use Illuminate\Support\Str;
  * @property $created_at
  * @property $updated_at
  */
-class ImportTemplate extends Model
+class ImportTemplate extends BaseModel
 {
     //
     protected $table = 'import_templates';

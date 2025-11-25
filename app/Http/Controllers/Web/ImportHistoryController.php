@@ -1,13 +1,15 @@
 <?php
+
 namespace App\Http\Controllers\Web;
 
-use App\Exports\HistoryErrorRecordsExport;
-use App\Http\Controllers\Controller;
 use App\Models\ImportHistory;
-use App\Models\ImportHistoryRecord;
 use App\Services\ImportService;
-use Illuminate\Http\Request;
+use App\Models\ImportHistoryRecord;
+use App\Http\Controllers\Controller;
+use App\Exports\HistoryErrorRecordsExport;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ImportHistoryController extends Controller
@@ -18,19 +20,26 @@ class ImportHistoryController extends Controller
     {
 
     }
-    public function index(Request $request)
+
+    /**
+     * 历史导入记录
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function index(Request $request): JsonResponse
     {
-        $histories = $this->importHistoryModel::query()
-                ->when($templateId = $request->get('template_id'), function ($query) use ($templateId) {
-                    $query->where('template_id', $templateId);
-                })
-                ->orderByDesc('id')
-                ->paginate($request->get('rows', 10));
-
+        $rows  = $request->input('rows', 10);
+        $sort  = $request->input('sort', 'id');
+        $order = $request->input('order', 'desc');
+        $query = ImportHistory::query()
+            ->with([
+                'template:id,title',
+            ])
+            ->orderBy($sort, $order)
+            ->paginate($rows);
         return response_success([
-            'rows' => $histories->items(),
-
-            'total' => $histories->total()
+            'rows'  => $query->items(),
+            'total' => $query->total()
         ]);
     }
 
@@ -58,7 +67,7 @@ class ImportHistoryController extends Controller
      *
      * @param $id
      * @param ImportService $importService
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function importRecords($id, ImportService $importService)
     {
