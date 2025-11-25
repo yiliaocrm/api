@@ -101,6 +101,8 @@ class CustomerProfileController extends Controller
         );
         $customer->load([
             'job:id,name',
+            'tags',
+            'phones',
             'economic:id,name',
             'consultantUser:id,name',
             'ascriptionUser:id,name',
