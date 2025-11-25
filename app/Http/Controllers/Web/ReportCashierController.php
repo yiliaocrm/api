@@ -168,6 +168,7 @@ class ReportCashierController extends Controller
 
         $builder = CustomerDepositDetail::query()
             ->select([
+                'customer.id as customer_id',
                 'customer.name as customer_name',
                 'customer.idcard',
             ])
