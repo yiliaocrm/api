@@ -953,10 +953,10 @@ class WebMenuTableSeeder extends Seeder
             'icon'       => 'icon-paper-pay',
             'path'       => '/report/cashier-deposit',
             'route'      => 'ReportCashierDeposit',
+            'url'        => '/new#/report/finance/cashier-deposit',
             'meta'       => [
                 'title' => '预收账款表'
             ],
-            'component'  => 'report/cashier-deposit',
             'remark'     => '资产负债表中:预收账款表',
             'permission' => 'report.cashier.deposit',
         ]);
