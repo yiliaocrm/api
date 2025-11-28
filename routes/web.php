@@ -27,6 +27,7 @@ Route::controller(Web\AuthController::class)->prefix('auth')->group(function () 
 
 Route::controller(Web\MessageController::class)->prefix('message')->group(function () {
     Route::get('export', 'export');
+    Route::get('import', 'import');
 });
 
 Route::controller(Web\DownloadController::class)->prefix('download')->group(function () {
