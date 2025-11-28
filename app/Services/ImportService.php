@@ -3,23 +3,23 @@ namespace App\Services;
 
 use App\Jobs\ImportJob;
 use App\Imports\BaseImport;
-use App\Models\ImportHistory;
+use App\Models\ImportTask;
 use App\Models\ImportTemplate;
 
 class ImportService
 {
-    public function import($historyId): void
+    public function import($taskId): void
     {
         //
-        $history = ImportHistory::query()->where('id', $historyId)->first();
+        $task = ImportTask::query()->where('id', $taskId)->first();
 
-        $template = ImportTemplate::query()->where('id', $history->template_id)->first();
+        $template = ImportTemplate::query()->where('id', $task->template_id)->first();
 
-        // 是否使用异步导入，如果导入历史的成功行数（1000） > async_limit （500） 限制
-        if ($history->success_rows > $template->async_limit) {
-            ImportJob::dispatch($template, $history);
+        // 是否使用异步导入，如果导入任务的成功行数（1000） > async_limit （500） 限制
+        if ($task->success_rows > $template->async_limit) {
+            ImportJob::dispatch($template, $task);
         } else {
-            $template->use_import->import($historyId);
+            $template->use_import->import($taskId);
         }
     }
 

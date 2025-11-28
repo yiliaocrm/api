@@ -2,11 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Models\ImportTask;
 use App\Imports\BaseImport;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Queue\Queueable;
 use App\Models\ImportTemplate;
-use App\Models\ImportHistory;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 
 class ImportJob implements ShouldQueue, ShouldBeUnique
@@ -18,7 +18,7 @@ class ImportJob implements ShouldQueue, ShouldBeUnique
      */
     public function __construct(
         protected ImportTemplate $importTemplate,
-        protected ImportHistory $importHistory
+        protected ImportTask     $importTask
     )
     {
         //
@@ -32,7 +32,7 @@ class ImportJob implements ShouldQueue, ShouldBeUnique
         /** @var BaseImport $useImport */
         $useImport = $this->importTemplate->use_import;
 
-        $useImport->import($this->importHistory->id);
+        $useImport->import($this->importTask->id);
     }
 
     /**
@@ -40,6 +40,6 @@ class ImportJob implements ShouldQueue, ShouldBeUnique
      */
     public function unique(): mixed
     {
-        return $this->importHistory->id;
+        return $this->importTask->id;
     }
 }

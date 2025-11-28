@@ -2,39 +2,30 @@
 
 namespace App\Models;
 
+use App\Enums\ImportTaskStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property $id
- * @property $history_id
- * @property $row_data
- * @property $status
- * @property $error_msg
- * @property $create_user_id
- * @property $created_at
- * @property $updated_at
- */
-class ImportHistoryRecord extends Model
+class ImportTaskDetail extends BaseModel
 {
-    //
-    protected $table = 'import_history_records';
+    /**
+     * 获取模型的类型转换
+     */
+    protected function casts(): array
+    {
+        return [
+            'status' => ImportTaskStatus::class,
+        ];
+    }
 
-    protected $fillable = [
-        'id',
-        'history_id',
-        'row_data',
-        'status',
-        'error_msg',
-        'create_user_id',
-        'created_at',
-        'updated_at'
-    ];
-
-
-    const int UN_START = 0;
-    const int SUCCESS = 1;
-    const int FAIL = 2;
+    /**
+     * 导入任务
+     * @return BelongsTo
+     */
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(ImportTask::class);
+    }
 
     /**
      * 保存行数据
@@ -45,7 +36,6 @@ class ImportHistoryRecord extends Model
     {
         return Attribute::make(
             get: fn($value) => json_decode($value, true),
-
             set: fn($value) => json_encode($value, JSON_UNESCAPED_UNICODE),
         );
     }
@@ -59,8 +49,18 @@ class ImportHistoryRecord extends Model
     {
         return Attribute::make(
             get: fn($value) => json_decode($value, true),
-
             set: fn($value) => json_encode($value, JSON_UNESCAPED_UNICODE),
+        );
+    }
+
+    /**
+     * 导入状态文本
+     * @return Attribute
+     */
+    public function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->status->getLabel(),
         );
     }
 }

@@ -1,13 +1,16 @@
 <?php
+
 namespace App\Imports;
 
-use App\Models\ImportHistory;
-use App\Models\ImportHistoryRecord;
-use App\Models\ImportTemplate;
 use Exception;
+use App\Models\ImportTask;
+use App\Models\ImportTemplate;
+use App\Enums\ImportTaskStatus;
+use App\Models\ImportTaskDetail;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use App\Enums\ImportTaskDetailStatus;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
@@ -54,11 +57,11 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     protected string $originalFileName;
 
     /**
-     * 历史记录 ID
+     * 任务记录 ID
      *
      * @var int
      */
-    protected int $historyId;
+    protected int $taskId;
 
     /**
      * 成功行数
@@ -93,16 +96,16 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     /**
      * 外部导入
      *
-     * @param $historyId
+     * @param $taskId
      * @return true
      * @throws Exception
      */
-    public function import($historyId): true
+    public function import($taskId): true
     {
         try {
-            ImportHistoryRecord::query()
-                ->where('history_id', $historyId)
-                ->where('status', ImportHistoryRecord::UN_START)
+            ImportTaskDetail::query()
+                ->where('task_id', $taskId)
+                ->where('status', ImportTaskDetailStatus::PENDING)
                 ->chunk($this->chunkSize(), function ($records) {
                     $this->handle($records);
                 });
@@ -128,9 +131,9 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
         // 导入
         Excel::import($this, $this->file);
 
-        // 更新导入历史的数据
-        ImportHistory::query()->where('id', $this->historyId)->update([
-            'fail_rows' => $this->dealWithFailureRows(),
+        // 更新导入任务的数据
+        ImportTask::query()->where('id', $this->taskId)->update([
+            'fail_rows'    => $this->dealWithFailureRows(),
             'success_rows' => $this->successRows
         ]);
 
@@ -146,17 +149,17 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     {
         // 导入前先把文件信息记录下来
         if (is_string($file)) {
-            if (! file_exists($file)) {
+            if (!file_exists($file)) {
                 throw new Exception("文件 {$file} 不存在");
             }
-            $this->filesize = filesize($file);
-            $this->file = $file;
+            $this->filesize         = filesize($file);
+            $this->file             = $file;
             $this->originalFileName = pathinfo($file, PATHINFO_BASENAME);
         } else {
-            $this->filesize = $file->getSize();
+            $this->filesize         = $file->getSize();
             $this->originalFileName = $file->getClientOriginalName();
-            $path = Storage::disk('import')->putFile(date('Y-m-d'), $file);
-            $this->file = Storage::disk('import')->path($path);
+            $path                   = Storage::disk('import')->putFile(date('Y-m-d'), $file);
+            $this->file             = Storage::disk('import')->path($path);
         }
     }
 
@@ -169,20 +172,20 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     protected function dealWithFailureRows(): int
     {
         // 收集错误行数
-        $failures = $this->failures();
+        $failures       = $this->failures();
         $failureRecords = [];
         foreach ($failures as $failure) {
             $failureRecords[] = [
-                'history_id' => $this->historyId,
-                'status' => ImportHistoryRecord::FAIL,
-                'row_data' => json_encode($failure->values(), JSON_UNESCAPED_UNICODE),
-                'error_msg' => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
+                'task_id'    => $this->taskId,
+                'status'     => ImportTaskDetailStatus::FAILED,
+                'row_data'   => json_encode($failure->values(), JSON_UNESCAPED_UNICODE),
+                'error_msg'  => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
         }
 
-        array_map(fn($record) => ImportHistoryRecord::query()->insert($record), array_chunk($failureRecords, 100));
+        array_map(fn($record) => ImportTaskDetail::query()->insert($record), array_chunk($failureRecords, 100));
 
         return count($failureRecords);
     }
@@ -197,7 +200,7 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     {
         $chunkSize = ImportTemplate::query()->where('id', $this->templateId)->value('chunk_size');
 
-        return intval($chunkSize ? : 100);
+        return intval($chunkSize ?: 100);
     }
 
     /**
@@ -213,15 +216,15 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
         // TODO: Implement collection() method.
         foreach ($collection as $item) {
             $records[] = [
-                'history_id' => $this->historyId,
-                'row_data' => json_encode($item, JSON_UNESCAPED_UNICODE),
-                'status' => ImportHistoryRecord::UN_START,
+                'task_id'    => $this->taskId,
+                'row_data'   => json_encode($item, JSON_UNESCAPED_UNICODE),
+                'status'     => ImportTaskDetailStatus::PENDING,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
         }
 
-        if (ImportHistoryRecord::query()->insert($records)) {
+        if (ImportTaskDetail::query()->insert($records)) {
             $this->successRows += count($records);
         }
     }
@@ -235,30 +238,30 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     {
         return [
             // Handle by a closure.
-            BeforeImport::class => fn (BeforeImport $event) => $this->saveImportHistory($event)
+            BeforeImport::class => fn(BeforeImport $event) => $this->saveImportHistory($event)
         ];
     }
 
     /**
-     * 导入之前保存一份导入历史的数据
+     * 导入之前保存一份导入任务的数据
      *
      * @param BeforeImport $event
      * @return void
      */
     protected function saveImportHistory(BeforeImport $event): void
     {
-        $history = new ImportHistory();
-        $history->template_id = $this->templateId;
-        $history->file_size = $this->filesize;
-        $history->import_header = json_encode(new HeadingRowImport()->toCollection($this->file)->first()->first());
-        $history->file_name = $this->originalFileName;
-        $history->file_path = $this->file;
-        $history->file_type = pathinfo($this->file, PATHINFO_EXTENSION);
-        $history->status = ImportHistory::UN_START;
-        $history->total_rows =  array_values($event->reader->getTotalRows())[0] - 1;
-        $history->create_user_id = 0;
-        $history->save();
+        $task                 = new ImportTask();
+        $task->template_id    = $this->templateId;
+        $task->file_size      = $this->filesize;
+        $task->import_header  = json_encode(new HeadingRowImport()->toCollection($this->file)->first()->first());
+        $task->file_name      = $this->originalFileName;
+        $task->file_path      = $this->file;
+        $task->file_type      = pathinfo($this->file, PATHINFO_EXTENSION);
+        $task->status         = ImportTaskStatus::PENDING;
+        $task->total_rows     = array_values($event->reader->getTotalRows())[0] - 1;
+        $task->create_user_id = 0;
+        $task->save();
 
-        $this->historyId = $history->getKey();
+        $this->taskId = $task->getKey();
     }
 }

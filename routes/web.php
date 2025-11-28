@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web as Web;
 use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -1037,24 +1038,11 @@ Route::controller(Web\SmsTemplateController::class)->prefix('sms-template')->gro
     Route::get('remove', 'remove');
 });
 
-// 导入模块
-Route::prefix('import')->group(function (){
-    // 导入模板
-    Route::controller(Web\ImportTemplateController::class)->prefix('template')->group(function () {
-       Route::get('', 'index');
-       Route::post('', 'store');
-       Route::get('{id}', 'show');
-       Route::post('update/{id}', 'update');
-       Route::post('destroy/{id}', 'destroy');
-       Route::get('download/{id}', 'download');
-       Route::post('{id}/data', 'import');
-    });
-    Route::resource('template', Web\ImportTemplateController::class);
-    // 导入历史
-    Route::controller(Web\ImportHistoryController::class)->prefix('history')->group(function (){
-        Route::get('', 'index');
-        Route::get('{id}', 'records');
-        Route::get('error/records/{id}', 'exportErrorRecord');
-        Route::post('{id}/records', 'importRecords');
-    });
+// 导入任务
+Route::controller(Web\ImportTaskController::class)->prefix('import-task')->group(function () {
+    Route::get('index', 'index');
+    Route::post('create', 'create');
+    Route::get('details', 'details');
+    Route::get('import', 'import');
+    Route::get('export', 'export');
 });

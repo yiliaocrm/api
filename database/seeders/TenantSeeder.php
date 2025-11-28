@@ -61,6 +61,7 @@ class TenantSeeder extends Seeder
             Tenant\CustomerPhoneRelationshipSeeder::class,
             Tenant\SmsCategorySeeder::class,
             Tenant\SmsScenarioSeeder::class,
+            Tenant\ImportTemplateSeeder::class,
         ]);
     }
 }

@@ -21,8 +21,7 @@ return new class extends Migration {
             $table->timestamps();
             $table->comment('导入文件模板');
         });
-
-        Schema::create('import_history', function (Blueprint $table) {
+        Schema::create('import_tasks', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('template_id')->default(1)->comment('导入模板');
             $table->json('import_header')->comment('导入表头数据');
@@ -36,17 +35,16 @@ return new class extends Migration {
             $table->integer('fail_rows')->comment('未导入行数')->default(0);
             $table->unsignedInteger('create_user_id')->default(1)->comment('创建人');
             $table->timestamps();
-            $table->comment('导入模板历史');
+            $table->comment('导入任务表');
         });
-
-        Schema::create('import_history_records', function (Blueprint $table) {
+        Schema::create('import_task_details', function (Blueprint $table) {
             $table->id();
-            $table->integer('history_id')->comment('导入历史');
+            $table->integer('task_id')->comment('导入任务');
             $table->json('row_data')->comment('行数据');
             $table->tinyInteger('status')->comment('状态:0=未导入,1=成功,2=失败');
             $table->string('error_msg')->nullable()->comment('错误信息');
             $table->timestamps();
-            $table->comment('导入记录');
+            $table->comment('导入任务明细表');
         });
     }
 
@@ -55,9 +53,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        //
         Schema::drop('import_templates');
-        Schema::drop('import_history');
-        Schema::drop('import_history_records');
+        Schema::drop('import_tasks');
+        Schema::drop('import_task_details');
     }
 };
