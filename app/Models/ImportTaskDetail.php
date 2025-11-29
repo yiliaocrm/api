@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\ImportTaskStatus;
+use App\Enums\ImportTaskDetailStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,7 +14,7 @@ class ImportTaskDetail extends BaseModel
     protected function casts(): array
     {
         return [
-            'status' => ImportTaskStatus::class,
+            'status' => ImportTaskDetailStatus::class,
         ];
     }
 

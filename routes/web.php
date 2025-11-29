@@ -1045,4 +1045,5 @@ Route::controller(Web\ImportTaskController::class)->prefix('import-task')->group
     Route::get('details', 'details');
     Route::get('import', 'import');
     Route::get('export', 'export');
+    Route::get('remove', 'remove');
 });

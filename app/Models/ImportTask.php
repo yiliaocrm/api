@@ -25,7 +25,7 @@ class ImportTask extends BaseModel
      */
     public function details(): HasMany
     {
-        return $this->hasMany(ImportTaskDetail::class);
+        return $this->hasMany(ImportTaskDetail::class, 'task_id', 'id');
     }
 
     /**

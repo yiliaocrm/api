@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Exports\ImportTaskDetailExport;
 use Throwable;
 use App\Models\ImportTask;
 use App\Models\ImportTemplate;
 use App\Services\ImportService;
 use App\Models\ImportTaskDetail;
 use App\Http\Controllers\Controller;
+use App\Exports\ImportTaskDetailExport;
 use App\Http\Requests\Web\ImportTaskRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Builder;
@@ -133,6 +133,26 @@ class ImportTaskController extends Controller
 
         // 分派异步导出任务
         dispatch(new ImportTaskDetailExport($request->all(), $exportTask, user()->id));
+
+        return response_success();
+    }
+
+    /**
+     * 删除导入任务
+     * @param ImportTaskRequest $request
+     * @return JsonResponse
+     */
+    public function remove(ImportTaskRequest $request): JsonResponse
+    {
+        $task = ImportTask::query()->find(
+            $request->input('id')
+        );
+
+        // 删除关联的明细数据
+        $task->details()->delete();
+
+        // 删除任务主记录
+        $task->delete();
 
         return response_success();
     }

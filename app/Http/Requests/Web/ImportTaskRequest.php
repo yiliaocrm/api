@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Web;
 
 use App\Enums\ExportTaskStatus;
+use App\Enums\ImportTaskStatus;
 use App\Models\ExportTask;
 use App\Models\ImportTask;
 use Illuminate\Support\Str;
@@ -26,6 +27,7 @@ class ImportTaskRequest extends FormRequest
             'details' => $this->getDetailsRules(),
             'import' => $this->getImportRules(),
             'export' => $this->getExportRules(),
+            'remove' => $this->getRemoveRules(),
             default => []
         };
     }
@@ -42,6 +44,7 @@ class ImportTaskRequest extends FormRequest
             'details' => $this->getDetailsMessages(),
             'import' => $this->getImportMessages(),
             'export' => $this->getExportMessages(),
+            'remove' => $this->getRemoveMessages(),
             default => []
         };
     }
@@ -164,6 +167,42 @@ class ImportTaskRequest extends FormRequest
             'task_id.exists'   => '[任务ID]不存在!',
             'status.integer'   => '[状态]必须是数字!',
             'status.in'        => '[状态]值无效，只能是0(成功)或2(失败)!',
+        ];
+    }
+
+    /**
+     * 获取remove方法的验证规则
+     *
+     * @return array
+     */
+    private function getRemoveRules(): array
+    {
+        return [
+            'id' => [
+                'required',
+                'integer',
+                'exists:import_tasks,id',
+                function ($attribute, $value, $fail) {
+                    $task = ImportTask::query()->find($value);
+                    if ($task && $task->status === ImportTaskStatus::IMPORTING) {
+                        $fail('[导入任务]正在导入中，不允许删除!');
+                    }
+                },
+            ],
+        ];
+    }
+
+    /**
+     * 获取remove方法的错误消息
+     *
+     * @return array
+     */
+    private function getRemoveMessages(): array
+    {
+        return [
+            'id.required' => '[任务ID]不能为空!',
+            'id.integer'  => '[任务ID]必须是数字!',
+            'id.exists'   => '[任务ID]不存在!',
         ];
     }
 
