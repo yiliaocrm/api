@@ -655,6 +655,11 @@ class PermissionActionSeeder extends Seeder
                 'except'     => 'info',
             ],
             [
+                'permission' => 'import.index',
+                'controller' => 'App\Http\Controllers\Web\ImportTaskController',
+                'action'     => '*',
+            ],
+            [
                 'permission' => 'prescription.frequency.manage',
                 'controller' => 'App\Http\Controllers\Web\PrescriptionFrequencyController',
                 'action'     => '*',
