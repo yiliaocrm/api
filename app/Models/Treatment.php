@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\TreatmentStatus;
+use App\Traits\QueryConditionsTrait;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,15 +12,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Treatment extends BaseModel
 {
-    use HasUuids;
+    use HasUuids, QueryConditionsTrait;
 
     protected $table = 'treatment';
-    protected $keyType = 'string';
-    public $incrementing = false;
 
     protected function casts(): array
     {
         return [
+            'status'       => TreatmentStatus::class,
             'participants' => 'array',
         ];
     }
@@ -29,6 +31,15 @@ class Treatment extends BaseModel
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * 执行科室
+     * @return BelongsTo
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     /**
@@ -65,5 +76,25 @@ class Treatment extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 项目信息
+     * @return BelongsTo
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * 状态文字
+     * @return Attribute
+     */
+    protected function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->status?->getLabel(),
+        );
     }
 }

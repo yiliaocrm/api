@@ -1,30 +1,96 @@
 <?php
 
-namespace App\Http\Requests\Treatment;
+namespace App\Http\Requests\Web;
 
 use App\Models\Role;
-use Ramsey\Uuid\Uuid;
+use App\Models\Treatment;
+use App\Rules\Web\SceneRule;
+use App\Enums\TreatmentStatus;
 use App\Models\CustomerProduct;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateRequest extends FormRequest
+class TreatmentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules(): array
+    {
+        return match (request()->route()->getActionMethod()) {
+            'record' => $this->getRecordRules(),
+            'create' => $this->getCreateRules(),
+            'undo' => $this->getUndoRules(),
+            default => []
+        };
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     */
+    public function messages(): array
+    {
+        return match (request()->route()->getActionMethod()) {
+            'record' => $this->getRecordMessages(),
+            'create' => $this->getCreateMessages(),
+            'undo' => $this->getUndoMessages(),
+            default => []
+        };
+    }
+
+    /**
+     * 划扣记录列表 - 验证规则
+     */
+    private function getRecordRules(): array
+    {
+        return [
+            'date'    => 'nullable|array|size:2',
+            'date.*'  => 'required_with:date|date|date_format:Y-m-d',
+            'keyword' => 'nullable|string|max:255',
+            'sort'    => 'nullable|string|max:255',
+            'order'   => 'nullable|string|in:asc,desc',
+            'rows'    => 'nullable|integer|min:1|max:1000',
+            'filters' => [
+                'nullable',
+                'array',
+                new SceneRule('TreatmentRecord')
+            ],
+        ];
+    }
+
+    /**
+     * 划扣记录列表 - 错误消息
+     */
+    private function getRecordMessages(): array
+    {
+        return [
+            'date.array'           => '[查询日期]格式不正确',
+            'date.size'            => '[查询日期]必须包含开始和结束日期',
+            'date.*.required_with' => '[查询日期]格式不正确',
+            'date.*.date'          => '[查询日期]格式不正确',
+            'date.*.date_format'   => '[查询日期]格式必须为Y-m-d',
+            'keyword.string'       => '[关键字]格式不正确',
+            'keyword.max'          => '[关键字]不能超过255个字符',
+            'sort.string'          => '[排序字段]格式不正确',
+            'sort.max'             => '[排序字段]不能超过255个字符',
+            'order.string'         => '[排序方式]格式不正确',
+            'order.in'             => '[排序方式]只能是asc或desc',
+            'rows.integer'         => '[每页数量]必须为整数',
+            'rows.min'             => '[每页数量]至少为1',
+            'rows.max'             => '[每页数量]不能超过1000',
+        ];
+    }
+
+    /**
+     * 创建划扣记录 - 验证规则
+     */
+    private function getCreateRules(): array
     {
         return [
             'customer_product_id'      => [
@@ -32,13 +98,15 @@ class CreateRequest extends FormRequest
                 function ($attribute, $customer_product_id, $fail) {
                     $customerProduct = CustomerProduct::query()->find($customer_product_id);
                     if (!$customerProduct) {
-                        return $fail('没有找到消费项目!');
+                        $fail('没有找到消费项目!');
+                        return;
                     }
                     if ($customerProduct->leftover == 0) {
-                        return $fail('[剩余次数]为0,无法划扣!');
+                        $fail('[剩余次数]为0,无法划扣!');
+                        return;
                     }
                     if ($customerProduct->leftover < $this->input('form.times')) {
-                        return $fail('[剩余次数]小于[划扣次数]');
+                        $fail('[剩余次数]小于[划扣次数]');
                     }
                     // 后期判断项目是否过期
                 }
@@ -57,7 +125,10 @@ class CreateRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * 创建划扣记录 - 错误消息
+     */
+    private function getCreateMessages(): array
     {
         return [
             'customer_product_id.required'              => '缺少customer_product_id参数',
@@ -72,12 +143,47 @@ class CreateRequest extends FormRequest
     }
 
     /**
+     * 撤销划扣记录 - 验证规则
+     */
+    private function getUndoRules(): array
+    {
+        return [
+            'id' => [
+                'required',
+                Rule::exists('treatment')->where(function ($query) {
+                    $query->where('id', $this->input('id'))->where('status', TreatmentStatus::NORMAL);
+                })
+            ]
+        ];
+    }
+
+    /**
+     * 撤销划扣记录 - 错误消息
+     */
+    private function getUndoMessages(): array
+    {
+        return [
+            'id.required' => '缺少id参数',
+            'id.exists'   => '状态不正确,无法撤销!'
+        ];
+    }
+
+    /**
      * 划扣信息
      * @param $customerProduct
      * @return array
      */
-    public function formData($customerProduct): array
+    public function formData($customerProduct = null): array
     {
+        // 撤销操作
+        if (request()->route()->getActionMethod() === 'undo') {
+            return [
+                'status'       => TreatmentStatus::CANCELLED,
+                'undo_user_id' => user()->id
+            ];
+        }
+
+        // 创建操作
         $price        = (($customerProduct->income + $customerProduct->deposit) / $customerProduct->times) * $this->input('form.times');
         $coupon       = ($customerProduct->coupon / $customerProduct->times) * $this->input('form.times');
         $arrearage    = ($customerProduct->arrearage / $customerProduct->times) * $this->input('form.times');
@@ -105,7 +211,7 @@ class CreateRequest extends FormRequest
             'participants'        => $participants,
             'remark'              => $this->input('form.remark'),
             'user_id'             => user()->id,
-            'status'              => 1
+            'status'              => TreatmentStatus::NORMAL
         ];
     }
 
@@ -169,6 +275,47 @@ class CreateRequest extends FormRequest
     }
 
     /**
+     * 业绩反向操作（撤销时使用）
+     * @param $cashier_id
+     * @param $treatment
+     * @param $reception_type
+     * @return array
+     */
+    public function salesPerformanceDataForUndo($cashier_id, $treatment, $reception_type): array
+    {
+        $data = [];
+
+        if (!empty($treatment->participants)) {
+            foreach ($treatment->participants as $v) {
+                $data[] = [
+                    'cashier_id'     => $cashier_id,
+                    'customer_id'    => $treatment->customer_id,
+                    'position'       => 3,  // 项目服务
+                    'table_name'     => 'App\Models\Treatment',
+                    'table_id'       => $treatment->id,
+                    'user_id'        => $v['user_id'],
+                    'reception_type' => $reception_type,
+                    'package_id'     => $treatment->package_id,
+                    'package_name'   => $treatment->package_name,
+                    'product_id'     => $treatment->product_id,
+                    'product_name'   => $treatment->product_name,
+                    'goods_id'       => null,
+                    'goods_name'     => null,
+                    'payable'        => 0,
+                    'income'         => 0,
+                    'arrearage'      => $treatment->arrearage,
+                    'deposit'        => 0,
+                    'amount'         => -1 * abs($treatment->price),  // 计提金额
+                    'rate'           => 100,
+                    'remark'         => get_user_name($treatment->undo_user_id) . '<撤销划扣>'
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * 插入回访提醒
      * @param $customer
      * @param $participants
@@ -216,7 +363,7 @@ class CreateRequest extends FormRequest
             }
 
             $data[] = [
-                'id'            => Uuid::uuid4()->toString(),
+                'id'            => Str::uuid7()->toString(),
                 'customer_id'   => $customer->id,
                 'type'          => $followup['type_id'],
                 'status'        => 1,
@@ -235,5 +382,22 @@ class CreateRequest extends FormRequest
 
 
         return $data;
+    }
+
+    /**
+     * 更新顾客最后一次划扣时间
+     * @param $treatment
+     * @return array
+     */
+    public function lastTreatmentData($treatment): array
+    {
+        $record = Treatment::query()
+            ->where('customer_id', $treatment->customer_id)
+            ->where('id', '<>', $treatment->id)
+            ->orderByDesc('created_at')
+            ->first();
+        return [
+            'last_treatment' => $record ? $record->created_at : null
+        ];
     }
 }

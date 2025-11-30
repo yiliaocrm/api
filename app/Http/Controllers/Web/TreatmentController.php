@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Treatment\UndoRequest;
-use App\Http\Requests\Treatment\CreateRequest;
 use Exception;
 use Throwable;
 use Carbon\Carbon;
-use App\Exceptions\HisException;
 use App\Models\Treatment;
-use App\Models\ProductType;
 use App\Models\CustomerProduct;
+use App\Exceptions\HisException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
+use App\Http\Requests\Web\TreatmentRequest;
 
 class TreatmentController extends Controller
 {
@@ -75,59 +74,48 @@ class TreatmentController extends Controller
 
     /**
      * 划扣记录
-     * @param Request $request
+     * @param TreatmentRequest $request
      * @return JsonResponse
      */
-    public function record(Request $request): JsonResponse
+    public function record(TreatmentRequest $request): JsonResponse
     {
-        $sort  = $request->input('sort', 'treatment.created_at');
-        $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
-        $query = Treatment::query()
+        $sort    = $request->input('sort', 'treatment.created_at');
+        $order   = $request->input('order', 'desc');
+        $rows    = $request->input('rows', 10);
+        $keyword = $request->input('keyword');
+        $query   = Treatment::query()
+            ->with([
+                'user:id,name',
+                'department:id,name',
+                'treatmentParticipants.user:id,name',
+                'product:id,type_id',
+                'product.type:id,name',
+            ])
             ->select([
                 'treatment.*',
                 'customer.name as customer_name',
                 'customer.idcard as customer_idcard',
-                'product_type.name as product_type_name',
             ])
             ->leftJoin('customer', 'customer.id', '=', 'treatment.customer_id')
-            ->leftJoin('product', 'treatment.product_id', '=', 'product.id')
-            ->leftJoin('product_type', 'product.type_id', '=', 'product_type.id')
-            ->when($request->input('keyword'), fn($query) => $query->where('customer.keyword', 'like', '%' . $request->input('keyword') . '%'))
-            ->when($request->input('product_name'), fn($query) => $query->where('treatment.product_name', 'like', '%' . $request->input('product_name') . '%'))
-            ->when($request->input('remark'), fn($query) => $query->where('treatment.remark', 'like', '%' . $request->input('remark') . '%'))
-            ->when($request->input('user_id'), fn($query) => $query->where('treatment.user_id', $request->input('user_id')))
-            ->when($request->input('department_id'), fn($query) => $query->where('treatment.department_id', $request->input('department_id')))
-            ->when($request->input('package_name'), fn($query) => $query->where('treatment.package_name', 'like', '%' . $request->input('package_name') . '%'))
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function ($query) use ($request) {
+            ->queryConditions('TreatmentRecord')
+            ->when($request->input('date.0') && $request->input('date.1'), function ($query) use ($request) {
                 $query->whereBetween('treatment.created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
+                    Carbon::parse($request->input('date.0'))->startOfDay(),
+                    Carbon::parse($request->input('date.1'))->endOfDay()
                 ]);
             })
-            ->when($request->input('participants'), function ($query) use ($request) {
-                $query->leftJoin('treatment_participants', 'treatment.id', '=', 'treatment_participants.treatment_id')
-                    ->where('treatment_participants.user_id', $request->input('participants'));
-            })
-            ->when(request('product_type') && request('product_type') != 1, function ($query) {
-                $query->whereIn('product.type_id', ProductType::find(request('product_type'))->getAllChild()->pluck('id'));
-            })
+            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
             // 限制查询权限
             ->when(!user()->hasAnyAccess(['superuser', 'treatment.view.all']), function ($query) {
-                $departments = user()->getTreatmentViewDepartmentsPermission();
-
-                if (count($departments) > 1) {
-                    $query->where(function ($query) use ($departments) {
-                        $query->whereIn('treatment.department_id', $departments);
-                    });
-                } else {
-                    $query->where(function ($query) {
-                        $query->where('treatment.department_id', user()->department_id);
-                    });
-                }
+                $ids = user()->getTreatmentViewDepartmentsPermission();
+                $query->where(function ($query) use ($ids) {
+                    $query->whereIn('treatment.department_id', $ids);
+                });
             })
             ->orderBy($sort, $order)
             ->paginate($rows);
+
+        $query->append(['status_text']);
 
         return response_success([
             'rows'  => $query->items(),
@@ -137,11 +125,11 @@ class TreatmentController extends Controller
 
     /**
      * 创建划扣记录
-     * @param CreateRequest $request
+     * @param TreatmentRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function create(CreateRequest $request): JsonResponse
+    public function create(TreatmentRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -193,11 +181,11 @@ class TreatmentController extends Controller
 
     /**
      * 撤销划扣记录
-     * @param UndoRequest $request
+     * @param TreatmentRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function undo(UndoRequest $request): JsonResponse
+    public function undo(TreatmentRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -221,7 +209,7 @@ class TreatmentController extends Controller
 
             // 撤回业绩
             $treatment->salesPerformance()->createMany(
-                $request->salesPerformanceData($customerProduct->cashier_id, $treatment, $customerProduct->reception_type)
+                $request->salesPerformanceDataForUndo($customerProduct->cashier_id, $treatment, $customerProduct->reception_type)
             );
 
             // 更新[顾客表]最后一次治疗时间
