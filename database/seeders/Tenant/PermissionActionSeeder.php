@@ -845,14 +845,19 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'index,create',
             ],
             [
-                'permission' => 'treatment.record',
+                'permission' => 'treatment.record.index',
                 'controller' => 'App\Http\Controllers\Web\TreatmentController',
                 'action'     => 'record',
             ],
             [
-                'permission' => 'treatment.undo',
+                'permission' => 'treatment.record.undo',
                 'controller' => 'App\Http\Controllers\Web\TreatmentController',
                 'action'     => 'undo',
+            ],
+            [
+                'permission' => 'treatment.record.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'treatmentRecord',
             ],
             [
                 'permission' => 'user.manage',
