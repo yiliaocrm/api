@@ -2262,25 +2262,41 @@ class WebMenuTableSeeder extends Seeder
             'permission' => 'treatment.manage',
         ]);
 
-        WebMenu::query()->create([
+        $menu = WebMenu::query()->create([
             'parentid'   => $root->id,
             'name'       => '治疗记录',
             'icon'       => 'iconfont if-record',
             'path'       => '/treatment/record',
+            'url'        => '/new#/treatment/record',
             'meta'       => [
                 'title' => '治疗记录'
             ],
             'route'      => 'TreatmentRecord',
-            'component'  => 'treatment/record',
             'permission' => 'treatment.record',
         ]);
 
         WebMenu::query()->create([
-            'parentid'   => $root->id,
-            'name'       => '撤销治疗',
-            'icon'       => 'iconfont if-redo',
+            'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看治疗记录',
             'display'    => false,
-            'permission' => 'treatment.undo',
+            'permission' => 'treatment.record.index',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '撤销',
+            'remark'     => '撤销治疗记录',
+            'display'    => false,
+            'permission' => 'treatment.record.undo',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '导出',
+            'remark'     => '导出治疗记录',
+            'display'    => false,
+            'permission' => 'treatment.record.export',
         ]);
 
         WebMenu::query()->create([
