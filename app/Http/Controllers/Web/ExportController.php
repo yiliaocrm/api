@@ -188,12 +188,15 @@ class ExportController extends Controller
 
     /**
      * 导出[扣划记录]
-     * @param Request $request
-     * @return TreatmentRecordExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function treatmentRecord(Request $request): TreatmentRecordExport
+    public function treatmentRecord(ExportRequest $request): JsonResponse
     {
-        return new TreatmentRecordExport($request);
+        $name = $request->input('fileName', '治疗记录');
+        $task = $request->createExportTask($name);
+        dispatch(new TreatmentRecordExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**
