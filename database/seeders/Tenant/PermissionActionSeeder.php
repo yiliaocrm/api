@@ -682,7 +682,22 @@ class PermissionActionSeeder extends Seeder
             [
                 'permission' => 'market.channel.index',
                 'controller' => 'App\Http\Controllers\Web\MarketChannelController',
-                'action'     => '*',
+                'action'     => 'index',
+            ],
+            [
+                'permission' => 'market.channel.create',
+                'controller' => 'App\Http\Controllers\Web\MarketChannelController',
+                'action'     => 'create',
+            ],
+            [
+                'permission' => 'market.channel.update',
+                'controller' => 'App\Http\Controllers\Web\MarketChannelController',
+                'action'     => 'update',
+            ],
+            [
+                'permission' => 'market.channel.remove',
+                'controller' => 'App\Http\Controllers\Web\MarketChannelController',
+                'action'     => 'remove',
             ],
             [
                 'permission' => 'prescription.unit.manage',
