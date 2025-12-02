@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Medium;
 use App\Helpers\Attachment;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\MarketChannel\CreateRequest;
-use App\Http\Requests\MarketChannel\RemoveRequest;
-use App\Http\Requests\MarketChannel\UpdateRequest;
-use App\Models\Medium;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Web\MarketChannelRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Builder;
 
 class MarketChannelController extends Controller
 {
@@ -24,7 +22,7 @@ class MarketChannelController extends Controller
         $keyword = $request->input('keyword');
         $data    = Medium::query()
             ->with(['user:id,name'])
-            ->where(fn($query) => $query->where('tree', 'like', "0-1-4-%")->orWhere('id', 4))
+            ->where(fn($query) => $query->where('tree', 'like', "0-4-%"))
             ->when($keyword, function (Builder $query) use ($keyword) {
 
                 // 执行包含关键字的原始查询
@@ -42,12 +40,11 @@ class MarketChannelController extends Controller
                 // 将提取的 ID 添加到主查询的 whereIn 子句中
                 return $query->whereIn('id', array_unique($ids));
             })
+            ->orderBy('order')
             ->orderBy('id')
             ->get();
 
-        return response_success(
-            list_to_tree($data->toArray(), 'id', 'parentid', 'children', 1)
-        );
+        return response_success($data);
     }
 
     /**
@@ -57,20 +54,19 @@ class MarketChannelController extends Controller
     public function tree(): JsonResponse
     {
         $data = Medium::query()
-            ->select(['id', 'name as text', 'parentid', 'child'])
-            ->where('tree', 'like', "0-1-4-%")
-            ->orWhere('id', 4)
+            ->select(['id', 'name', 'parentid', 'child'])
+            ->where('tree', 'like', "0-4-%")
             ->orderBy('id')
             ->get();
-        return response_success($data);
+        return response_success(list_to_tree(list: $data->toArray(), root: 4));
     }
 
     /**
      * 创建渠道
-     * @param CreateRequest $request
+     * @param MarketChannelRequest $request
      * @return JsonResponse
      */
-    public function create(CreateRequest $request): JsonResponse
+    public function create(MarketChannelRequest $request): JsonResponse
     {
         $medium = Medium::query()->create(
             $request->formData()
@@ -78,9 +74,15 @@ class MarketChannelController extends Controller
         $medium->attachments()->createMany(
             $request->attachmentData($medium->id)
         );
+        $medium->load(['user:id,name']);
         return response_success($medium);
     }
 
+    /**
+     * 渠道详情
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function info(Request $request): JsonResponse
     {
         $medium = Medium::query()->find(
@@ -92,10 +94,10 @@ class MarketChannelController extends Controller
 
     /**
      * 更新渠道
-     * @param UpdateRequest $request
+     * @param MarketChannelRequest $request
      * @return JsonResponse
      */
-    public function update(UpdateRequest $request): JsonResponse
+    public function update(MarketChannelRequest $request): JsonResponse
     {
         $medium = Medium::query()->find(
             $request->input('id')
@@ -110,6 +112,8 @@ class MarketChannelController extends Controller
         $medium->attachments()->createMany(
             $request->attachmentData($medium->id)
         );
+
+        $medium->load(['user:id,name']);
 
         return response_success($medium);
     }
@@ -143,12 +147,48 @@ class MarketChannelController extends Controller
 
     /**
      * 删除渠道
-     * @param RemoveRequest $request
+     * @param MarketChannelRequest $request
      * @return JsonResponse
      */
-    public function remove(RemoveRequest $request): JsonResponse
+    public function remove(MarketChannelRequest $request): JsonResponse
     {
         Medium::query()->where('id', $request->input('id'))->delete();
+        return response_success();
+    }
+
+    /**
+     * 交换渠道顺序
+     * @param MarketChannelRequest $request
+     * @return JsonResponse
+     */
+    public function swap(MarketChannelRequest $request): JsonResponse
+    {
+        $id1 = $request->input('id1');
+        $id2 = $request->input('id2');
+        $position = $request->input('position');
+
+        $medium1 = Medium::query()->find($id1);
+        $medium2 = Medium::query()->find($id2);
+
+        // 获取目标记录的顺序值
+        $targetOrder = $medium2->order;
+
+        if ($position === 'bottom') {
+            // 移动到目标记录下方
+            Medium::query()
+                ->where('order', '>', $targetOrder)
+                ->increment('order');
+
+            $medium1->update(['order' => $targetOrder + 1]);
+        } else {
+            // 移动到目标记录上方
+            Medium::query()
+                ->where('order', '<', $targetOrder)
+                ->decrement('order');
+
+            $medium1->update(['order' => $targetOrder - 1]);
+        }
+
         return response_success();
     }
 }

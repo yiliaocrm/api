@@ -12,6 +12,13 @@ class Medium extends BaseModel
 
     protected $table = 'medium';
 
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+        ];
+    }
+
     /**
      * 解析关键词字段
      * @param $model

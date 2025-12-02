@@ -936,9 +936,10 @@ Route::controller(Web\CustomerPhotoDetailController::class)->prefix('customer-ph
 });
 
 Route::controller(Web\MarketChannelController::class)->prefix('marketing-channel')->group(function () {
-    Route::post('index', 'index');
+    Route::get('index', 'index');
     Route::get('tree', 'tree');
     Route::get('info', 'info');
+    Route::get('swap', 'swap');
     Route::post('upload', 'upload');
     Route::get('remove', 'remove');
     Route::post('create', 'create');
