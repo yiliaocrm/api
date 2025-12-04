@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use Throwable;
-use Carbon\Carbon;
 use Vtiful\Kernel\Excel;
 use App\Models\Appointment;
 use App\Models\ExportTask;
@@ -177,9 +176,9 @@ class AppointmentExport implements ShouldQueue
             ])
             ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
             ->queryConditions('WorkbenchAppointment', $filters)
-            ->whereBetween('appointments.created_at', [
-                Carbon::parse($created_at[0])->startOfDay(),
-                Carbon::parse($created_at[1])->endOfDay()
+            ->whereBetween('appointments.date', [
+                $created_at[0],
+                $created_at[1]
             ])
             ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->orderBy('appointments.id');
