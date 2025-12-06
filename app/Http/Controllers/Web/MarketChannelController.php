@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Models\Medium;
-use App\Helpers\Attachment;
+use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\MarketChannelRequest;
 use Illuminate\Http\Request;
@@ -121,10 +121,10 @@ class MarketChannelController extends Controller
     /**
      * 上传渠道图片
      * @param Request $request
-     * @param Attachment $attachment
+     * @param AttachmentHelper $attachment
      * @return JsonResponse
      */
-    public function upload(Request $request, Attachment $attachment): JsonResponse
+    public function upload(Request $request, AttachmentHelper $attachment): JsonResponse
     {
         $request->validate([
             'file' => 'required|file|mimes:jpeg,png,jpg',
@@ -163,8 +163,8 @@ class MarketChannelController extends Controller
      */
     public function swap(MarketChannelRequest $request): JsonResponse
     {
-        $id1 = $request->input('id1');
-        $id2 = $request->input('id2');
+        $id1      = $request->input('id1');
+        $id2      = $request->input('id2');
         $position = $request->input('position');
 
         $medium1 = Medium::query()->find($id1);

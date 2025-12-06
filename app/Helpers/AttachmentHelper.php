@@ -4,11 +4,10 @@ namespace App\Helpers;
 
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
-class Attachment
+class AttachmentHelper
 {
     /**
      * 上传文件
@@ -23,7 +22,7 @@ class Attachment
             $disk = config('filesystems.default');
         }
 
-        // 云存储(加上路径前缀)
+        // 如果是本地驱动，增加租户路径前缀
         if (config("filesystems.disks.{$disk}.driver") !== 'local') {
             $path = sprintf(
                 '%s/%s',
@@ -33,6 +32,7 @@ class Attachment
         }
 
         $path = sprintf('%s/%s', $path, date('Y/m/d'));
+        $md5  = md5_file($file->getRealPath());
         $path = Storage::disk($disk)->put($path, $file);
 
         return [
@@ -42,8 +42,8 @@ class Attachment
             'file_size' => $file->getSize(),
             'file_ext'  => $file->getClientOriginalExtension(),
             'file_mime' => $file->getClientMimeType(),
-            'isimage'   => $this->isImage($file->getClientMimeType()) ? 1 : 0,
-            'isthumb'   => 0,
+            'file_md5'  => $md5,
+            'is_image'  => $this->isImage($file->getClientMimeType()),
             'user_id'   => user() ? user()->id : null,
             'ip'        => request()->getClientIp(),
         ];
@@ -64,7 +64,7 @@ class Attachment
             $disk = config('filesystems.default');
         }
 
-        // 云存储(加上路径前缀)
+        // 如果是本地驱动，增加租户路径前缀
         if (config("filesystems.disks.{$disk}.driver") !== 'local') {
             $path = sprintf(
                 '%s/%s',
@@ -88,19 +88,15 @@ class Attachment
         return [
             'disk'      => $disk,
             'file_path' => $path,
-            'file_name' => $file->getClientOriginalName(),
-            'file_size' => $file->getSize(),
-            'file_ext'  => $file->getClientOriginalExtension(),
-            'file_mime' => $file->getClientMimeType(),
-            'isimage'   => 1,
-            'isthumb'   => 1,
-            'user_id'   => user() ? user()->id : null,
-            'ip'        => request()->getClientIp(),
+            'file_size' => strlen($image),
+            'file_ext'  => 'jpg',
+            'width'     => $width,
+            'height'    => $height,
         ];
     }
 
     /**
-     * 判断是否是图片
+     * 判断是否为图片
      * @param string $mime
      * @return bool
      */

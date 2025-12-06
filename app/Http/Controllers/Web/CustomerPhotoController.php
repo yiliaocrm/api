@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Helpers\Attachment;
+use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerPhoto\CreateRequest;
 use App\Http\Requests\CustomerPhoto\RemoveRequest;
@@ -89,10 +89,10 @@ class CustomerPhotoController extends Controller
     /**
      * 上传对比照
      * @param UploadRequest $request
-     * @param Attachment $service
+     * @param AttachmentHelper $service
      * @return JsonResponse
      */
-    public function upload(UploadRequest $request, Attachment $service): JsonResponse
+    public function upload(UploadRequest $request, AttachmentHelper $service): JsonResponse
     {
         $album = CustomerPhoto::query()->find(
             $request->input('id')

@@ -6,7 +6,7 @@ use Exception;
 use App\Models\Goods;
 use App\Models\GoodsType;
 use App\Models\Inventory;
-use App\Helpers\Attachment;
+use App\Helpers\AttachmentHelper;
 use Illuminate\Http\Request;
 use App\Models\InventoryBatchs;
 use App\Models\InventoryDetail;
@@ -122,10 +122,10 @@ class GoodsController extends Controller
     /**
      * 上传图片
      * @param Request $request
-     * @param Attachment $attachment
+     * @param AttachmentHelper $attachment
      * @return JsonResponse
      */
-    public function upload(Request $request, Attachment $attachment): JsonResponse
+    public function upload(Request $request, AttachmentHelper $attachment): JsonResponse
     {
         $request->validate([
             'file' => 'required|file|mimes:jpeg,png,jpg',

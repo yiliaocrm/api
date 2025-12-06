@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\Attachment;
 use App\Models\CustomerPhoto;
+use App\Helpers\AttachmentHelper;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CustomerPhotoInfoRequest;
@@ -65,10 +65,10 @@ class CustomerPhotoController extends Controller
     /**
      * 上传照片
      * @param CustomerPhotoUploadRequest $request
-     * @param Attachment $service
+     * @param AttachmentHelper $service
      * @return JsonResponse
      */
-    public function upload(CustomerPhotoUploadRequest $request, Attachment $service): JsonResponse
+    public function upload(CustomerPhotoUploadRequest $request, AttachmentHelper $service): JsonResponse
     {
         $album = CustomerPhoto::query()->find(
             $request->input('id')

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Helpers\Attachment;
+use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Material\MaterialRequest;
 use App\Models\Material;
@@ -171,10 +171,10 @@ class MaterialController extends Controller
     /**
      * 创建素材
      * @param MaterialRequest $request
-     * @param Attachment $service
+     * @param AttachmentHelper $service
      * @return JsonResponse
      */
-    public function create(MaterialRequest $request, Attachment $service): JsonResponse
+    public function create(MaterialRequest $request, AttachmentHelper $service): JsonResponse
     {
         $data = collect($request->toMaterial())->only([
             'material_category_id',

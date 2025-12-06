@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Helpers\Attachment;
+use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\DrugRequest;
 use App\Models\Goods;
@@ -110,10 +110,10 @@ class DrugController extends Controller
     /**
      * 上传图片
      * @param Request $request
-     * @param Attachment $attachment
+     * @param AttachmentHelper $attachment
      * @return JsonResponse
      */
-    public function upload(Request $request, Attachment $attachment): JsonResponse
+    public function upload(Request $request, AttachmentHelper $attachment): JsonResponse
     {
         $request->validate([
             'file' => 'required|file|mimes:jpeg,png,jpg',
