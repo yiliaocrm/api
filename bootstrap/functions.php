@@ -424,24 +424,28 @@ function formatter_salesman(array $value = []): ?string
 }
 
 /**
- * 获取附件url
+ * 获取附件URL
  * @param string $url
+ * @param string|null $disk
  * @return string
  */
-function get_attachment_url(string $url): string
+function get_attachment_url(string $url, ?string $disk = null): string
 {
     if (empty($url)) {
         return '';
     }
 
-    $disk   = config('filesystems.default');
+    if (empty($disk)) {
+        $disk = config('filesystems.default');
+    }
+
     $config = config('filesystems.disks.' . $disk);
 
     if ($config['driver'] == 'local') {
         return tenant_asset($url);
     }
 
-    // 私有访问 生成url签名
+    // 如果是私有读写，生成临时URL
     if (!empty($config['signed_url'])) {
         return Storage::disk($disk)->temporaryUrl($url, now()->addMinutes(10));
     }
