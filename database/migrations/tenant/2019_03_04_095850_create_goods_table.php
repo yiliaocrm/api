@@ -18,7 +18,6 @@ return new class extends Migration {
             $table->string('short_name')->comment('商品简称');
             $table->text('keyword')->comment('检索字段');
             $table->string('barcode')->nullable()->comment('表形码（goods_unit表的冗余）');
-            $table->string('thumb')->nullable()->comment('缩略图(主图)');
             $table->integer('type_id')->comment('类别');
             $table->integer('expense_category_id')->default(1)->comment('费用类别');
             $table->unsignedTinyInteger('high_value')->default(0)->comment('高值耗材');

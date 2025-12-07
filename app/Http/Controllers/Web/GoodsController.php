@@ -6,7 +6,6 @@ use Exception;
 use App\Models\Goods;
 use App\Models\GoodsType;
 use App\Models\Inventory;
-use App\Helpers\AttachmentHelper;
 use Illuminate\Http\Request;
 use App\Models\InventoryBatchs;
 use App\Models\InventoryDetail;
@@ -26,31 +25,14 @@ class GoodsController extends Controller
             ->with([
                 'type',
                 'units' => fn($query) => $query->orderByDesc('basic')->orderByDesc('id'),
-                'alarms'
+                'alarms',
+                'attachments'
             ])
             ->when(request('type_id') && request('type_id') != 1, function ($query) {
                 $query->whereIn('type_id', GoodsType::query()->find(request('type_id'))->getAllChild()->pluck('id'));
             })
             ->when(request('keyword'), function ($query) {
                 $query->where('keyword', 'like', '%' . request('keyword') . '%');
-            })
-            ->when(request('warn_days_start') && request('warn_days_end'), function ($query) {
-                $query->whereBetween('warn_days', [
-                    request('warn_days_start'),
-                    request('warn_days_end')
-                ]);
-            })
-            ->when(request('inventory_number_start') && request('inventory_number_end'), function ($query) {
-                $query->whereBetween('inventory_number', [
-                    request('inventory_number_start'),
-                    request('inventory_number_end')
-                ]);
-            })
-            ->when(request('inventory_amount_start') && request('inventory_amount_end'), function ($query) {
-                $query->whereBetween('inventory_amount', [
-                    request('inventory_amount_start'),
-                    request('inventory_amount_end')
-                ]);
             })
             ->orderBy($sort, $order)
             ->paginate($rows);
@@ -80,9 +62,16 @@ class GoodsController extends Controller
             $request->getGoodsAlarm()
         );
 
+        // 写入 attachment_uses 多态关联表（引用计数由 AttachmentUse 模型事件自动维护）
+        $attachmentIds = $request->attachmentData();
+        if (!empty($attachmentIds)) {
+            $goods->attachments()->attach($attachmentIds);
+        }
+
         $goods->load([
             'units',
-            'alarms'
+            'alarms',
+            'attachments'
         ]);
 
         return response_success($goods);
@@ -107,38 +96,34 @@ class GoodsController extends Controller
             $request->getGoodsAlarm()
         );
 
+        // 同步更新 attachment_uses 多态关联表（引用计数由 AttachmentUse 模型事件自动维护）
+        $goods->attachments()->sync($request->attachmentData());
+
         $goods->update(
             $request->getGoodsData()
         );
 
         $goods->load([
             'units',
-            'alarms'
+            'alarms',
+            'attachments'
         ]);
 
         return response_success($goods);
     }
 
     /**
-     * 上传图片
-     * @param Request $request
-     * @param AttachmentHelper $attachment
+     * 商品详情
+     * @param GoodsRequest $request
      * @return JsonResponse
      */
-    public function upload(Request $request, AttachmentHelper $attachment): JsonResponse
+    public function info(GoodsRequest $request): JsonResponse
     {
-        $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg',
-        ], [
-            'file.required' => '请选择上传文件',
-            'file.file'     => '上传文件必须是图片',
-            'file.mimes'    => '上传文件类型不符合要求',
-        ]);
-        $file = $attachment->upload($request->file('file'), 'goods');
-        $path = get_attachment_url($file['file_path']);
-        return response_success([
-            'path' => $path
-        ]);
+        $goods = Goods::query()->find(
+            $request->input('id')
+        );
+        $goods->load(['attachments']);
+        return response_success($goods);
     }
 
     /**

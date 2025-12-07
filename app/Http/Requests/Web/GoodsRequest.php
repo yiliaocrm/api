@@ -209,7 +209,6 @@ class GoodsRequest extends FormRequest
             'name'                => $this->input('goods.name'),
             'short_name'          => $this->input('goods.short_name'),
             'type_id'             => $this->input('goods.type_id'),
-            'thumb'               => $this->input('goods.thumb'),
             'expense_category_id' => $this->input('goods.expense_category_id'),
             'high_value'          => $this->input('goods.high_value', false),
             'is_drug'             => $this->input('goods.is_drug', false),
@@ -298,5 +297,24 @@ class GoodsRequest extends FormRequest
             'warehouse_id.required' => '仓库ID不能为空',
             'warehouse_id.exists'   => '仓库ID不存在'
         ];
+    }
+
+    /**
+     * 获取附件ID数组（用于 attachment_uses 多态关联）
+     *
+     * @return array
+     */
+    public function attachmentData(): array
+    {
+        $attachmentIds = [];
+
+        foreach ($this->input('attachments', []) as $index => $attachment) {
+            $attachmentId = $attachment['id'] ?? null;
+            if ($attachmentId) {
+                $attachmentIds[$attachmentId] = ['sort' => $index];
+            }
+        }
+
+        return $attachmentIds;
     }
 }

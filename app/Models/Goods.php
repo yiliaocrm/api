@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Goods extends BaseModel
@@ -37,14 +38,6 @@ class Goods extends BaseModel
             $goods->unit()->delete();
             $goods->alarm()->delete();
         });
-    }
-
-    public function thumb(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value) => $value ? get_attachment_url($value) : null,
-            set: fn($value) => $value ? str_replace(get_attachment_url(''), '', $value) : null
-        );
     }
 
     public static function getInfo($id)
@@ -150,5 +143,20 @@ class Goods extends BaseModel
     public function expenseCategory(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class);
+    }
+
+    /**
+     * 附件多态关联（通过 attachment_uses 表）
+     * @return MorphToMany
+     */
+    public function attachments(): MorphToMany
+    {
+        return $this->morphToMany(
+            Attachment::class,
+            'usable',
+            'attachment_uses',
+            'usable_id',
+            'attachment_id'
+        )->using(AttachmentUse::class)->withPivot('sort')->withTimestamps()->orderBy('sort');
     }
 }
