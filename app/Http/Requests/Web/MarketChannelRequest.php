@@ -169,27 +169,22 @@ class MarketChannelRequest extends FormRequest
     }
 
     /**
-     * 附件数据
+     * 获取附件ID数组（用于 attachment_uses 多态关联）
      *
-     * @param int $medium_id
      * @return array
      */
-    public function attachmentData(int $medium_id): array
+    public function attachmentData(): array
     {
-        $attachments = [];
+        $attachmentIds = [];
 
-        foreach ($this->input('attachments', []) as $attachment) {
-            $attachments[] = [
-                'medium_id'      => $medium_id,
-                'name'           => $attachment['name'],
-                'thumb'          => $attachment['thumb'],
-                'file_path'      => $attachment['file_path'],
-                'file_mime'      => $attachment['file_mime'],
-                'create_user_id' => user()->id
-            ];
+        foreach ($this->input('attachments', []) as $index => $attachment) {
+            $attachmentId = $attachment['id'] ?? $attachment['attachment_id'] ?? null;
+            if ($attachmentId) {
+                $attachmentIds[$attachmentId] = ['sort' => $index];
+            }
         }
 
-        return $attachments;
+        return $attachmentIds;
     }
 
     /**

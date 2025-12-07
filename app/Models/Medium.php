@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Traits\HasTree;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Medium extends BaseModel
 {
@@ -57,11 +57,17 @@ class Medium extends BaseModel
     }
 
     /**
-     * 渠道附件
-     * @return HasMany
+     * 附件多态关联（通过 attachment_uses 表）
+     * @return MorphToMany
      */
-    public function attachments(): HasMany
+    public function attachments(): MorphToMany
     {
-        return $this->hasMany(MediumAttachment::class);
+        return $this->morphToMany(
+            Attachment::class,
+            'usable',
+            'attachment_uses',
+            'usable_id',
+            'attachment_id'
+        )->using(AttachmentUse::class)->withPivot('sort')->withTimestamps()->orderBy('sort');
     }
 }

@@ -940,7 +940,6 @@ Route::controller(Web\MarketChannelController::class)->prefix('marketing-channel
     Route::get('tree', 'tree');
     Route::get('info', 'info');
     Route::get('swap', 'swap');
-    Route::post('upload', 'upload');
     Route::get('remove', 'remove');
     Route::post('create', 'create');
     Route::post('update', 'update');
@@ -1048,3 +1047,20 @@ Route::controller(Web\ImportTaskController::class)->prefix('import-task')->group
     Route::get('export', 'export');
     Route::get('remove', 'remove');
 });
+
+// 附件管理
+Route::prefix('attachment')->controller(Web\AttachmentController::class)->group(function () {
+    // 文件管理
+    Route::get('index', 'index');
+    Route::get('check', 'check');
+    Route::get('picker', 'picker');
+    Route::get('remove', 'remove');
+    Route::post('upload', 'upload');
+
+    // 分组管理
+    Route::get('groups', 'groups');
+    Route::post('group/create', 'createGroup');
+    Route::post('group/update', 'updateGroup');
+    Route::delete('group/remove', 'removeGroup');
+});
+

@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Models\Medium;
-use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\MarketChannelRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -14,10 +12,10 @@ class MarketChannelController extends Controller
 {
     /**
      * 首页
-     * @param Request $request
+     * @param MarketChannelRequest $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(MarketChannelRequest $request): JsonResponse
     {
         $keyword = $request->input('keyword');
         $data    = Medium::query()
@@ -71,24 +69,28 @@ class MarketChannelController extends Controller
         $medium = Medium::query()->create(
             $request->formData()
         );
-        $medium->attachments()->createMany(
-            $request->attachmentData($medium->id)
-        );
+
+        // 写入 attachment_uses 多态关联表（引用计数由 AttachmentUse 模型事件自动维护）
+        $attachmentIds = $request->attachmentData();
+        if (!empty($attachmentIds)) {
+            $medium->attachments()->attach($attachmentIds);
+        }
+
         $medium->load(['user:id,name']);
         return response_success($medium);
     }
 
     /**
      * 渠道详情
-     * @param Request $request
+     * @param MarketChannelRequest $request
      * @return JsonResponse
      */
-    public function info(Request $request): JsonResponse
+    public function info(MarketChannelRequest $request): JsonResponse
     {
         $medium = Medium::query()->find(
             $request->input('id')
         );
-        $medium->loadMissing(['attachments']);
+        $medium->load(['attachments']);
         return response_success($medium);
     }
 
@@ -107,42 +109,12 @@ class MarketChannelController extends Controller
             $request->formData()
         );
 
-        // 更新附件
-        $medium->attachments()->delete();
-        $medium->attachments()->createMany(
-            $request->attachmentData($medium->id)
-        );
+        // 同步更新 attachment_uses 多态关联表（引用计数由 AttachmentUse 模型事件自动维护）
+        $medium->attachments()->sync($request->attachmentData());
 
         $medium->load(['user:id,name']);
 
         return response_success($medium);
-    }
-
-    /**
-     * 上传渠道图片
-     * @param Request $request
-     * @param AttachmentHelper $attachment
-     * @return JsonResponse
-     */
-    public function upload(Request $request, AttachmentHelper $attachment): JsonResponse
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg',
-        ], [
-            'file.required' => '请选择上传文件',
-            'file.file'     => '上传文件必须是图片',
-            'file.mimes'    => '上传文件类型不符合要求',
-        ]);
-
-        $file  = $attachment->upload($request->file('file'), 'market-channel');
-        $thumb = $attachment->makeImageThumb($request->file('file'), 'market-channel', 150, 150);
-
-        return response_success([
-            'name'      => $file['file_name'],
-            'thumb'     => get_attachment_url($thumb['file_path']),
-            'file_path' => get_attachment_url($file['file_path']),
-            'file_mime' => $file['file_mime'],
-        ]);
     }
 
     /**

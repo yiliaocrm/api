@@ -2,32 +2,61 @@
 
 namespace App\Models;
 
-
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attachment extends BaseModel
 {
-    protected $table = 'attachments';
-    protected $guarded = [];
+    protected function casts(): array
+    {
+        return [
+            'is_image'        => 'boolean',
+            'download_count'  => 'integer',
+            'reference_count' => 'integer',
+            'last_used_at'    => 'datetime',
+        ];
+    }
+
+    protected $appends = ['url'];
 
     public static function boot(): void
     {
         parent::boot();
-
-        // 删除文件(注意一对多关系里面无法执行,必须使用each)
         static::deleting(function ($attachment) {
             Storage::disk($attachment->disk)->delete($attachment->file_path);
         });
     }
 
     /**
-     * 关联模型
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     * 关联缩略图
      */
-    public function model()
+    public function thumbnails(): HasMany
     {
-        return $this->morphTo();
+        return $this->hasMany(AttachmentThumbnail::class);
     }
 
+    /**
+     * 关联使用记录
+     */
+    public function uses(): HasMany
+    {
+        return $this->hasMany(AttachmentUse::class);
+    }
 
+    /**
+     * 关联分组
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(AttachmentGroup::class, 'group_id');
+    }
+
+    /**
+     * 获取URL属性
+     */
+    public function getUrlAttribute(): string
+    {
+        return get_attachment_url($this->file_path, $this->disk);
+    }
 }
