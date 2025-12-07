@@ -53,6 +53,14 @@ class Attachment extends BaseModel
     }
 
     /**
+     * 关联下载记录
+     */
+    public function downloads(): HasMany
+    {
+        return $this->hasMany(AttachmentDownload::class);
+    }
+
+    /**
      * 获取URL属性
      */
     public function getUrlAttribute(): string

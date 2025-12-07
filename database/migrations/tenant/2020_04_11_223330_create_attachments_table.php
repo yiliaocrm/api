@@ -66,6 +66,16 @@ return new class extends Migration {
             $table->timestamps();
             $table->comment('附件缩略图表');
         });
+
+        Schema::create('attachment_downloads', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('attachment_id')->index()->comment('附件ID');
+            $table->unsignedInteger('user_id')->nullable()->index()->comment('下载用户ID');
+            $table->string('ip', 45)->comment('下载IP');
+            $table->string('user_agent', 255)->nullable()->comment('User Agent');
+            $table->timestamps();
+            $table->comment('附件下载记录表');
+        });
     }
 
     /**
@@ -79,5 +89,6 @@ return new class extends Migration {
         Schema::dropIfExists('attachment_uses');
         Schema::dropIfExists('attachment_groups');
         Schema::dropIfExists('attachment_thumbnails');
+        Schema::dropIfExists('attachment_downloads');
     }
 };
