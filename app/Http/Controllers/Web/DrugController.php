@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Helpers\AttachmentHelper;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Web\DrugRequest;
+use Exception;
 use App\Models\Goods;
 use App\Models\GoodsType;
 use App\Models\InventoryBatchs;
 use App\Models\InventoryDetail;
-use Exception;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\DrugRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Builder;
 
 class DrugController extends Controller
 {
@@ -25,31 +24,14 @@ class DrugController extends Controller
             ->with([
                 'type',
                 'units' => fn($query) => $query->orderByDesc('basic')->orderByDesc('id'),
-                'alarms'
+                'alarms',
+                'attachments'
             ])
             ->when($request->input('type_id') && $request->input('type_id') != 1, function (Builder $query) use ($request) {
                 $query->whereIn('type_id', GoodsType::query()->find($request->input('type_id'))->getAllChild()->pluck('id'));
             })
             ->when($request->input('keyword'), function ($query) use ($request) {
                 $query->where('keyword', 'like', '%' . $request->input('keyword') . '%');
-            })
-            ->when($request->input('warn_days_start') && $request->input('warn_days_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('warn_days', [
-                    $request->input('warn_days_start'),
-                    $request->input('warn_days_end')
-                ]);
-            })
-            ->when($request->input('inventory_number_start') && $request->input('inventory_number_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('inventory_number', [
-                    $request->input('inventory_number_start'),
-                    $request->input('inventory_number_end')
-                ]);
-            })
-            ->when($request->input('inventory_amount_start') && $request->input('inventory_amount_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('inventory_amount', [
-                    $request->input('inventory_amount_start'),
-                    $request->input('inventory_amount_end')
-                ]);
             })
             ->orderBy($sort, $order)->paginate($rows);
 
@@ -78,7 +60,17 @@ class DrugController extends Controller
             $request->getGoodsAlarm()
         );
 
-        $drug->load(['units', 'alarms']);
+        // 写入 attachment_uses 多态关联表（引用计数由 AttachmentUse 模型事件自动维护）
+        $attachmentIds = $request->attachmentData();
+        if (!empty($attachmentIds)) {
+            $drug->attachments()->attach($attachmentIds);
+        }
+
+        $drug->load([
+            'units',
+            'alarms',
+            'attachments'
+        ]);
 
         return response_success($drug);
     }
@@ -98,35 +90,20 @@ class DrugController extends Controller
         $drug->unit()->sync($request->getGoodsUnit());
         $drug->alarm()->sync($request->getGoodsAlarm());
 
+        // 同步更新 attachment_uses 多态关联表（引用计数由 AttachmentUse 模型事件自动维护）
+        $drug->attachments()->sync($request->attachmentData());
+
         $drug->update(
             $request->getGoodsData()
         );
 
-        $drug->load(['units', 'alarms']);
+        $drug->load([
+            'units',
+            'alarms',
+            'attachments'
+        ]);
 
         return response_success($drug);
-    }
-
-    /**
-     * 上传图片
-     * @param Request $request
-     * @param AttachmentHelper $attachment
-     * @return JsonResponse
-     */
-    public function upload(Request $request, AttachmentHelper $attachment): JsonResponse
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg',
-        ], [
-            'file.required' => '请选择上传文件',
-            'file.file'     => '上传文件必须是图片',
-            'file.mimes'    => '上传文件类型不符合要求',
-        ]);
-        $file = $attachment->upload($request->file('file'), 'goods');
-        $path = get_attachment_url($file['file_path']);
-        return response_success([
-            'path' => $path
-        ]);
     }
 
     /**

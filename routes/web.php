@@ -633,7 +633,6 @@ Route::controller(Web\DrugController::class)->prefix('drug')->group(function () 
     Route::post('create', 'create');
     Route::post('update', 'update');
     Route::get('remove', 'remove');
-    Route::post('upload', 'upload');
     Route::post('enable', 'enable');
     Route::post('disable', 'disable');
     Route::post('inventory-batch', 'inventoryBatch');
