@@ -24,6 +24,7 @@ class DrugController extends Controller
             ->with([
                 'type',
                 'units' => fn($query) => $query->orderByDesc('basic')->orderByDesc('id'),
+                'units.unit',
                 'alarms',
                 'attachments'
             ])
