@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers\Web;
 
+use Carbon\Carbon;
+use App\Models\CustomerPhoto;
 use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CustomerPhoto\CreateRequest;
-use App\Http\Requests\CustomerPhoto\RemoveRequest;
-use App\Http\Requests\CustomerPhoto\UpdateRequest;
 use App\Http\Requests\CustomerPhoto\UploadRequest;
-use App\Models\CustomerPhoto;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Web\CustomerPhotoRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Builder;
 
 class CustomerPhotoController extends Controller
 {
@@ -51,10 +49,10 @@ class CustomerPhotoController extends Controller
 
     /**
      * 创建相册
-     * @param CreateRequest $request
+     * @param CustomerPhotoRequest $request
      * @return JsonResponse
      */
-    public function create(CreateRequest $request): JsonResponse
+    public function create(CustomerPhotoRequest $request): JsonResponse
     {
         $album = CustomerPhoto::query()->create(
             $request->formData()
@@ -68,10 +66,10 @@ class CustomerPhotoController extends Controller
 
     /**
      * 更新相册
-     * @param UpdateRequest $request
+     * @param CustomerPhotoRequest $request
      * @return JsonResponse
      */
-    public function update(UpdateRequest $request): JsonResponse
+    public function update(CustomerPhotoRequest $request): JsonResponse
     {
         $album = CustomerPhoto::query()->find(
             $request->input('id')
@@ -122,10 +120,10 @@ class CustomerPhotoController extends Controller
 
     /**
      * 删除相册
-     * @param RemoveRequest $request
+     * @param CustomerPhotoRequest $request
      * @return JsonResponse
      */
-    public function remove(RemoveRequest $request): JsonResponse
+    public function remove(CustomerPhotoRequest $request): JsonResponse
     {
         $album = CustomerPhoto::query()->find(
             $request->input('id')

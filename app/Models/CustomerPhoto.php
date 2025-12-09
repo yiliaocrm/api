@@ -10,8 +10,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class CustomerPhoto extends BaseModel
 {
     use HasUuids;
-    protected $keyType = 'string';
-    public $incrementing = false;
 
     /**
      * 顾客信息
