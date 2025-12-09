@@ -2,39 +2,37 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DiagnosisCategory\CreateRequest;
-use App\Http\Requests\DiagnosisCategory\RemoveRequest;
-use App\Http\Requests\DiagnosisCategory\UpdateRequest;
 use App\Models\DiagnosisCategory;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\DiagnosisCategoryRequest;
 
 class DiagnosisCategoryController extends Controller
 {
     public function all()
     {
-		$data = DiagnosisCategory::select('id', 'name AS text', 'parentid', 'child')->get()->toArray();
-		return list_to_tree($data);
+        $data = DiagnosisCategory::select('id', 'name AS text', 'parentid', 'child')->get()->toArray();
+        return list_to_tree($data);
     }
 
-    public function create(CreateRequest $request)
+    public function create(DiagnosisCategoryRequest $request)
     {
-    	return DiagnosisCategory::create([
-    		'name'     => $request->name,
-    		'parentid' => $request->parentid,
-    	]);
+        return DiagnosisCategory::create([
+            'name'     => $request->name,
+            'parentid' => $request->parentid,
+        ]);
     }
 
-    public function update(UpdateRequest $request)
+    public function update(DiagnosisCategoryRequest $request)
     {
-    	$category = DiagnosisCategory::find($request->id);
+        $category = DiagnosisCategory::find($request->id);
 
-    	$category->name = $request->name;
-    	$category->save();
+        $category->name = $request->name;
+        $category->save();
 
-    	return $category;
+        return $category;
     }
 
-    public function remove(RemoveRequest $request)
+    public function remove(DiagnosisCategoryRequest $request)
     {
         DiagnosisCategory::find($request->id)->delete();
     }
