@@ -7,6 +7,7 @@ use App\Http\Requests\PrescriptionUnit\CreateRequest;
 use App\Http\Requests\PrescriptionUnit\RemoveRequest;
 use App\Http\Requests\PrescriptionUnit\UpdateRequest;
 use App\Models\PrescriptionUnit;
+use App\Http\Requests\Web\PrescriptionUnitRequest;
 
 /**
  * 用量单位
