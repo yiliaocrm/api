@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\PrescriptionWays\CreateRequest;
-use App\Http\Requests\PrescriptionWays\RemoveRequest;
-use App\Http\Requests\PrescriptionWays\UpdateRequest;
 use App\Models\PrescriptionWays;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\PrescriptionWaysRequest;
 
 /**
  * 用药途径管理
@@ -18,7 +16,7 @@ class PrescriptionWaysController extends Controller
         return PrescriptionWays::orderBy('id', 'desc')->get();
     }
 
-    public function create(CreateRequest $request)
+    public function create(PrescriptionWaysRequest $request)
     {
         return PrescriptionWays::create([
             'name' => request('name'),
@@ -31,7 +29,7 @@ class PrescriptionWaysController extends Controller
         return PrescriptionWays::find(request('id'));
     }
 
-    public function update(UpdateRequest $request)
+    public function update(PrescriptionWaysRequest $request)
     {
         PrescriptionWays::find(request('id'))->update([
             'name' => request('name'),
@@ -39,7 +37,7 @@ class PrescriptionWaysController extends Controller
         ]);
     }
 
-    public function remove(RemoveRequest $request)
+    public function remove(PrescriptionWaysRequest $request)
     {
         PrescriptionWays::find(request('id'))->delete();
     }
