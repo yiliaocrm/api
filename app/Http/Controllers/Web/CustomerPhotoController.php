@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\Models\CustomerPhoto;
 use App\Helpers\AttachmentHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CustomerPhoto\UploadRequest;
 use App\Http\Requests\Web\CustomerPhotoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -86,11 +85,11 @@ class CustomerPhotoController extends Controller
 
     /**
      * 上传对比照
-     * @param UploadRequest $request
+     * @param CustomerPhotoRequest $request
      * @param AttachmentHelper $service
      * @return JsonResponse
      */
-    public function upload(UploadRequest $request, AttachmentHelper $service): JsonResponse
+    public function upload(CustomerPhotoRequest $request, AttachmentHelper $service): JsonResponse
     {
         $album = CustomerPhoto::query()->find(
             $request->input('id')
