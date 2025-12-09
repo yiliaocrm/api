@@ -39,15 +39,6 @@ class CustomerPhoto extends BaseModel
     }
 
     /**
-     * 附件表信息
-     * @return MorphMany
-     */
-    public function attachments(): MorphMany
-    {
-        return $this->morphMany(Attachment::class, 'model');
-    }
-
-    /**
      * 创建人员
      * @return BelongsTo
      */

@@ -100,12 +100,6 @@ class CustomerPhotoController extends Controller
         $attachment = $service->upload($request->file('file'), 'customer_photo');
         $thumbnail  = $service->makeImageThumb($request->file('file'), 'customer_photo');
 
-        // 写入附件表
-        $album->attachments()->createMany([
-            $attachment,
-            $thumbnail
-        ]);
-
         // 写入相册明细
         $detail = $album->details()->create(
             $request->formData(
