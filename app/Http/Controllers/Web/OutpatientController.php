@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Exceptions\HisException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Outpatient\CreateRequest;
-use App\Http\Requests\Outpatient\UpdateRequest;
+use App\Http\Requests\Web\OutpatientRequest;
 use App\Models\Customer;
 use App\Models\Outpatient;
 use Illuminate\Http\JsonResponse;
@@ -65,11 +64,11 @@ class OutpatientController extends Controller
 
     /**
      * 新增
-     * @param CreateRequest $request
+     * @param OutpatientRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function create(CreateRequest $request)
+    public function create(OutpatientRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -131,11 +130,11 @@ class OutpatientController extends Controller
 
     /**
      * 更新门诊记录
-     * @param UpdateRequest $request
+     * @param OutpatientRequest $request
      * @return JsonResponse
      * @throws HisException|Throwable
      */
-    public function update(UpdateRequest $request)
+    public function update(OutpatientRequest $request)
     {
         DB::beginTransaction();
         try {
