@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CustomerPhotoDetail\DownloadRequest;
-use App\Http\Requests\CustomerPhotoDetail\RemoveRequest;
-use App\Http\Requests\CustomerPhotoDetail\RenameRequest;
 use App\Models\CustomerPhotoDetail;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\CustomerPhotoDetailRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -15,28 +13,26 @@ class CustomerPhotoDetailController extends Controller
 {
     /**
      * 照片重命名
-     * @param RenameRequest $request
+     * @param CustomerPhotoDetailRequest $request
      * @return JsonResponse
      */
-    public function rename(RenameRequest $request): JsonResponse
+    public function rename(CustomerPhotoDetailRequest $request): JsonResponse
     {
         $detail = CustomerPhotoDetail::query()->find(
             $request->input('id')
         );
 
-        $detail->update([
-            'name' => $request->input('name')
-        ]);
+        $detail->update($request->formData());
 
         return response_success($detail);
     }
 
     /**
      * 删除照片
-     * @param RemoveRequest $request
+     * @param CustomerPhotoDetailRequest $request
      * @return JsonResponse
      */
-    public function remove(RemoveRequest $request): JsonResponse
+    public function remove(CustomerPhotoDetailRequest $request): JsonResponse
     {
         $detail = CustomerPhotoDetail::query()->find(
             $request->input('id')
@@ -47,10 +43,10 @@ class CustomerPhotoDetailController extends Controller
 
     /**
      * 下载照片
-     * @param DownloadRequest $request
+     * @param CustomerPhotoDetailRequest $request
      * @return StreamedResponse
      */
-    public function download(DownloadRequest $request): StreamedResponse
+    public function download(CustomerPhotoDetailRequest $request): StreamedResponse
     {
         $detail = CustomerPhotoDetail::query()->find(
             $request->input('id')
