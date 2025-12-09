@@ -49,6 +49,9 @@ class AttachmentController extends Controller
         $groupId = $request->input('group_id');
 
         $query = Attachment::query()
+            ->with([
+                'thumbnails'
+            ])
             ->when($keyword, fn(Builder $q) => $q->where('file_name', 'like', "%{$keyword}%"))
 //            ->when($groupId, fn(Builder $q) => $q->where('group_id', $groupId))
             ->orderBy($sort, $order)
