@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Models\CustomerLevel;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CustomerLevel\CreateRequest;
-use App\Http\Requests\CustomerLevel\RemoveRequest;
-use App\Http\Requests\CustomerLevel\UpdateRequest;
+use App\Http\Requests\Web\CustomerLevelRequest;
 use Illuminate\Http\JsonResponse;
 
 class CustomerLevelController extends Controller
@@ -18,10 +16,10 @@ class CustomerLevelController extends Controller
 
     /**
      * 新增会员等级
-     * @param CreateRequest $request
+     * @param CustomerLevelRequest $request
      * @return JsonResponse
      */
-    public function create(CreateRequest $request)
+    public function create(CustomerLevelRequest $request)
     {
         $data = CustomerLevel::query()->create(
             $request->input('name')
@@ -31,10 +29,10 @@ class CustomerLevelController extends Controller
 
     /**
      * 更新会员等级
-     * @param UpdateRequest $request
+     * @param CustomerLevelRequest $request
      * @return JsonResponse
      */
-    public function update(UpdateRequest $request)
+    public function update(CustomerLevelRequest $request)
     {
         $data = CustomerLevel::query()->find($request->id);
         $data->update([
@@ -45,10 +43,10 @@ class CustomerLevelController extends Controller
 
     /**
      * 删除会员等级
-     * @param RemoveRequest $request
+     * @param CustomerLevelRequest $request
      * @return JsonResponse
      */
-    public function remove(RemoveRequest $request)
+    public function remove(CustomerLevelRequest $request)
     {
         CustomerLevel::query()->find($request->input('id'))->delete();
         return response_success();
