@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\PrescriptionUnit\CreateRequest;
-use App\Http\Requests\PrescriptionUnit\RemoveRequest;
-use App\Http\Requests\PrescriptionUnit\UpdateRequest;
 use App\Models\PrescriptionUnit;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\PrescriptionUnitRequest;
 
 /**
@@ -19,7 +16,7 @@ class PrescriptionUnitController extends Controller
         return PrescriptionUnit::orderBy('id', 'desc')->get();
     }
 
-    public function create(CreateRequest $request)
+    public function create(PrescriptionUnitRequest $request)
     {
         return PrescriptionUnit::create([
             'name' => request('name')
@@ -31,14 +28,14 @@ class PrescriptionUnitController extends Controller
         return PrescriptionUnit::find(request('id'));
     }
 
-    public function update(UpdateRequest $request)
+    public function update(PrescriptionUnitRequest $request)
     {
         PrescriptionUnit::find(request('id'))->update([
             'name' => request('name')
         ]);
     }
 
-    public function remove(RemoveRequest $request)
+    public function remove(PrescriptionUnitRequest $request)
     {
         PrescriptionUnit::find(request('id'))->delete();
     }
