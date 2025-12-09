@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Diagnosis\CreateRequest;
-use App\Http\Requests\Diagnosis\RemoveRequest;
-use App\Http\Requests\Diagnosis\UpdateRequest;
 use App\Models\Diagnosis;
 use App\Models\DiagnosisCategory;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\DiagnosisRequest;
 
 class DiagnosisController extends Controller
 {
@@ -19,12 +17,12 @@ class DiagnosisController extends Controller
         $order       = request('order', 'desc');
         $category_id = request('category_id');
         $query       = Diagnosis::whereIn('category_id', DiagnosisCategory::find($category_id)->getAllChild()->pluck('id'))
-        ->when(request('keyword'), function($query) {
-            $query->where('keyword', 'like', '%' . request('keyword') . '%');
-        })
-        ->orderBy($sort, $order)->paginate($rows);
+            ->when(request('keyword'), function ($query) {
+                $query->where('keyword', 'like', '%' . request('keyword') . '%');
+            })
+            ->orderBy($sort, $order)->paginate($rows);
 
-        if($query) {
+        if ($query) {
             $data['rows']  = $query->items();
             $data['total'] = $query->total();
         } else {
@@ -34,19 +32,19 @@ class DiagnosisController extends Controller
         return $data;
     }
 
-    public function create(CreateRequest $request)
+    public function create(DiagnosisRequest $request)
     {
-    	return Diagnosis::create($request->only('category_id', 'name', 'code'));
+        return Diagnosis::create($request->formData());
     }
 
-    public function update(UpdateRequest $request)
+    public function update(DiagnosisRequest $request)
     {
-    	Diagnosis::find($request->id)->update($request->only('category_id', 'name', 'code'));
+        Diagnosis::find($request->id)->update($request->formData());
     }
 
-    public function remove(RemoveRequest $request)
+    public function remove(DiagnosisRequest $request)
     {
-    	Diagnosis::find($request->id)->delete();
+        Diagnosis::find($request->id)->delete();
     }
 
     public function search()
