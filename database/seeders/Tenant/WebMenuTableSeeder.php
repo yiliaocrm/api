@@ -1777,20 +1777,6 @@ class WebMenuTableSeeder extends Seeder
             'permission' => 'user.group.manage'
         ]);
 
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
-            'name'       => '参数设置',
-            'icon'       => 'iconfont if-parameter',
-            'path'       => '/system/parameter',
-            'url'        => '/new#/system/store/parameter',
-            'meta'       => [
-                'title' => '参数设置'
-            ],
-            'route'      => 'ParameterIndex',
-            'component'  => 'parameter/index',
-            'permission' => 'parameter.index'
-        ]);
-
         $menu = WebMenu::query()->create([
             'parentid' => $root->id,
             'name'     => '安全管理',
@@ -1923,6 +1909,26 @@ class WebMenuTableSeeder extends Seeder
             'route'      => 'LogPhone',
             'component'  => 'log/phone',
             'permission' => 'system.log.phone',
+        ]);
+
+        $menu = WebMenu::query()->create([
+            'parentid' => $root->id,
+            'name'     => '系统管理',
+            'icon'     => 'iconfont if-setting'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '系统参数设置',
+            'icon'       => 'iconfont if-parameter',
+            'path'       => '/system/parameter',
+            'url'        => '/new#/system/manage/parameter',
+            'meta'       => [
+                'title' => '系统参数设置'
+            ],
+            'route'      => 'ParameterIndex',
+            'component'  => 'parameter/index',
+            'permission' => 'parameter.index'
         ]);
     }
 
