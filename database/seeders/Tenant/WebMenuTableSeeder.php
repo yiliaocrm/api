@@ -2080,22 +2080,40 @@ class WebMenuTableSeeder extends Seeder
         ]);
 
         $menu = WebMenu::query()->create([
-            'parentid' => $root->id,
-            'name'     => '市场渠道',
-            'icon'     => 'iconfont if-organization',
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $menu->id,
+            'parentid'   => $root->id,
             'name'       => '渠道管理',
-            'icon'       => 'iconfont if-customer',
-            'path'       => '/market/channel/index',
+            'icon'       => 'iconfont if-organization',
+            'path'       => '/market/channel',
+            'url'        => '/new#/market/channel',
             'meta'       => [
                 'title' => '渠道管理'
             ],
             'route'      => 'MarketChannelIndex',
-            'component'  => 'market-channel/index',
-            'permission' => 'market.channel.index',
+            'permission' => 'market.channel',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看',
+            'remark'     => '查看渠道',
+            'display'    => false,
+            'permission' => 'market.channel.index'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '编辑',
+            'remark'     => '编辑渠道',
+            'display'    => false,
+            'permission' => 'market.channel.update'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '删除',
+            'remark'     => '删除渠道',
+            'display'    => false,
+            'permission' => 'market.channel.index'
         ]);
 
         $menu = WebMenu::query()->create([
