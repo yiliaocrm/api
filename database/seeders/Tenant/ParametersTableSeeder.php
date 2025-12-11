@@ -172,6 +172,12 @@ class ParametersTableSeeder extends Seeder
                 'remark' => '开启IP白名单,在白名单内的IP才可以访问系统',
             ],
             [
+                'name'   => 'cywebos_enable_operation_log',
+                'value'  => 'true',
+                'type'   => 'boolean',
+                'remark' => '开启请求日志写入',
+            ],
+            [
                 'name'   => 'cywebos_enable_item_product_type_sync',
                 'value'  => 'true',
                 'type'   => 'boolean',
