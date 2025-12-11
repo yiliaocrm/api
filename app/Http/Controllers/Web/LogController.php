@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Models\ExportTask;
 use App\Models\UsersLogin;
 use App\Models\CustomerLog;
+use App\Models\OperationLog;
 use App\Models\CustomerPhoneView;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -143,6 +144,44 @@ class LogController extends Controller
             ->when($phone, fn(Builder $query) => $query->where('phone', 'like', "%{$phone}%"))
             ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
             ->when($customer_id, fn(Builder $query) => $query->where('customer_id', $customer_id))
+            ->orderBy($sort, $order)
+            ->paginate($rows);
+
+        return response_success([
+            'rows'  => $query->items(),
+            'total' => $query->total()
+        ]);
+    }
+
+    /**
+     * 操作日志
+     * @param LogRequest $request
+     * @return JsonResponse
+     */
+    public function operation(LogRequest $request): JsonResponse
+    {
+        $rows       = $request->input('rows', 10);
+        $sort       = $request->input('sort', 'id');
+        $order      = $request->input('order', 'desc');
+        $keyword    = $request->input('keyword');
+        $user_id    = $request->input('user_id');
+        $method     = $request->input('method');
+        $controller = $request->input('controller');
+        $action     = $request->input('action');
+
+        $query = OperationLog::query()
+            ->with([
+                'user:id,name'
+            ])
+            ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
+            ->when($method, fn(Builder $query) => $query->where('method', $method))
+            ->when($controller, fn(Builder $query) => $query->where('controller', 'like', "%{$controller}%"))
+            ->when($action, fn(Builder $query) => $query->where('action', 'like', "%{$action}%"))
+            ->when($keyword, fn(Builder $query) => $query->whereAny(['ip', 'url', 'controller', 'action', 'user_agent'], 'like', "%{$keyword}%"))
+            ->whereBetween('created_at', [
+                Carbon::parse($request->input('created_at.0'))->startOfDay(),
+                Carbon::parse($request->input('created_at.1'))->endOfDay()
+            ])
             ->orderBy($sort, $order)
             ->paginate($rows);
 

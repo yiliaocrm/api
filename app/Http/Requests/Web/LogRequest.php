@@ -21,6 +21,7 @@ class LogRequest extends FormRequest
             'export' => $this->getExportRules(),
             'customer' => $this->getCustomerRules(),
             'phone' => $this->getPhoneRules(),
+            'operation' => $this->getOperationRules(),
             default => []
         };
     }
@@ -37,6 +38,7 @@ class LogRequest extends FormRequest
             'export' => $this->getExportMessages(),
             'customer' => $this->getCustomerMessages(),
             'phone' => $this->getPhoneMessages(),
+            'operation' => $this->getOperationMessages(),
             default => []
         };
     }
@@ -162,6 +164,47 @@ class LogRequest extends FormRequest
             'customer_id.exists'  => '[顾客信息]不存在',
             'user_id.integer'     => '[查看人员]必须是整数',
             'user_id.exists'      => '[查看人员]不存在',
+        ];
+    }
+
+    /**
+     * 操作日志验证规则
+     */
+    private function getOperationRules(): array
+    {
+        return [
+            'created_at' => 'required|array|size:2',
+            'rows'       => 'nullable|integer|min:1|max:100',
+            'user_id'    => 'nullable|integer|exists:users,id',
+            'method'     => 'nullable|string|in:GET,POST,PUT,PATCH,DELETE',
+            'keyword'    => 'nullable|string|max:100',
+            'controller' => 'nullable|string|max:100',
+            'action'     => 'nullable|string|max:100',
+        ];
+    }
+
+    /**
+     * 操作日志验证错误消息
+     */
+    private function getOperationMessages(): array
+    {
+        return [
+            'created_at.required' => '[操作日期]不能为空',
+            'created_at.array'    => '[操作日期]必须是数组',
+            'created_at.size'     => '[操作日期]格式不正确',
+            'rows.integer'        => '[每页数量]必须是整数',
+            'rows.min'            => '[每页数量]不能小于1',
+            'rows.max'            => '[每页数量]不能大于100',
+            'user_id.integer'     => '[操作人员]必须是整数',
+            'user_id.exists'      => '[操作人员]不存在',
+            'method.string'       => '[请求方法]必须是字符串',
+            'method.in'           => '[请求方法]格式不正确',
+            'keyword.string'      => '[关键字]必须是字符串',
+            'keyword.max'         => '[关键字]不能超过100个字符',
+            'controller.string'   => '[控制器]必须是字符串',
+            'controller.max'      => '[控制器]不能超过100个字符',
+            'action.string'       => '[方法]必须是字符串',
+            'action.max'          => '[方法]不能超过100个字符',
         ];
     }
 }

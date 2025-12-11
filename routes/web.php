@@ -160,6 +160,7 @@ Route::controller(Web\LogController::class)->prefix('log')->group(function () {
     Route::post('phone', 'phone');
     Route::post('export', 'export');
     Route::post('customer', 'customer');
+    Route::post('operation', 'operation');
 });
 
 Route::controller(Web\UnitController::class)->prefix('unit')->group(function () {
