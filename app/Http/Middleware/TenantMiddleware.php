@@ -61,7 +61,7 @@ class TenantMiddleware
         }
 
         // 开启请求日志
-        if (parameter('cywebos_enable_operation_log')) {
+        if (!parameter('cywebos_enable_operation_log')) {
             return;
         }
 
