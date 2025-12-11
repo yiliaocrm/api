@@ -140,8 +140,7 @@ class TenantMiddleware
         $requestStartAt = app(Kernel::class)->requestStartedAt()->getPreciseTimestamp(3);
 
         // 计算执行时长（从 Laravel 开始处理请求到响应完成）
-        $duration   = round(microtime(true) - ($requestStartAt / 1000), 2);
-        $paramsJson = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
+        $duration = round(microtime(true) - ($requestStartAt / 1000), 2);
 
         // 获取控制器和方法信息
         $route      = $request->route();
@@ -156,7 +155,7 @@ class TenantMiddleware
             'controller'  => $controller,
             'action'      => $action,
             'url'         => $request->fullUrl(),
-            'params'      => $paramsJson,
+            'params'      => $request->all(),
             'status_code' => $response->getStatusCode(),
             'duration'    => $duration,
             'user_agent'  => $request->userAgent(),
