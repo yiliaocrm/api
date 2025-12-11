@@ -3,9 +3,13 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Throwable;
+use App\Models\OperationLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Http\Kernel;
+use Symfony\Component\HttpFoundation\Response;
 
 class TenantMiddleware
 {
@@ -36,6 +40,40 @@ class TenantMiddleware
         }
 
         return $next($request);
+    }
+
+    /**
+     * 在响应发送到浏览器后执行
+     * @param Request $request
+     * @param Response $response
+     * @return void
+     */
+    public function terminate(Request $request, Response $response): void
+    {
+        // CLI 环境下不记录操作日志
+        if (app()->runningInConsole()) {
+            return;
+        }
+
+        // 只有在租户环境下才记录日志
+        if (!tenant()) {
+            return;
+        }
+
+        // 开启请求日志
+        if (parameter('cywebos_enable_operation_log')) {
+            return;
+        }
+
+        try {
+            $this->logOperation($request, $response);
+        } catch (Throwable $e) {
+            // 记录日志失败不应该影响业务，静默处理
+            logger()->error('操作日志记录失败', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
     }
 
     /**
@@ -89,5 +127,39 @@ class TenantMiddleware
             return response_error(msg: $message, code: $code);
         }
         return view('message', ['message' => $message]);
+    }
+
+    /**
+     * 记录操作日志
+     * @param Request $request
+     * @param Response $response
+     * @return void
+     */
+    protected function logOperation(Request $request, Response $response): void
+    {
+        $requestStartAt = app(Kernel::class)->requestStartedAt()->getPreciseTimestamp(3);
+
+        // 计算执行时长（从 Laravel 开始处理请求到响应完成）
+        $duration   = round(microtime(true) - ($requestStartAt / 1000), 2);
+        $paramsJson = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
+
+        // 获取控制器和方法信息
+        $route      = $request->route();
+        $action     = $route ? $route->getActionMethod() : null;
+        $controller = $route ? $route->getControllerClass() : null;
+
+        // 记录日志
+        OperationLog::query()->create([
+            'user_id'     => user()?->id,
+            'ip'          => $request->getClientIp(),
+            'method'      => $request->method(),
+            'controller'  => $controller,
+            'action'      => $action,
+            'url'         => $request->fullUrl(),
+            'params'      => $paramsJson,
+            'status_code' => $response->getStatusCode(),
+            'duration'    => $duration,
+            'user_agent'  => $request->userAgent(),
+        ]);
     }
 }
