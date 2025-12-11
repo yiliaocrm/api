@@ -77,7 +77,7 @@ function list_to_tree(array $list, string $pk = 'id', string $pid = 'parentid', 
  * @param mixed $default
  * @return mixed
  */
-function parameter(?string $name = null, ?string $default = null): mixed
+function parameter(?string $name = null, mixed $default = null): mixed
 {
     $parameters = Parameter::query()
         ->get()
