@@ -51,6 +51,6 @@ class CustomerPhone extends BaseModel
      */
     public function relationship(): BelongsTo
     {
-        return $this->belongsTo(CustomerPhoneRelationship::class, 'relationship_id');
+        return $this->belongsTo(CustomerPhoneRelationship::class, 'relation_id');
     }
 }
