@@ -41,6 +41,7 @@ class CustomerProfileController extends Controller
             'tags',
             'items',
             'phones',
+            'phones.relationship:id,name',
             'medium:id,name',
             'doctorUser:id,name',
             'serviceUser:id,name',
