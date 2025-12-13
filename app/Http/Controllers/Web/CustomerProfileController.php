@@ -59,7 +59,11 @@ class CustomerProfileController extends Controller
     {
         $id    = $request->input('id');
         $show  = $request->input('show');
-        $query = CustomerPhone::query()->where('customer_id', $request->input('customer_id'));
+        $query = CustomerPhone::query()
+            ->with([
+                'relationship:id,name'
+            ])
+            ->where('customer_id', $request->input('customer_id'));
 
         if (!user()->hasAnyAccess(['superuser', 'customer.phone']) && $show) {
             return response_error(msg: '没有权限查看顾客手机号码');
@@ -103,6 +107,7 @@ class CustomerProfileController extends Controller
             'job:id,name',
             'tags',
             'phones',
+            'phones.relationship:id,name',
             'economic:id,name',
             'consultantUser:id,name',
             'ascriptionUser:id,name',

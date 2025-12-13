@@ -24,6 +24,7 @@ class FollowupController extends Controller
         $followup->load([
             'customer:id,idcard,name',
             'customer.phones',
+            'customer.phones.relationship:id,name'
         ]);
         return response_success($followup);
     }
