@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Web as Web;
+use App\Http\Controllers\Web;
 use Illuminate\Support\Facades\Route;
 
 /*
