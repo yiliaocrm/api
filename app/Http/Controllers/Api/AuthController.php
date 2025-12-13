@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
-use App\Events\Web\ScanQRCodeLoginEvent;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\Auth\LoginRequest;
-use App\Http\Requests\Api\Auth\QrcodeRequest;
-
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\AuthRequest;
+use App\Events\Web\ScanQRCodeLoginEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
@@ -18,19 +15,19 @@ class AuthController extends Controller
 {
     /**
      * 用户登陆
-     * @param LoginRequest $request
+     * @param AuthRequest $request
      * @return JsonResponse
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(AuthRequest $request): JsonResponse
     {
         $user = User::query()->where('email', $request->input('email'))->first();
         if (!$user || !Hash::check($request->input('password'), $user->password)) {
-            return response_error([], '账号或密码错误');
+            return response_error(msg: '账号或密码错误');
         }
 
         // 禁止登录
         if ($user->banned) {
-            return response_error([], '账号已被禁用，请联系管理员解决！');
+            return response_error(msg: '账号已被禁用，请联系管理员解决！');
         }
 
         // 登录成功，写日志
@@ -101,10 +98,10 @@ class AuthController extends Controller
 
     /**
      * APP扫码登陆
-     * @param QrcodeRequest $request
+     * @param AuthRequest $request
      * @return JsonResponse
      */
-    public function qrcode(QrcodeRequest $request): JsonResponse
+    public function qrcode(AuthRequest $request): JsonResponse
     {
         $uuid  = $request->input('uuid');
         $key   = "qrcode.login.{$uuid}";
