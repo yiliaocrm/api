@@ -55,18 +55,28 @@ class CacheController extends Controller
         );
     }
 
+    /**
+     * 回访类型
+     * @return JsonResponse
+     */
     public function followupTypes(): JsonResponse
     {
-        return response_success(
-            FollowupType::all()
-        );
+        $types = FollowupType::query()
+            ->select(['id', 'name'])
+            ->get();
+        return response_success($types);
     }
 
+    /**
+     * 回访工具
+     * @return JsonResponse
+     */
     public function followupTools(): JsonResponse
     {
-        return response_success(
-            FollowupTool::all()
-        );
+        $tools = FollowupTool::query()
+            ->select(['id', 'name'])
+            ->get();
+        return response_success($tools);
     }
 
     public function mediums(): JsonResponse
