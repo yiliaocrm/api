@@ -4,53 +4,45 @@ namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
 use App\Models\Followup;
-use Illuminate\Http\Request;
+use App\Enums\FollowupStatus;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Requests\Api\FollowupInfoRequest;
-use App\Http\Requests\Api\FollowupCreateRequest;
-use App\Http\Requests\Api\FollowupExecuteRequest;
+use App\Http\Requests\Api\FollowupRequest;
 
 class FollowupController extends Controller
 {
     /**
      * 回访列表
-     * @param Request $request
+     * @param FollowupRequest $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(FollowupRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'created_at');
-        $order = $request->input('order', 'desc');
+        $rows    = $request->input('rows', 10);
+        $sort    = $request->input('sort', 'created_at');
+        $order   = $request->input('order', 'desc');
+        $type    = $request->input('type');
+        $status  = $request->input('status');
+        $keyword = $request->input('keyword');
+
         $query = Followup::query()
             ->select([
-                'customer.name',
-                'customer.sex',
-                'followup.id',
-                'followup.date',
-                'followup.type',
-                'followup.title',
-                'followup.status',
-                'followup.customer_id',
-                'followup.followup_user',
-                'followup.created_at',
-                'followup.updated_at',
+                'followup.*',
             ])
             ->with([
+                'customer:id,sex,name,idcard',
                 'followupType:id,name',
-                'followupUserInfo:id,name'
+                'followupTool:id,name',
+                'followupUserInfo:id,name',
             ])
-            ->when($request->input('status'), function (Builder $builder) use ($request) {
-                $builder->where('followup.status', $request->input('status'));
-            })
-            ->when($request->input('date_start') && $request->input('date_end'), function (Builder $builder) use ($request) {
-                $builder->whereBetween('followup.date', [
-                    $request->input('date_start'),
-                    $request->input('date_end'),
-                ]);
-            })
+            ->whereBetween('followup.date', [
+                $request->input('date_start'),
+                $request->input('date_end'),
+            ])
+            ->when($type, fn(Builder $query) => $query->whereIn('followup.type', $type))
+            ->when($status, fn(Builder $query) => $query->where('followup.status', $status))
+            ->when($keyword, fn(Builder $query) => $query->whereLike('customer.keyword', '%' . $keyword . '%'))
             ->leftJoin('customer', 'customer.id', '=', 'followup.customer_id')
             ->orderBy($sort, $order)
             ->paginate($rows);
@@ -63,10 +55,10 @@ class FollowupController extends Controller
 
     /**
      * 回访信息
-     * @param FollowupInfoRequest $request
+     * @param FollowupRequest $request
      * @return JsonResponse
      */
-    public function info(FollowupInfoRequest $request): JsonResponse
+    public function info(FollowupRequest $request): JsonResponse
     {
         $followup = Followup::query()->find(
             $request->input('id')
@@ -84,10 +76,10 @@ class FollowupController extends Controller
 
     /**
      * 执行回访
-     * @param FollowupExecuteRequest $request
+     * @param FollowupRequest $request
      * @return JsonResponse
      */
-    public function execute(FollowupExecuteRequest $request): JsonResponse
+    public function execute(FollowupRequest $request): JsonResponse
     {
         $followup = Followup::query()->find(
             $request->input('id')
@@ -107,17 +99,17 @@ class FollowupController extends Controller
 
     /**
      * 创建回访或者回访计划
-     * @param FollowupCreateRequest $request
+     * @param FollowupRequest $request
      * @return JsonResponse
      */
-    public function create(FollowupCreateRequest $request): JsonResponse
+    public function create(FollowupRequest $request): JsonResponse
     {
         $followup = Followup::query()->create(
             $request->formData()
         );
 
         // 更新顾客最近回访时间
-        if ($followup->status == '2') {
+        if ($followup->status == FollowupStatus::COMPLETED) {
             $followup->customer->update([
                 'last_followup' => Carbon::now()->toDateTimeString()
             ]);

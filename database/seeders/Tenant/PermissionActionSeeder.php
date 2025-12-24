@@ -55,9 +55,9 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'create',
             ],
             [
-                'permission' => 'app.followup',
+                'permission' => 'app.followup.index',
                 'controller' => 'App\Http\Controllers\Api\FollowupController',
-                'action'     => '*',
+                'action'     => 'index',
             ],
             [
                 'permission' => 'app.followup.create',
