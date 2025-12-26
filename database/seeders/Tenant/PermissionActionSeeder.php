@@ -36,12 +36,12 @@ class PermissionActionSeeder extends Seeder
             ],
             [
                 'permission' => 'app.customer.photo',
-                'controller' => 'App\Http\Controllers\Api\CustomerController',
+                'controller' => 'App\Http\Controllers\Api\CustomerProfileController',
                 'action'     => 'photo',
             ],
             [
                 'permission' => 'app.customer.followup',
-                'controller' => 'App\Http\Controllers\Api\CustomerController',
+                'controller' => 'App\Http\Controllers\Api\CustomerProfileController',
                 'action'     => 'followup',
             ],
             [

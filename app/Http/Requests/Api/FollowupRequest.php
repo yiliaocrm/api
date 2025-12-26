@@ -100,7 +100,7 @@ class FollowupRequest extends FormRequest
     private function getInfoRules(): array
     {
         return [
-            'id' => 'required|exists:followup'
+            'id' => 'required|string|exists:followup'
         ];
     }
 
@@ -111,7 +111,8 @@ class FollowupRequest extends FormRequest
     {
         return [
             'id.required' => 'id参数不能为空!',
-            'id.exists'   => '数据不存在!'
+            'id.string'   => 'id参数格式错误!',
+            'id.exists'   => '数据不存在!',
         ];
     }
 

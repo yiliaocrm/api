@@ -27,7 +27,6 @@ class CustomerRequest extends FormRequest
     public function rules(): array
     {
         return match (request()->route()->getActionMethod()) {
-            'profile', 'followup', 'reservation', 'photo' => $this->getCustomerIdRules(),
             'query' => $this->getQueryRules(),
             'info' => $this->getInfoRules(),
             'create' => $this->getCreateRules(),
@@ -38,33 +37,11 @@ class CustomerRequest extends FormRequest
     public function messages(): array
     {
         return match (request()->route()->getActionMethod()) {
-            'profile', 'followup', 'reservation', 'photo' => $this->getCustomerIdMessages(),
             'query' => $this->getQueryMessages(),
             'info' => $this->getInfoMessages(),
             'create' => $this->getCreateMessages(),
             default => []
         };
-    }
-
-    /**
-     * 获取顾客ID验证规则
-     */
-    private function getCustomerIdRules(): array
-    {
-        return [
-            'customer_id' => 'required|exists:customer,id',
-        ];
-    }
-
-    /**
-     * 获取顾客ID验证错误消息
-     */
-    private function getCustomerIdMessages(): array
-    {
-        return [
-            'customer_id.required' => '顾客ID不能为空',
-            'customer_id.exists'   => '顾客ID不存在',
-        ];
     }
 
     /**

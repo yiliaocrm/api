@@ -47,13 +47,18 @@ Route::prefix('message')->group(function () {
 
 Route::prefix('customer')->group(function () {
     Route::get('info', [Api\CustomerController::class, 'info']);
-    Route::get('profile', [Api\CustomerController::class, 'profile']);
     Route::get('index', [Api\CustomerController::class, 'index']);
     Route::get('query', [Api\CustomerController::class, 'query']);
-    Route::get('photo', [Api\CustomerController::class, 'photo']);
-    Route::get('followup', [Api\CustomerController::class, 'followup']);
-    Route::get('reservation', [Api\CustomerController::class, 'reservation']);
     Route::post('create', [Api\CustomerController::class, 'create']);
+});
+
+Route::prefix('customer-profile')->group(function () {
+    Route::get('phone', [Api\CustomerProfileController::class, 'phone']);
+    Route::get('photo', [Api\CustomerProfileController::class, 'photo']);
+    Route::get('profile', [Api\CustomerProfileController::class, 'profile']);
+    Route::get('overview', [Api\CustomerProfileController::class, 'overview']);
+    Route::get('followup', [Api\CustomerProfileController::class, 'followup']);
+    Route::get('reservation', [Api\CustomerProfileController::class, 'reservation']);
 });
 
 Route::prefix('reservation')->group(function () {
