@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('auth')->group(function () {
+    Route::get('version', [Api\AuthController::class, 'version'])->withoutMiddleware(['auth:sanctum']);
     Route::post('login', [Api\AuthController::class, 'login'])->withoutMiddleware(['auth:sanctum']);
     Route::get('logout', [Api\AuthController::class, 'logout']);
     Route::get('profile', [Api\AuthController::class, 'profile']);
@@ -71,6 +72,7 @@ Route::prefix('followup')->group(function () {
     Route::get('info', [Api\FollowupController::class, 'info']);
     Route::get('index', [Api\FollowupController::class, 'index']);
     Route::post('create', [Api\FollowupController::class, 'create']);
+    Route::post('update', [Api\FollowupController::class, 'update']);
     Route::post('execute', [Api\FollowupController::class, 'execute']);
 });
 

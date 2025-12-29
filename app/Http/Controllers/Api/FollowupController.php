@@ -94,6 +94,10 @@ class FollowupController extends Controller
         $followup->customer->update([
             'last_followup' => Carbon::now()->toDateTimeString()
         ]);
+
+        // 加载指定字段的关联数据
+        $followup->load(['customer:id,name,idcard,sex']);
+
         return response_success($followup);
     }
 
@@ -115,6 +119,32 @@ class FollowupController extends Controller
             ]);
         }
 
+        return response_success($followup);
+    }
+
+    /**
+     * 更新回访记录
+     * @param FollowupRequest $request
+     * @return JsonResponse
+     */
+    public function update(FollowupRequest $request): JsonResponse
+    {
+        $followup = Followup::query()->find(
+            $request->input('id')
+        );
+
+        // 更新
+        $followup->update(
+            $request->formData()
+        );
+
+        // 写入顾客最近回访时间
+        $followup->customer->update([
+            'last_followup' => Carbon::now()->toDateTimeString()
+        ]);
+
+        $followup->load(['customer:id,name,idcard,sex']);
+        
         return response_success($followup);
     }
 }

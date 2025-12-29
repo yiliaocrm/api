@@ -148,7 +148,9 @@ class CustomerProfileController extends Controller
         $order = $request->input('order', 'desc');
         $query = Followup::query()
             ->with([
-                'followupUserInfo:id,name'
+                'followupType:id,name',
+                'followupTool:id,name',
+                'followupUserInfo:id,name',
             ])
             ->where('customer_id', $request->input('customer_id'))
             ->when($request->input('status'), fn(Builder $query) => $query->where('status', $request->input('status')))

@@ -14,6 +14,17 @@ use Illuminate\Support\Facades\Cache;
 class AuthController extends Controller
 {
     /**
+     * 返回系统版本号
+     * @return JsonResponse
+     */
+    public function version(): JsonResponse
+    {
+        return response_success(
+            admin_parameter('his_version')
+        );
+    }
+
+    /**
      * 用户登陆
      * @param AuthRequest $request
      * @return JsonResponse

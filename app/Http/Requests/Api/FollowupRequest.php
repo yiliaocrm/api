@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Enums\FollowupStatus;
 use Illuminate\Foundation\Http\FormRequest;
 
 class FollowupRequest extends FormRequest
@@ -55,7 +56,7 @@ class FollowupRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             'create' => $this->getCreateFormData(),
-            'execute' => $this->getExecuteFormData(),
+            'execute', 'update' => $this->getExecuteFormData(),
             default => []
         };
     }
@@ -197,7 +198,7 @@ class FollowupRequest extends FormRequest
             'time'         => date("Y-m-d H:i:s"),
             'remark'       => $this->input('remark'),
             'execute_user' => user()->id,
-            'status'       => 2,  // 已回访
+            'status'       => FollowupStatus::COMPLETED,
         ];
     }
 }
