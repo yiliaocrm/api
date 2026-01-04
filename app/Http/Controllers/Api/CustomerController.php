@@ -78,11 +78,9 @@ class CustomerController extends Controller
                 'consultant',
                 'ascription',
                 'medium_id',
-                'balance'
+                'first_time'
             ])
             ->with([
-                'tags',
-                'phones',
                 'createUser:id,name',
                 'consultantUser:id,name',
                 'ascriptionUser:id,name',
@@ -107,6 +105,10 @@ class CustomerController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate($rows);
+
+        $query->getCollection()->each(function ($customer) {
+            $customer->medium_name = get_medium_name($customer->medium_id, true);
+        });
 
         return response_success([
             'rows'  => $query->items(),
