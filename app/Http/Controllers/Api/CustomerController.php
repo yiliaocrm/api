@@ -81,6 +81,7 @@ class CustomerController extends Controller
                 'first_time'
             ])
             ->with([
+                'phone',
                 'createUser:id,name',
                 'consultantUser:id,name',
                 'ascriptionUser:id,name',
