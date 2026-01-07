@@ -9,7 +9,6 @@ use App\Repositorys\ErkaiRepository;
 use App\Repositorys\CashierRepository;
 use App\Repositorys\FollowupRepository;
 use App\Http\Requests\Web\ReportRequest;
-use App\Repositorys\TreatmentRepository;
 use App\Repositorys\ErpReportRepository;
 use App\Repositorys\ReceptionRepository;
 use App\Repositorys\ConsultantRepository;
@@ -118,19 +117,6 @@ class ReportController extends Controller
     {
         return response_success(
             $report->retailOutboundDetail($request)
-        );
-    }
-
-    /**
-     * 治疗划扣明细表
-     * @param TreatmentRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function treatmentDetail(TreatmentRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->detail($request)
         );
     }
 

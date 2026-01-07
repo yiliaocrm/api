@@ -48,6 +48,7 @@ class ExportRequest extends FormRequest
             'user' => $this->getUserRules(),
             'appointment' => $this->getAppointmentRules(),
             'treatmentRecord' => $this->getTreatmentRecordRules(),
+            'treatmentDetail' => $this->getTreatmentDetailRules(),
             default => []
         };
     }
@@ -73,6 +74,7 @@ class ExportRequest extends FormRequest
             'user' => $this->getUserMessages(),
             'appointment' => $this->getAppointmentMessages(),
             'treatmentRecord' => $this->getTreatmentRecordMessages(),
+            'treatmentDetail' => $this->getTreatmentDetailMessages(),
             default => []
         };
     }
@@ -530,58 +532,89 @@ class ExportRequest extends FormRequest
     private function getTreatmentRecordRules(): array
     {
         return [
-            'filters'      => [
+            'filters'  => [
                 'nullable',
                 'array',
                 new SceneRule('TreatmentRecord')
             ],
-            'keyword'      => 'nullable|string|max:200',
-            'date'         => 'required|array|size:2',
-            'date.*'       => 'required|date',
-            'fileName'     => 'nullable|string|max:200',
+            'keyword'  => 'nullable|string|max:200',
+            'date'     => 'required|array|size:2',
+            'date.*'   => 'required|date',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getTreatmentRecordMessages(): array
     {
         return [
-            'filters.array'      => '[场景化筛选条件]格式不正确',
-            'keyword.string'     => '关键字格式错误',
-            'keyword.max'        => '关键字不能超过200个字符',
-            'date.required'      => '[查询时间]不能为空',
-            'date.array'         => '[查询时间]格式不正确',
-            'date.size'          => '[查询时间]必须包含开始和结束日期',
-            'date.*.required'    => '[查询时间]不能为空',
-            'date.*.date'        => '[查询时间]格式错误',
-            'fileName.string'    => '文件名称格式错误',
-            'fileName.max'       => '文件名称不能超过200个字符',
+            'filters.array'   => '[场景化筛选条件]格式不正确',
+            'keyword.string'  => '关键字格式错误',
+            'keyword.max'     => '关键字不能超过200个字符',
+            'date.required'   => '[查询时间]不能为空',
+            'date.array'      => '[查询时间]格式不正确',
+            'date.size'       => '[查询时间]必须包含开始和结束日期',
+            'date.*.required' => '[查询时间]不能为空',
+            'date.*.date'     => '[查询时间]格式错误',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max'    => '文件名称不能超过200个字符',
+        ];
+    }
+
+    private function getTreatmentDetailRules(): array
+    {
+        return [
+            'filters'  => [
+                'nullable',
+                'array',
+                new SceneRule('ReportTreatmentDetail')
+            ],
+            'keyword'  => 'nullable|string|max:200',
+            'date'     => 'required|array|size:2',
+            'date.*'   => 'required|date',
+            'fileName' => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getTreatmentDetailMessages(): array
+    {
+        return [
+            'filters.array'   => '[场景化筛选条件]格式不正确',
+            'keyword.string'  => '关键字格式错误',
+            'keyword.max'     => '关键字不能超过200个字符',
+            'date.required'   => '[查询时间]不能为空',
+            'date.array'      => '[查询时间]格式不正确',
+            'date.size'       => '[查询时间]必须包含开始和结束日期',
+            'date.*.required' => '[查询时间]不能为空',
+            'date.*.date'     => '[查询时间]格式错误',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max'    => '文件名称不能超过200个字符',
         ];
     }
 
     private function getCustomerDepositDetailRules(): array
     {
         return [
-            'date'              => 'required|array|size:2',
-            'date.*'            => 'required|date',
-            'keyword'           => 'nullable|string|max:200',
-            'cashierable_type'  => 'nullable|string',
-            'fileName'          => 'nullable|string|max:200',
+            'date'             => 'required|array|size:2',
+            'date.*'           => 'required|date',
+            'keyword'          => 'nullable|string|max:200',
+            'cashierable_type' => 'nullable|string',
+            'fileName'         => 'nullable|string|max:200',
         ];
     }
 
     private function getCustomerDepositDetailMessages(): array
     {
         return [
-            'date.required'        => '[查询日期]不能为空',
-            'date.array'           => '[查询日期]格式错误',
-            'date.size'            => '[查询日期]必须包含开始和结束日期',
-            'date.*.required'      => '[查询日期]不能为空',
-            'date.*.date'          => '[查询日期]格式错误',
-            'keyword.string'       => '关键字格式错误',
-            'keyword.max'          => '关键字不能超过200个字符',
+            'date.required'           => '[查询日期]不能为空',
+            'date.array'              => '[查询日期]格式错误',
+            'date.size'               => '[查询日期]必须包含开始和结束日期',
+            'date.*.required'         => '[查询日期]不能为空',
+            'date.*.date'             => '[查询日期]格式错误',
+            'keyword.string'          => '关键字格式错误',
+            'keyword.max'             => '关键字不能超过200个字符',
             'cashierable_type.string' => '业务类型格式错误',
-            'fileName.string'      => '文件名称格式错误',
-            'fileName.max'         => '文件名称不能超过200个字符',
+            'fileName.string'         => '文件名称格式错误',
+            'fileName.max'            => '文件名称不能超过200个字符',
         ];
     }
 
@@ -608,6 +641,7 @@ class ExportRequest extends FormRequest
             'user' => $this->only(['keyword', 'roles', 'department_id']),
             'appointment' => $this->only(['filters', 'keyword', 'created_at']),
             'treatmentRecord' => $this->only(['filters', 'keyword', 'date']),
+            'treatmentDetail' => $this->only(['filters', 'keyword', 'date']),
             default => []
         };
     }

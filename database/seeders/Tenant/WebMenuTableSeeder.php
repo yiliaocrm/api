@@ -866,6 +866,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '治疗划扣明细表',
             'icon'       => 'iconfont if-treatment',
             'path'       => '/report/treatment-detail',
+            'url'        => '/new#/report/operation/treatment-detail',
             'meta'       => [
                 'title' => '治疗划扣明细表'
             ],

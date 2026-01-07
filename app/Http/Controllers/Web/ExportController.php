@@ -21,6 +21,7 @@ use App\Exports\PurchaseDetailExport;
 use App\Exports\InventoryAlarmExport;
 use App\Exports\InventoryBatchExport;
 use App\Exports\TreatmentRecordExport;
+use App\Exports\TreatmentDetailExport;
 use App\Exports\InventoryDetailExport;
 use App\Exports\InventoryExpiryExport;
 use App\Exports\CustomerProductExport;
@@ -196,6 +197,19 @@ class ExportController extends Controller
         $name = $request->input('fileName', '治疗记录');
         $task = $request->createExportTask($name);
         dispatch(new TreatmentRecordExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
+    }
+
+    /**
+     * 导出[治疗划扣明细表]
+     * @param ExportRequest $request
+     * @return JsonResponse
+     */
+    public function treatmentDetail(ExportRequest $request): JsonResponse
+    {
+        $name = $request->input('fileName', '治疗划扣明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new TreatmentDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
