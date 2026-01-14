@@ -94,7 +94,7 @@ Route::prefix('customer-photo')->group(function () {
 Route::prefix('appointment')->group(function () {
     Route::get('index', [Api\AppointmentController::class, 'index']);
     Route::get('config', [Api\AppointmentController::class, 'config']);
-    Route::get('dashboard', [Api\AppointmentController::class, 'dashboard']);
     Route::post('create', [Api\AppointmentController::class, 'create']);
+    Route::get('dashboard', [Api\AppointmentController::class, 'dashboard']);
 });
 

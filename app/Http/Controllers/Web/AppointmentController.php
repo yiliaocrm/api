@@ -6,20 +6,26 @@ use App\Models\Appointment;
 use App\Enums\AppointmentStatus;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Services\AppointmentService;
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Requests\Web\AppointmentRequest;
 
 class AppointmentController extends Controller
 {
+    public function __construct(
+        protected AppointmentService $appointmentService
+    )
+    {
+    }
+
     /**
      * 预约设置
-     * @param AppointmentRequest $request
      * @return JsonResponse
      */
-    public function getConfig(AppointmentRequest $request): JsonResponse
+    public function getConfig(): JsonResponse
     {
         return response_success(
-            $request->getConfigData()
+            $this->appointmentService->getConfig()
         );
     }
 
@@ -30,7 +36,9 @@ class AppointmentController extends Controller
      */
     public function saveConfig(AppointmentRequest $request): JsonResponse
     {
-        $request->saveConfig();
+        $this->appointmentService->saveConfig(
+            $request->all()
+        );
         return response_success();
     }
 

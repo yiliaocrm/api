@@ -10,6 +10,7 @@ class AppointmentConfig extends BaseModel
     protected function casts(): array
     {
         return [
+            'display'      => 'boolean',
             'color_scheme' => 'json',
         ];
     }

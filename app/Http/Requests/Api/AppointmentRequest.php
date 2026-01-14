@@ -3,13 +3,9 @@
 namespace App\Http\Requests\Api;
 
 use Carbon\Carbon;
-use App\Models\Role;
-use App\Models\Room;
-use App\Models\Department;
 use App\Models\Appointment;
 use App\Enums\AppointmentStatus;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -56,10 +52,13 @@ class AppointmentRequest extends FormRequest
     private function getIndexRules(): array
     {
         return [
-            'date'  => 'required|date_format:Y-m-d',
-            'sort'  => 'nullable|string',
-            'order' => 'nullable|in:asc,desc',
-            'rows'  => 'nullable|integer|min:1',
+            'date'        => 'required|date_format:Y-m-d',
+            'sort'        => 'nullable|string',
+            'order'       => 'nullable|in:asc,desc',
+            'rows'        => 'nullable|integer|min:1',
+            'status'      => 'required|array|in:' . implode(',', array_keys(AppointmentStatus::options())),
+            'view'        => 'nullable|string|in:department,room,doctor,consultant,technician',
+            'resource_id' => 'nullable|array'
         ];
     }
 
@@ -71,11 +70,16 @@ class AppointmentRequest extends FormRequest
     private function getIndexMessages(): array
     {
         return [
-            'date.required'    => '[日期]不能为空!',
-            'date.date_format' => '[日期]格式错误!',
-            'order.in'         => '[排序方式]错误!',
-            'rows.integer'     => '[每页条数]必须为整数!',
-            'rows.min'         => '[每页条数]最小为1!',
+            'date.required'     => '[日期]不能为空!',
+            'date.date_format'  => '[日期]格式错误!',
+            'order.in'          => '[排序方式]错误!',
+            'rows.integer'      => '[每页条数]必须为整数!',
+            'rows.min'          => '[每页条数]最小为1!',
+            'status.required'   => '[预约状态]不能为空!',
+            'status.array'      => '[预约状态]必须是数组!',
+            'status.in'         => '[预约状态]错误!',
+            'view.in'           => '[视图类型]错误!',
+            'resource_id.array' => '[资源ID]必须是数组!',
         ];
     }
 
@@ -134,26 +138,27 @@ class AppointmentRequest extends FormRequest
     private function getDashboardRules(): array
     {
         $rules = [
-            'date'        => 'required|date_format:Y-m-d',
-            'resource_id' => 'required|in:consultant,doctor,department,room,technician',
+            'date'   => 'required|date_format:Y-m-d',
+            'view'   => 'required|string|in:department,room,doctor,consultant,technician',
+            'status' => 'required|array|in:' . implode(',', array_keys(AppointmentStatus::options())),
         ];
 
         // 科室id
-        if ($this->input('resource_id') === 'department') {
-            $rules['resources']   = 'nullable|array';
-            $rules['resources.*'] = 'nullable|integer';
+        if ($this->input('view') === 'department') {
+            $rules['resource_id']   = 'nullable|array';
+            $rules['resource_id.*'] = 'nullable|integer|exists:department,id';
         }
 
         // 员工id
-        if (in_array($this->input('resource_id'), ['doctor', 'consultant', 'technician'])) {
-            $rules['resources']   = 'nullable|array';
-            $rules['resources.*'] = 'nullable|integer';
+        if (in_array($this->input('view'), ['doctor', 'consultant', 'technician'])) {
+            $rules['resource_id']   = 'nullable|array';
+            $rules['resource_id.*'] = 'nullable|integer|exists:users,id';
         }
 
         // 房间id
-        if ($this->input('resource_id') === 'room') {
-            $rules['resources']   = 'nullable|array';
-            $rules['resources.*'] = 'nullable|integer';
+        if ($this->input('view') === 'room') {
+            $rules['resource_id']   = 'nullable|array';
+            $rules['resource_id.*'] = 'nullable|integer|exists:room,id';
         }
 
         return $rules;
@@ -167,11 +172,17 @@ class AppointmentRequest extends FormRequest
     private function getDashboardMessages(): array
     {
         return [
-            'date.required'        => '请选择日期',
-            'date.date_format'     => '日期格式错误',
-            'resource_id.required' => '请选择资源类型',
-            'resource_id.in'       => '资源类型错误',
-            'resources.array'      => 'resources错误',
+            'date.required'         => '[预约日期]不能为空!',
+            'date.date_format'      => '[预约日期]格式错误!',
+            'view.required'         => '[视图类型]不能为空!',
+            'view.string'           => '[视图类型]必须是字符串!',
+            'view.in'               => '[视图类型]错误!',
+            'status.required'       => '[预约状态]不能为空!',
+            'status.array'          => '[预约状态]必须是数组!',
+            'status.in'             => '[预约状态]错误!',
+            'resource_id.array'     => '[资源ID]必须是数组!',
+            'resource_id.*.integer' => '[资源ID]必须是整数!',
+            'resource_id.*.exists'  => '[资源ID]不存在!',
         ];
     }
 
@@ -217,239 +228,86 @@ class AppointmentRequest extends FormRequest
     }
 
     /**
-     * 构建资源列表
-     *
-     * @return array
-     */
-    public function structResources(): array
-    {
-        $resources   = $this->input('resources');
-        $resource_id = $this->input('resource_id');
-
-        // 科室视图
-        if ($resource_id === 'department') {
-            $default = ['id' => 0, 'name' => '未指定科室', 'appointment_order' => 99999];
-            return Department::query()
-                ->select(['id', 'name', 'appointment_order'])
-                ->where('appointment_display', 1)
-                ->where('primary', 1)
-                ->when($resources, fn(Builder $query) => $query->whereIn('id', $resources))
-                ->orderByDesc('appointment_order')
-                ->orderByDesc('id')
-                ->get()
-                ->prepend($default)
-                ->toArray();
-        }
-
-        // 诊间
-        if ($resource_id === 'room') {
-            $default = ['id' => 0, 'name' => '未指定诊间', 'appointment_order' => 99999];
-            return Room::query()
-                ->select(['id', 'name', 'appointment_order'])
-                ->where('appointment_display', 1)
-                ->when($resources, fn(Builder $query) => $query->whereIn('id', $resources))
-                ->orderByDesc('appointment_order')
-                ->orderByDesc('id')
-                ->get()
-                ->prepend($default)
-                ->toArray();
-        }
-
-        // users表
-        return $this->getUsersByRole($resource_id, true);
-    }
-
-    /**
      * 构建事件列表
      *
      * @return array
      */
     public function structEvents(): array
     {
-        return Appointment::query()
-            ->select(['appointments.*'])
+        $keyword       = $this->input('keyword');
+        $view          = $this->input('view');
+        $resourceIds   = $this->input('resource_id', []);
+        $date          = $this->input('date');
+
+        $query = Appointment::query()
+            ->select('appointments.*')
             ->with([
                 'room:id,name',
                 'doctor:id,name',
-                'customer:id,idcard,sex,name',
+                'customer:id,idcard,sex,name,file_number,birthday,ascription,consultant,remark',
+                'customer.ascriptionUser:id,name',
+                'customer.consultantUser:id,name',
+                'customer.phones',
                 'consultant:id,name',
-                'department:id,name'
+                'department:id,name',
+                'createUser:id,name',
             ])
             ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
-            ->where('appointments.date', $this->input('date'))
-            ->orderBy('appointments.start')
-            ->get()
-            ->toArray();
-    }
+            ->where('appointments.date', $date)
+            ->whereIn('appointments.status', $this->input('status'))
+            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'));
 
-    /**
-     * 获取角色对应的用户id
-     *
-     * @param string $slug
-     * @param boolean $schedule
-     * @return array
-     */
-    private function getUsersByRole(string $slug, bool $schedule = false): array
-    {
-        $default = ['id' => 0, 'name' => '未指定人员', 'schedules' => [], 'appointment_order' => 99999];
-        $role    = Role::query()->where('slug', $slug)->first();
-        $users   = $this->input('resources', []);
-
-        if (!$role) {
-            return $default;
+        // 根据视图类型和资源ID过滤
+        if ($view && !empty($resourceIds)) {
+            $query->whereIn('appointments.' . $view . '_id', $resourceIds);
         }
 
-        return $role->users()
-            ->select([
-                'id',
-                'name',
-                'appointment_order'
-            ])
-            // 查询排班
-            ->when($schedule, function (Builder $builder) {
-                $builder->with([
-                    'schedules' => function ($query) {
-                        $query->whereBetween('start', [
-                            Carbon::parse($this->input('date')),
-                            Carbon::parse($this->input('date'))->endOfDay(),
-                        ])->where('store_id', store()->id);
-                    }
-                ]);
-            })
-            ->where('appointment_display', 1)
-            ->where('banned', 0)
-            ->when($users, fn(Builder $query) => $query->whereIn('id', $users))
-            ->orderByDesc('appointment_order')
-            ->orderByDesc('id')
+        return $query->orderBy('appointments.start', 'asc')
             ->get()
-            ->makeHidden('pivot')
-            ->prepend($default)
             ->toArray();
     }
 
     /**
-     * 获取预约看板配置数据
-     *
+     * 构建状态统计数据
      * @return array
      */
-    public function getConfig(): array
+    public function structStatus(): array
     {
-        $prefix = DB::getTablePrefix();
+        $keyword     = $this->input('keyword');
+        $view        = $this->input('view');
+        $resourceIds = $this->input('resource_id', []);
+        $date        = $this->input('date');
 
-        $room = DB::table('room')
-            ->select([
-                'room.id',
-                'room.name',
-                'room.department_id',
-                DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}room.id) as `order`"),
-                DB::raw("COALESCE({$prefix}appointment_configs.display, 1) as `display`")
-            ])
-            ->leftJoin('appointment_configs', function (JoinClause $join) {
-                $join->on('appointment_configs.target_id', '=', 'room.id')
-                    ->where('appointment_configs.config_type', 'room')
-                    ->where('appointment_configs.store_id', store()->id);
-            })
-            ->orderByDesc('order')
-            ->orderByDesc('room.id')
-            ->get()
-            ->toArray();
+        // 获取所有可用状态选项
+        $statusOptions = AppointmentStatus::options([AppointmentStatus::CANCELLED]);
 
-        $department = DB::table('department')
-            ->select([
-                'department.id',
-                'department.name',
-                DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}department.id) as `order`"),
-                DB::raw("COALESCE({$prefix}appointment_configs.display, 1) as `display`")
-            ])
-            ->leftJoin('appointment_configs', function (JoinClause $join) {
-                $join->on('appointment_configs.target_id', '=', 'department.id')
-                    ->where('appointment_configs.config_type', 'department')
-                    ->where('appointment_configs.store_id', store()->id);
-            })
-            ->orderByDesc('order')
-            ->orderByDesc('department.id')
-            ->where('department.primary', 1)
-            ->get()
-            ->toArray();
+        // 构建基础查询
+        $baseQuery = Appointment::query()
+            ->select('appointments.status', DB::raw('COUNT(*) as count'))
+            ->leftJoin('customer', 'customer.id', '=', 'appointments.customer_id')
+            ->where('appointments.date', $date)
+            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'));
 
-        $doctor = DB::table('users')
-            ->select([
-                'users.id',
-                'users.name',
-                'users.department_id',
-                DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}users.id) as `order`"),
-                DB::raw("COALESCE({$prefix}appointment_configs.display, 1) as `display`")
-            ])
-            ->join('role_users', 'role_users.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_users.role_id')
-            ->leftJoin('appointment_configs', function (JoinClause $join) {
-                $join->on('appointment_configs.target_id', '=', 'users.id')
-                    ->where('appointment_configs.config_type', 'doctor')
-                    ->where('appointment_configs.store_id', store()->id);
-            })
-            ->where('roles.slug', '=', 'doctor')
-            ->where('users.banned', '=', 0)
-            ->orderByDesc('order')
-            ->orderByDesc('users.id')
-            ->get()
-            ->toArray();
+        // 根据视图类型和资源ID过滤
+        if ($view && !empty($resourceIds)) {
+            $baseQuery->whereIn('appointments.' . $view . '_id', $resourceIds);
+        }
 
-        $consultant = DB::table('users')
-            ->select([
-                'users.id',
-                'users.name',
-                'users.department_id',
-                DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}users.id) as `order`"),
-                DB::raw("COALESCE({$prefix}appointment_configs.display, 1) as `display`")
-            ])
-            ->join('role_users', 'role_users.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_users.role_id')
-            ->leftJoin('appointment_configs', function (JoinClause $join) {
-                $join->on('appointment_configs.target_id', '=', 'users.id')
-                    ->where('appointment_configs.config_type', 'consultant')
-                    ->where('appointment_configs.store_id', store()->id);
-            })
-            ->where('roles.slug', '=', 'consultant')
-            ->where('users.banned', '=', 0)
-            ->orderByDesc('order')
-            ->orderByDesc('users.id')
-            ->get()
-            ->toArray();
+        $baseQuery->groupBy('appointments.status');
 
-        $technician = DB::table('users')
-            ->select([
-                'users.id',
-                'users.name',
-                'users.department_id',
-                DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}users.id) as `order`"),
-                DB::raw("COALESCE({$prefix}appointment_configs.display, 1) as `display`")
-            ])
-            ->join('role_users', 'role_users.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_users.role_id')
-            ->leftJoin('appointment_configs', function (JoinClause $join) {
-                $join->on('appointment_configs.target_id', '=', 'users.id')
-                    ->where('appointment_configs.config_type', 'technician')
-                    ->where('appointment_configs.store_id', store()->id);
-            })
-            ->where('roles.slug', '=', 'technician')
-            ->where('users.banned', '=', 0)
-            ->orderByDesc('order')
-            ->orderByDesc('users.id')
-            ->get()
-            ->toArray();
+        // 获取状态统计数据
+        $statusCounts = $baseQuery->pluck('count', 'status')->toArray();
 
-        return [
-            'room'                     => $room,
-            'status'                   => AppointmentStatus::options([AppointmentStatus::CANCELLED]),
-            'doctor'                   => $doctor,
-            'consultant'               => $consultant,
-            'department'               => $department,
-            'technician'               => $technician,
-            'business_start'           => store()->business_start->format('H:i'),
-            'business_end'             => store()->business_end->format('H:i'),
-            'slot_duration'            => store()->slot_duration,
-            'appointment_color_config' => store()->appointment_color_config,
-            'appointment_color_scheme' => store()->appointment_color_scheme,
-        ];
+        // 构建返回结果
+        $result = [];
+        foreach ($statusOptions as $statusValue => $statusLabel) {
+            $result[] = [
+                'value' => $statusValue,
+                'label' => $statusLabel,
+                'count' => $statusCounts[$statusValue] ?? 0,
+            ];
+        }
+
+        return $result;
     }
 }
