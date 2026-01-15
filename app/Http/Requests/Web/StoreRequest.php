@@ -44,6 +44,8 @@ class StoreRequest extends FormRequest
             'business_start' => 'required|string',
             'business_end'   => 'required|string',
             'remark'         => 'nullable|string|max:255',
+            'longitude'      => 'nullable|numeric|between:-180,180',
+            'latitude'       => 'nullable|numeric|between:-90,90',
         ];
     }
 
@@ -65,7 +67,11 @@ class StoreRequest extends FormRequest
             'business_end.required'   => '营业时间结束不能为空！',
             'business_end.string'     => '营业时间结束必须为字符串！',
             'remark.string'           => '门店简介必须为字符串！',
-            'remark.max'              => '门店简介不能超过255个字符！'
+            'remark.max'              => '门店简介不能超过255个字符！',
+            'longitude.numeric'       => '经度必须为数字！',
+            'longitude.between'       => '经度必须在-180到180之间！',
+            'latitude.numeric'        => '纬度必须为数字！',
+            'latitude.between'        => '纬度必须在-90到90之间！'
         ];
     }
 
@@ -80,6 +86,8 @@ class StoreRequest extends FormRequest
             'business_start' => 'required|string',
             'business_end'   => 'required|string',
             'remark'         => 'nullable|string|max:255',
+            'longitude'      => 'nullable|numeric|between:-180,180',
+            'latitude'       => 'nullable|numeric|between:-90,90',
         ];
     }
 
@@ -106,7 +114,11 @@ class StoreRequest extends FormRequest
             'business_end.required'   => '营业时间结束不能为空！',
             'business_end.string'     => '营业时间结束必须为字符串！',
             'remark.string'           => '门店简介必须为字符串！',
-            'remark.max'              => '门店简介不能超过255个字符！'
+            'remark.max'              => '门店简介不能超过255个字符！',
+            'longitude.numeric'       => '经度必须为数字！',
+            'longitude.between'       => '经度必须在-180到180之间！',
+            'latitude.numeric'        => '纬度必须为数字！',
+            'latitude.between'        => '纬度必须在-90到90之间！'
         ];
     }
 
@@ -146,7 +158,9 @@ class StoreRequest extends FormRequest
             'address'        => $this->input('address'),
             'business_start' => $this->input('business_start'),
             'business_end'   => $this->input('business_end'),
-            'remark'         => $this->input('remark')
+            'remark'         => $this->input('remark'),
+            'longitude'      => $this->input('longitude'),
+            'latitude'       => $this->input('latitude')
         ];
     }
 }

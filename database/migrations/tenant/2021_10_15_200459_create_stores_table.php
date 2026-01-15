@@ -24,6 +24,8 @@ return new class extends Migration {
             $table->json('appointment_color_config')->nullable()->comment('预约看板配色方案设置');
             $table->string('appointment_color_scheme')->default('default')->comment('预约看板颜色方案');
             $table->text('remark')->nullable()->comment('门店简介');
+            $table->decimal('longitude', 10, 7)->nullable()->comment('经度');
+            $table->decimal('latitude', 10, 7)->nullable()->comment('纬度');
             $table->timestamps();
             $table->comment('门店表');
         });

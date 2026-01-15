@@ -109,9 +109,17 @@ class CacheController extends Controller
         return response_success($rooms);
     }
 
+    /**
+     * 员工列表
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function users(Request $request): JsonResponse
     {
         $users = User::query()
+            ->with([
+                'department:id,name',
+            ])
             ->select([
                 'users.id',
                 'users.name',
