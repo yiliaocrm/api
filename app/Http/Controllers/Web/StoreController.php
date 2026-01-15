@@ -72,4 +72,16 @@ class StoreController extends Controller
         Store::query()->find($request->input('id'))->delete();
         return response_success();
     }
+
+    /**
+     * 获取高德地图配置
+     * @return JsonResponse
+     */
+    public function amapConfig(): JsonResponse
+    {
+        return response_success([
+            'key'    => admin_parameter('amap_key'),
+            'secret' => admin_parameter('amap_secret')
+        ]);
+    }
 }

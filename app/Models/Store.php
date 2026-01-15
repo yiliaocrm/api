@@ -10,8 +10,8 @@ class Store extends BaseModel
             'business_start'           => 'datetime:H:i',
             'business_end'             => 'datetime:H:i',
             'appointment_color_config' => 'json',
-            'longitude'                => 'decimal:7',
-            'latitude'                 => 'decimal:7',
+            'longitude'                => 'float',
+            'latitude'                 => 'float',
         ];
     }
 }

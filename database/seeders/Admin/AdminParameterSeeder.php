@@ -201,6 +201,18 @@ class AdminParameterSeeder extends Seeder
                 'type'   => 'string',
                 'remark' => '客服描述',
             ],
+            [
+                'name'   => 'amap_key',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => '高德地图Web端Key',
+            ],
+            [
+                'name'   => 'amap_secret',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => '高德地图安全密钥',
+            ],
         ];
         // 添加或更新参数
         foreach ($parameters as $parameter) {

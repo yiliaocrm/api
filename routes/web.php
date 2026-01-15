@@ -62,6 +62,7 @@ Route::controller(Web\StoreController::class)->prefix('store')->group(function (
     Route::get('remove', 'remove');
     Route::post('create', 'create');
     Route::post('update', 'update');
+    Route::get('amap-config', 'amapConfig');
 });
 
 Route::controller(Web\AddressController::class)->prefix('address')->group(function () {
@@ -944,6 +945,11 @@ Route::controller(Web\MarketChannelController::class)->prefix('marketing-channel
     Route::get('remove', 'remove');
     Route::post('create', 'create');
     Route::post('update', 'update');
+});
+
+Route::controller(Web\MarketLocationController::class)->prefix('market-location')->group(function () {
+    Route::get('index', 'index');
+    Route::get('amap-config', 'amapConfig');
 });
 
 Route::controller(Web\TokenController::class)->prefix('token')->group(function () {
