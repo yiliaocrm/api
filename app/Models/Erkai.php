@@ -70,4 +70,13 @@ class Erkai extends BaseModel
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * 媒介来源
+     * @return BelongsTo
+     */
+    public function medium(): BelongsTo
+    {
+        return $this->belongsTo(Medium::class);
+    }
 }

@@ -853,6 +853,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '二开零购明细表',
             'icon'       => 'iconfont if-shopping-cart',
             'path'       => '/report/erkai-detail',
+            'url'        => '/new#/report/operation/erkai-detail',
             'route'      => 'ReportErkaiDetail',
             'meta'       => [
                 'title' => '二开零购明细表'

@@ -47,6 +47,7 @@ class ExportRequest extends FormRequest
             'productRanking' => $this->getProductRankingRules(),
             'user' => $this->getUserRules(),
             'appointment' => $this->getAppointmentRules(),
+            'erkaiDetail' => $this->getErkaiDetailRules(),
             'treatmentRecord' => $this->getTreatmentRecordRules(),
             'treatmentDetail' => $this->getTreatmentDetailRules(),
             default => []
@@ -73,6 +74,7 @@ class ExportRequest extends FormRequest
             'productRanking' => $this->getProductRankingMessages(),
             'user' => $this->getUserMessages(),
             'appointment' => $this->getAppointmentMessages(),
+            'erkaiDetail' => $this->getErkaiDetailMessages(),
             'treatmentRecord' => $this->getTreatmentRecordMessages(),
             'treatmentDetail' => $this->getTreatmentDetailMessages(),
             default => []
@@ -529,6 +531,38 @@ class ExportRequest extends FormRequest
         ];
     }
 
+    private function getErkaiDetailRules(): array
+    {
+        return [
+            'filters'      => [
+                'nullable',
+                'array',
+                new SceneRule('ReportErkaiDetail')
+            ],
+            'keyword'      => 'nullable|string|max:200',
+            'created_at'   => 'required|array|size:2',
+            'created_at.*' => 'required|date|date_format:Y-m-d',
+            'fileName'     => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getErkaiDetailMessages(): array
+    {
+        return [
+            'filters.array'            => '[场景化筛选条件]格式不正确',
+            'keyword.string'           => '[顾客信息]格式错误',
+            'keyword.max'              => '[顾客信息]不能超过200个字符',
+            'created_at.required'      => '[查询时间]不能为空',
+            'created_at.array'         => '[查询时间]格式不正确',
+            'created_at.size'          => '[查询时间]格式不正确',
+            'created_at.*.required'    => '[查询时间]格式不正确',
+            'created_at.*.date'        => '[查询时间]格式不正确',
+            'created_at.*.date_format' => '[查询时间]格式不正确',
+            'fileName.string'          => '文件名称格式错误',
+            'fileName.max'             => '文件名称不能超过200个字符',
+        ];
+    }
+
     private function getTreatmentRecordRules(): array
     {
         return [
@@ -640,6 +674,7 @@ class ExportRequest extends FormRequest
             'inventoryExpiry' => $this->only(['warehouse_id', 'type_id', 'name', 'status', 'expiry_diff']),
             'user' => $this->only(['keyword', 'roles', 'department_id']),
             'appointment' => $this->only(['filters', 'keyword', 'created_at']),
+            'erkaiDetail' => $this->only(['filters', 'keyword', 'created_at']),
             'treatmentRecord' => $this->only(['filters', 'keyword', 'date']),
             'treatmentDetail' => $this->only(['filters', 'keyword', 'date']),
             default => []

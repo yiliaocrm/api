@@ -830,7 +830,7 @@ Route::prefix('report')->group(function () {
     Route::post('cashier/deposit-received-detail', [Web\ReportCashierController::class, 'depositReceivedDetail']);
     Route::post('retail-outbound/detail', [Web\ReportController::class, 'retailOutboundDetail']);
     Route::post('treatment/detail', [Web\ReportTreatmentController::class, 'detail']);
-    Route::post('erkai/detail', [Web\ReportController::class, 'erkaiDetail']);
+    Route::post('erkai/detail', [Web\ReportErkaiController::class, 'detail']);
     Route::post('consumable/detail', [Web\ReportConsumableController::class, 'detail']);
     Route::post('product/ranking', [Web\ReportCustomerProductController::class, 'ranking']);
     Route::get('reception/product-analysis', [Web\ReportController::class, 'receptionProductAnalysis']);
@@ -860,7 +860,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::post('cashier/refund', 'cashierRefund');
     Route::post('cashier/list', 'cashierList');
     Route::post('coupon/detail', 'couponDetail');
-    Route::get('erkai/detail', 'erkaiDetail');
+    Route::post('erkai/detail', 'erkaiDetail');
     Route::post('product/ranking', 'productRanking');
     Route::get('inventory/detail', 'inventoryDetail');
     Route::get('inventory/batch', 'inventoryBatch');

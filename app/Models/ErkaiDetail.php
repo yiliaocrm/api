@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ErkaiDetail extends BaseModel
 {
-    use HasUuids;
+    use HasUuids, QueryConditionsTrait;
 
     protected $table = 'erkai_detail';
     protected $keyType = 'string';
@@ -50,5 +51,23 @@ class ErkaiDetail extends BaseModel
     public function units(): HasMany
     {
         return $this->hasMany(GoodsUnit::class, 'goods_id', 'goods_id');
+    }
+
+    /**
+     * 录单人员
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 结算科室
+     * @return BelongsTo
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 }

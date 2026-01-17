@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Repositorys\ErkaiRepository;
 use App\Repositorys\CashierRepository;
 use App\Repositorys\FollowupRepository;
 use App\Http\Requests\Web\ReportRequest;
@@ -117,19 +116,6 @@ class ReportController extends Controller
     {
         return response_success(
             $report->retailOutboundDetail($request)
-        );
-    }
-
-    /**
-     * 二开零购明细表
-     * @param ErkaiRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function erkaiDetail(ErkaiRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->detail($request)
         );
     }
 

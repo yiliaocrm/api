@@ -353,12 +353,15 @@ class ExportController extends Controller
 
     /**
      * 导出[二开零购明细表]
-     * @param Request $request
-     * @return ErkaiDetailExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function erkaiDetail(Request $request): ErkaiDetailExport
+    public function erkaiDetail(ExportRequest $request): JsonResponse
     {
-        return new ErkaiDetailExport($request);
+        $name = $request->input('fileName', '二开零购明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new ErkaiDetailExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**
