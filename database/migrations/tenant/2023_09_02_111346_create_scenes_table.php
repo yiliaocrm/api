@@ -30,6 +30,7 @@ return new class extends Migration {
             $table->string('api')->nullable()->comment('API地址');
             $table->string('table')->comment('表名');
             $table->string('field')->comment('字段');
+            $table->string('field_alias')->nullable()->comment('字段别名(用于解决同名字段冲突)');
             $table->string('field_type')->comment('字段类型');
             $table->string('component')->comment('前端组件');
             $table->text('component_params')->nullable()->comment('前端组件参数');

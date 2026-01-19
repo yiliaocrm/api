@@ -28,16 +28,22 @@ class ParseFilter
         }
 
         foreach ($filters as $filter) {
-            $field       = $filter['field'];
-            $value       = $filter['value'] ?? null;
-            $operator    = $filter['operator'];
-            $fieldConfig = $fields->where('field', $field)->first();
-            $column      = "{$fieldConfig->table}.{$field}";
+            $field    = $filter['field'];
+            $value    = $filter['value'] ?? null;
+            $operator = $filter['operator'];
+
+            // 优先通过 field_alias 匹配，其次使用 field 匹配
+            $fieldConfig = $fields->first(function ($item) use ($field) {
+                return $item->field_alias === $field || $item->field === $field;
+            });
 
             // 字段不在配置中，直接跳过
-            if (!$fields->contains('field', $field)) {
+            if (!$fieldConfig) {
                 continue;
             }
+
+            // 使用配置中的实际字段名进行查询
+            $column = "{$fieldConfig->table}.{$fieldConfig->field}";
 
             // 需要特殊处理的字段
             if ($fieldConfig->query_config) {

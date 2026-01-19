@@ -29,6 +29,7 @@ class SceneFieldTableSeeder extends Seeder
         foreach ($fields as &$field) {
             $field['api']              = $field['api'] ?? null;
             $field['keyword']          = implode(',', parse_pinyin($field['name']));
+            $field['field_alias']      = $field['field_alias'] ?? null;
             $field['query_config']     = $field['query_config'] ?? null;
             $field['component_params'] = $field['component_params'] ?? null;
         }
