@@ -33,7 +33,10 @@ class SceneController extends Controller
     public function fields(SceneRequest $request): JsonResponse
     {
         return response_success(
-            SceneField::query()->where('page', $request->input('page'))->get()
+            SceneField::query()
+                ->where('page', $request->input('page'))
+                ->get()
+                ->makeHidden(['query_config'])
         );
     }
 
