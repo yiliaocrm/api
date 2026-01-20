@@ -92,13 +92,14 @@ class ReportPerformanceSalesSeeder extends BaseSceneFieldSeeder
                 'component'        => 'select',
                 'component_params' => json_encode([
                     'props'   => [
+                        'multiple'  => true,
                         'clearable' => true
                     ],
                     'options' => $this->convertSettingConfigToOptions('setting.sales_performance.table_name')
                 ]),
                 'operators'        => json_encode([
-                    ['text' => '等于', 'value' => '='],
-                    ['text' => '不等于', 'value' => '<>']
+                    ['text' => '等于', 'value' => 'in'],
+                    ['text' => '不等于', 'value' => 'not in']
                 ])
             ],
             [
@@ -110,13 +111,14 @@ class ReportPerformanceSalesSeeder extends BaseSceneFieldSeeder
                 'component'        => 'select',
                 'component_params' => json_encode([
                     'props'   => [
+                        'multiple'  => true,
                         'clearable' => true
                     ],
                     'options' => $this->convertSettingConfigToOptions('setting.sales_performance.position')
                 ]),
                 'operators'        => json_encode([
-                    ['text' => '等于', 'value' => '='],
-                    ['text' => '不等于', 'value' => '<>']
+                    ['text' => '等于', 'value' => 'in'],
+                    ['text' => '不等于', 'value' => 'not in']
                 ])
             ],
             [
@@ -129,12 +131,13 @@ class ReportPerformanceSalesSeeder extends BaseSceneFieldSeeder
                 'api'              => '/cache/reception-type',
                 'component_params' => json_encode([
                     'props' => [
+                        'multiple'  => true,
                         'clearable' => true
                     ],
                 ]),
                 'operators'        => json_encode([
-                    ['text' => '等于', 'value' => '='],
-                    ['text' => '不等于', 'value' => '<>']
+                    ['text' => '等于', 'value' => 'in'],
+                    ['text' => '不等于', 'value' => 'not in']
                 ])
             ],
             [
