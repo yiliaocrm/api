@@ -13,6 +13,7 @@ class ReportConsultantOrderSeeder extends BaseSceneFieldSeeder
                 'name'             => '接诊类型',
                 'table'            => 'reception',
                 'field'            => 'type',
+                'field_alias'      => 'reception_type',
                 'field_type'       => 'tinyint',
                 'component'        => 'select',
                 'api'              => '/cache/reception-type',
@@ -216,6 +217,7 @@ class ReportConsultantOrderSeeder extends BaseSceneFieldSeeder
                 'name'             => '类别',
                 'table'            => 'reception_order',
                 'field'            => 'type',
+                'field_alias'      => 'reception_order_type',
                 'field_type'       => 'varchar',
                 'component'        => 'select',
                 'component_params' => json_encode([
@@ -235,18 +237,77 @@ class ReportConsultantOrderSeeder extends BaseSceneFieldSeeder
             ],
             // 成交项目/商品名称 - 来自 reception_order 表
             [
-                'page'       => 'ReportConsultantOrder',
-                'name'       => '成交项目/商品名称',
-                'table'      => 'reception_order',
-                'field'      => 'product_name',
-                'field_type' => 'varchar',
-                'component'  => 'input',
-                'operators'  => json_encode([
+                'page'         => 'ReportConsultantOrder',
+                'name'         => '成交项目/商品名称',
+                'table'        => 'reception_order',
+                'field'        => 'product_name',
+                'field_type'   => 'varchar',
+                'component'    => 'input',
+                'operators'    => json_encode([
                     ['text' => '包含', 'value' => 'like'],
                     ['text' => '等于', 'value' => '='],
                     ['text' => '不等于', 'value' => '<>'],
                     ['text' => '为空', 'value' => 'is null'],
                     ['text' => '不为空', 'value' => 'is not null']
+                ]),
+                'query_config' => json_encode([
+                    [
+                        'operator' => 'like',
+                        'wheres'   => [
+                            [
+                                'type'     => 'whereRaw',
+                                'sql'      => "(cy_reception_order.product_name LIKE ? OR cy_reception_order.goods_name LIKE ?)",
+                                'bindings' => [
+                                    '%{$value}%',
+                                    '%{$value}%'
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'operator' => '=',
+                        'wheres'   => [
+                            [
+                                'type'     => 'whereRaw',
+                                'sql'      => "(cy_reception_order.product_name = ? OR cy_reception_order.goods_name = ?)",
+                                'bindings' => [
+                                    '{$value}',
+                                    '{$value}'
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'operator' => '<>',
+                        'wheres'   => [
+                            [
+                                'type'     => 'whereRaw',
+                                'sql'      => "(cy_reception_order.product_name <> ? OR cy_reception_order.goods_name <> ?)",
+                                'bindings' => [
+                                    '{$value}',
+                                    '{$value}'
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'operator' => 'is null',
+                        'wheres'   => [
+                            [
+                                'type' => 'whereRaw',
+                                'sql'  => "(cy_reception_order.product_name IS NULL OR cy_reception_order.goods_name IS NULL)",
+                            ]
+                        ]
+                    ],
+                    [
+                        'operator' => 'is not null',
+                        'wheres'   => [
+                            [
+                                'type' => 'whereRaw',
+                                'sql'  => "(cy_reception_order.product_name IS NOT NULL OR cy_reception_order.goods_name IS NOT NULL)",
+                            ]
+                        ]
+                    ]
                 ])
             ],
             // 套餐名称 - 来自 reception_order 表
