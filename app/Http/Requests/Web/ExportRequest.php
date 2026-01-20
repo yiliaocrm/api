@@ -50,6 +50,7 @@ class ExportRequest extends FormRequest
             'erkaiDetail' => $this->getErkaiDetailRules(),
             'treatmentRecord' => $this->getTreatmentRecordRules(),
             'treatmentDetail' => $this->getTreatmentDetailRules(),
+            'consultantOrder' => $this->getConsultantOrderRules(),
             default => []
         };
     }
@@ -77,6 +78,7 @@ class ExportRequest extends FormRequest
             'erkaiDetail' => $this->getErkaiDetailMessages(),
             'treatmentRecord' => $this->getTreatmentRecordMessages(),
             'treatmentDetail' => $this->getTreatmentDetailMessages(),
+            'consultantOrder' => $this->getConsultantOrderMessages(),
             default => []
         };
     }
@@ -652,6 +654,37 @@ class ExportRequest extends FormRequest
         ];
     }
 
+    private function getConsultantOrderRules(): array
+    {
+        return [
+            'filters'      => [
+                'nullable',
+                'array',
+                new SceneRule('ReportConsultantOrder'),
+            ],
+            'created_at'   => 'required|array|size:2',
+            'created_at.*' => 'required|date',
+            'keyword'      => 'nullable|string|max:100',
+            'fileName'     => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getConsultantOrderMessages(): array
+    {
+        return [
+            'filters.array'         => '[场景化筛选条件]格式不正确',
+            'created_at.required'   => '[查询时间]不能为空',
+            'created_at.array'      => '[查询时间]格式不正确',
+            'created_at.size'       => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date'     => '[查询时间]格式不正确',
+            'keyword.string'        => '[顾客信息]格式错误',
+            'keyword.max'           => '[顾客信息]不能超过100个字符',
+            'fileName.string'       => '文件名称格式错误',
+            'fileName.max'          => '文件名称不能超过200个字符',
+        ];
+    }
+
     /**
      * 获取导出请求参数
      * @return array
@@ -677,6 +710,7 @@ class ExportRequest extends FormRequest
             'erkaiDetail' => $this->only(['filters', 'keyword', 'created_at']),
             'treatmentRecord' => $this->only(['filters', 'keyword', 'date']),
             'treatmentDetail' => $this->only(['filters', 'keyword', 'date']),
+            'consultantOrder' => $this->only(['filters', 'created_at', 'keyword']),
             default => []
         };
     }

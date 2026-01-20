@@ -910,6 +910,16 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'index',
             ],
             [
+                'permission' => 'report.consultant.order',
+                'controller' => 'App\Http\Controllers\Web\ReportConsultantController',
+                'action'     => 'order',
+            ],
+            [
+                'permission' => 'report.consultant.order.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'consultantOrder',
+            ],
+            [
                 'permission' => 'report.erkai.detail',
                 'controller' => 'App\Http\Controllers\Web\ReportErkaiController',
                 'action'     => 'detail',

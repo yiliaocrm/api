@@ -840,6 +840,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '现场开单明细表',
             'icon'       => 'iconfont if-shopping-cart',
             'path'       => '/report/consultant-order',
+            'url'        => '/new#/report/operation/consultant-order',
             'meta'       => [
                 'title' => '现场开单明细表'
             ],

@@ -94,19 +94,6 @@ class ReportController extends Controller
     }
 
     /**
-     * 现场开单明细表
-     * @param ConsultantRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function consultantOrder(ConsultantRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->order($request)
-        );
-    }
-
-    /**
      * 零售出料明细表
      * @param ErpReportRepository $report
      * @param Request $request

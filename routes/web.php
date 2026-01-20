@@ -820,7 +820,7 @@ Route::prefix('report')->group(function () {
     Route::post('department/cashier', [Web\ReportCashierController::class, 'department']);
     Route::post('customer/refund', [Web\ReportController::class, 'customerRefund']);
     Route::post('consultant/detail', [Web\ReportController::class, 'consultantDetail']);
-    Route::get('consultant/order', [Web\ReportController::class, 'consultantOrder']);
+    Route::post('consultant/order', [Web\ReportConsultantController::class, 'order']);
     Route::get('followup/statistics', [Web\ReportController::class, 'followupStatistics']);
     Route::post('purchase/detail', [Web\ReportPurchaseController::class, 'detail']);
     Route::post('inventory/detail', [Web\ReportController::class, 'inventoryDetail']);
@@ -850,7 +850,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::get('customer/integral', 'customerIntegral');
     Route::get('customer-deposit/detail', 'customerDepositDetail');
     Route::post('consultant/detail', 'consultantDetail');
-    Route::get('consultant/order', 'consultantOrder');
+    Route::post('consultant/order', 'consultantOrder');
     Route::post('performance/sales', 'salesPerformance');
     Route::post('treatment/record', 'treatmentRecord');
     Route::post('treatment/detail', 'treatmentDetail');
