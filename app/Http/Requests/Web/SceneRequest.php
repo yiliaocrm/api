@@ -181,9 +181,19 @@ class SceneRequest extends FormRequest
             'filters'         => 'nullable|array',
             'filters.*.field' => [
                 'required',
-                'exists:scene_fields,field,page,' . $this->input('page')
+                function ($attribute, $value, $fail) {
+                    $exists = SceneField::query()
+                        ->where('page', $this->input('page'))
+                        ->where(function ($query) use ($value) {
+                            $query->where('field', $value)
+                                ->orWhere('field_alias', $value);
+                        })
+                        ->exists();
+                    if (!$exists) {
+                        $fail("字段 {$value} 在场景配置中不存在!");
+                    }
+                },
             ],
-            // 后续补充验证规则
         ];
     }
 
@@ -203,7 +213,13 @@ class SceneRequest extends FormRequest
     public function formatterText(array $filter): string
     {
         $page          = $this->input('page');
-        $field         = SceneField::query()->where('page', $page)->where('field', $filter['field'])->first();
+        $field         = SceneField::query()
+            ->where('page', $page)
+            ->where(function ($query) use ($filter) {
+                $query->where('field_alias', $filter['field'])
+                    ->orWhere('field', $filter['field']);
+            })
+            ->first();
         $operator      = collect($field->operators)->where('value', $filter['operator'])->first();
         $fieldName     = $field->name;
         $operatorText  = $operator['text'];

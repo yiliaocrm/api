@@ -42,7 +42,12 @@ class SceneRule implements Rule
         }
 
         foreach ($value as $filter) {
-            if (!$this->fields->contains('field', $filter['field'])) {
+            // 优先通过 field_alias 匹配，其次使用 field 匹配（与 ParseFilter::applyFilters 保持一致）
+            $exists = $this->fields->contains(function ($item) use ($filter) {
+                return $item->field_alias === $filter['field'] || $item->field === $filter['field'];
+            });
+
+            if (!$exists) {
                 $this->message = $filter['field'] . '字段不在配置中';
                 return false;
             }
