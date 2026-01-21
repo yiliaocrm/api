@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Repositorys\CashierRepository;
 use App\Repositorys\FollowupRepository;
 use App\Http\Requests\Web\ReportRequest;
 use App\Repositorys\ErpReportRepository;
@@ -64,19 +63,6 @@ class ReportController extends Controller
     {
         return response_success(
             $report->inventoryDetail($request)
-        );
-    }
-
-    /**
-     * 收费明细表
-     * @param CashierRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function cashierList(CashierRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->lists($request)
         );
     }
 

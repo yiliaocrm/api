@@ -928,6 +928,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '收费记录表',
             'icon'       => 'icon-inv-search',
             'path'       => '/report/cashier-list',
+            'url'        => '/new#/report/finance/cashier-list',
             'meta'       => [
                 'title' => '收费记录表'
             ],

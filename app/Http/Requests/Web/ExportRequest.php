@@ -34,6 +34,7 @@ class ExportRequest extends FormRequest
             'inventory' => $this->getInventoryRules(),
             'cashierRefund' => $this->getExportRules(),
             'cashierPay' => $this->getCashierPayRules(),
+            'cashierList' => $this->getCashierListRules(),
             'customerGoods' => $this->getCustomerGoodsRules(),
             'inventoryBatch' => $this->getInventoryBatchRules(),
             'inventoryAlarm' => $this->getInventoryAlarmRules(),
@@ -62,6 +63,7 @@ class ExportRequest extends FormRequest
             'inventory' => $this->getInventoryMessages(),
             'cashierRefund' => $this->getExportMessages(),
             'cashierPay' => $this->getCashierPayMessages(),
+            'cashierList' => $this->getCashierListMessages(),
             'customerGoods' => $this->getCustomerGoodsMessages(),
             'inventoryBatch' => $this->getInventoryBatchMessages(),
             'inventoryAlarm' => $this->getInventoryAlarmMessages(),
@@ -284,6 +286,41 @@ class ExportRequest extends FormRequest
             'order.in'        => '[排序方向]值无效',
             'fileName.string' => '文件名称格式错误',
             'fileName.max'    => '文件名称不能超过200个字符',
+        ];
+    }
+
+    private function getCashierListRules(): array
+    {
+        return [
+            'filters'      => [
+                'nullable',
+                'array',
+                new SceneRule('ReportCashierList'),
+            ],
+            'created_at'   => 'required|array|size:2',
+            'created_at.0' => 'required|date',
+            'created_at.1' => 'required|date|after_or_equal:created_at.0',
+            'keyword'      => 'nullable|string|max:100',
+            'fileName'     => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getCashierListMessages(): array
+    {
+        return [
+            'filters.array'               => '筛选条件必须为数组',
+            'created_at.required'         => '[日期范围]不能为空',
+            'created_at.array'            => '[日期范围]必须为数组',
+            'created_at.size'             => '[日期范围]必须包含开始和结束日期',
+            'created_at.0.required'       => '[开始日期]不能为空',
+            'created_at.0.date'           => '[开始日期]格式不正确',
+            'created_at.1.required'       => '[结束日期]不能为空',
+            'created_at.1.date'           => '[结束日期]格式不正确',
+            'created_at.1.after_or_equal' => '[结束日期]不能早于开始日期',
+            'keyword.string'              => '[关键词]必须是字符串',
+            'keyword.max'                 => '[关键词]最多100个字符',
+            'fileName.string'             => '文件名称格式错误',
+            'fileName.max'                => '文件名称不能超过200个字符',
         ];
     }
 
@@ -699,6 +736,7 @@ class ExportRequest extends FormRequest
             'customerLog' => $this->only(['created_at', 'customer_id', 'action', 'user_id']),
             'customerGoods', 'customerProduct', 'cashierRefund', 'purchaseDetail', 'departmentPickingDetail', 'consumableDetail' => $this->only(['filters', 'keyword']),
             'cashierPay', 'cashierDetail' => $this->only(['filters', 'date', 'keyword']),
+            'cashierList' => $this->only(['filters', 'created_at', 'keyword']),
             'customerDepositDetail' => $this->only(['date', 'keyword', 'cashierable_type']),
             'salesPerformance' => $this->only(['filters', 'created_at', 'keyword']),
             'customerIntegral' => $this->only(['created_at', 'type', 'keyword', 'expired']),

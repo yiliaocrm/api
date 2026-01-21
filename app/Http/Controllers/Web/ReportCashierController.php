@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Models\Cashier;
 use App\Models\Accounts;
 use App\Models\Department;
 use App\Models\CustomerDepositDetail;
@@ -263,6 +264,118 @@ class ReportCashierController extends Controller
         return response_success([
             'rows'  => $query->items(),
             'total' => $query->total()
+        ]);
+    }
+
+    /**
+     * 收费明细表
+     * @param ReportCashierRequest $request
+     * @return JsonResponse
+     */
+    public function list(ReportCashierRequest $request): JsonResponse
+    {
+        $sort      = $request->input('sort', 'created_at');
+        $order     = $request->input('order', 'desc');
+        $rows      = $request->input('rows', 10);
+        $keyword   = $request->input('keyword');
+        $createdAt = $request->input('created_at');
+
+        // 获取所有支付方式
+        $accounts = Accounts::all()->keyBy('id');
+
+        $builder = Cashier::query()
+            ->with([
+                'pay',
+                'user:id,name',
+                'operatorUser:id,name',
+                'customer:id,name,sex,idcard'
+            ])
+            ->select([
+                'cashier.*'
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'cashier.customer_id')
+            ->where('status', 2)
+            ->whereBetween('cashier.created_at', [
+                Carbon::parse($createdAt[0])->startOfDay(),
+                Carbon::parse($createdAt[1])->endOfDay()
+            ])
+            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
+            ->queryConditions('ReportCashierList');
+
+        // 查询
+        $query = $builder->clone()->orderBy("cashier.{$sort}", $order)->paginate($rows);
+
+        // 合计
+        $items = collect($query->items());
+        $table = DB::query()->fromSub($builder->clone(), 'sub');
+
+        // 构建支付方式聚合查询（用于页小计和总合计）
+        $cashierIds = $items->pluck('id');
+        $payQuery   = DB::table('cashier_pay as cp')
+            ->join('cashier as c', 'c.id', '=', 'cp.cashier_id')
+            ->where('c.status', 2)
+            ->whereBetween('c.created_at', [
+                Carbon::parse($createdAt[0])->startOfDay(),
+                Carbon::parse($createdAt[1])->endOfDay()
+            ]);
+
+        // 计算各支付方式的页小计和总合计
+        $payPageSums  = [];
+        $payTotalSums = [];
+
+        if ($cashierIds->isNotEmpty()) {
+            $prefix      = DB::getTablePrefix();
+            $pagePayData = DB::table('cashier_pay as cp')
+                ->select('cp.accounts_id', DB::raw("SUM({$prefix}cp.income) as total"))
+                ->whereIn('cp.cashier_id', $cashierIds)
+                ->groupBy('cp.accounts_id')
+                ->pluck('total', 'accounts_id');
+
+            foreach ($accounts as $account) {
+                $payPageSums["pay_{$account->id}"] = floatval($pagePayData->get($account->id, 0));
+            }
+        } else {
+            // 没有数据时，初始化所有支付方式为 0
+            foreach ($accounts as $account) {
+                $payPageSums["pay_{$account->id}"] = 0;
+            }
+        }
+
+        $prefix       = DB::getTablePrefix();
+        $totalPayData = (clone $payQuery)
+            ->select('cp.accounts_id', DB::raw("SUM({$prefix}cp.income) as total"))
+            ->groupBy('cp.accounts_id')
+            ->pluck('total', 'accounts_id');
+
+        foreach ($accounts as $account) {
+            $payTotalSums["pay_{$account->id}"] = floatval($totalPayData->get($account->id, 0));
+        }
+
+        $footer = [
+            array_merge(
+                [
+                    'id'        => '页小计:',
+                    'payable'   => floatval($items->sum('payable')),
+                    'income'    => floatval($items->sum('income')),
+                    'arrearage' => floatval($items->sum('arrearage')),
+                ],
+                $payPageSums
+            ),
+            array_merge(
+                [
+                    'id'        => '总合计:',
+                    'payable'   => floatval($table->sum('payable')),
+                    'income'    => floatval($table->sum('income')),
+                    'arrearage' => floatval($table->sum('arrearage')),
+                ],
+                $payTotalSums
+            )
+        ];
+
+        return response_success([
+            'rows'   => $query->items(),
+            'total'  => $query->total(),
+            'footer' => $footer
         ]);
     }
 }

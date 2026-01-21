@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 use App\Models\GoodsUnit;
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Cashier extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected $table = 'cashier';
     protected $keyType = 'string';
     public $incrementing = false;
