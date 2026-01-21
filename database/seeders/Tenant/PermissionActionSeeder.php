@@ -890,6 +890,16 @@ class PermissionActionSeeder extends Seeder
                 'action'     => '*',
             ],
             [
+                'permission' => 'report.cashier.list',
+                'controller' => 'App\Http\Controllers\Web\ReportCashierController',
+                'action'     => 'list',
+            ],
+            [
+                'permission' => 'report.cashier.list.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'cashierList',
+            ],
+            [
                 'permission' => 'report.cashier.deposit',
                 'controller' => 'App\Http\Controllers\Web\ReportCashierController',
                 'action'     => 'depositReceived',
