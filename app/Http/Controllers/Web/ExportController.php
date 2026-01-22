@@ -228,12 +228,15 @@ class ExportController extends Controller
 
     /**
      * 导出[现场咨询明细表]
-     * @param Request $request
-     * @return ConsultantDetailExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function consultantDetail(Request $request): ConsultantDetailExport
+    public function consultantDetail(ExportRequest $request): JsonResponse
     {
-        return new ConsultantDetailExport($request);
+        $name = $request->input('fileName', '现场咨询明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new ConsultantDetailExport($request->all(), $task, user()->id));
+        return response_success();
     }
 
     /**

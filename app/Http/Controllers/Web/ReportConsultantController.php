@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use Carbon\Carbon;
+use App\Models\Reception;
 use App\Models\ReceptionOrder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\ReportConsultantRequest;
@@ -69,6 +70,57 @@ class ReportConsultantController extends Controller
             'rows'   => $query->items(),
             'total'  => $query->total(),
             'footer' => $footer
+        ]);
+    }
+
+    /**
+     * 现场咨询明细表
+     * @param ReportConsultantRequest $request
+     * @return JsonResponse
+     */
+    public function detail(ReportConsultantRequest $request): JsonResponse
+    {
+        $rows    = $request->input('rows', 10);
+        $sort    = $request->input('sort', 'created_at');
+        $order   = $request->input('order', 'desc');
+        $keyword = $request->input('keyword');
+
+        $query = Reception::query()
+            ->with([
+                'user:id,name',
+                'customer:id,name,idcard',
+                'department:id,name',
+                'medium:id,name',
+                'consultantUser:id,name',
+                'receptionType:id,name',
+                'receptionItems',
+                'failure:id,name',
+                'ekUserRelation:id,name',
+                'doctorUser:id,name',
+                'receptionUser:id,name',
+                'orders' => function ($query) {
+                    $query->with([
+                        'department:id,name',
+                        'user:id,name'
+                    ])->orderBy('created_at', 'desc');
+                },
+            ])
+            ->select([
+                'reception.*',
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'reception.customer_id')
+            ->queryConditions('ReportConsultantDetailIndex')
+            ->whereBetween('reception.created_at', [
+                Carbon::parse($request->input('created_at.0'))->startOfDay(),
+                Carbon::parse($request->input('created_at.1'))->endOfDay()
+            ])
+            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
+            ->orderBy("reception.{$sort}", $order)
+            ->paginate($rows);
+
+        return response_success([
+            'rows'  => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use App\Observers\ConsultantObserver;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 class Consultant extends BaseModel
 {
     use HasUuids;
+    use QueryConditionsTrait;
 
     protected $table = 'reception';
 

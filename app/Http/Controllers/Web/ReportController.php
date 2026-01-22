@@ -9,7 +9,6 @@ use App\Repositorys\FollowupRepository;
 use App\Http\Requests\Web\ReportRequest;
 use App\Repositorys\ErpReportRepository;
 use App\Repositorys\ReceptionRepository;
-use App\Repositorys\ConsultantRepository;
 use App\Repositorys\CustomerReportRepository;
 
 class ReportController extends Controller
@@ -63,19 +62,6 @@ class ReportController extends Controller
     {
         return response_success(
             $report->inventoryDetail($request)
-        );
-    }
-
-    /**
-     * 现场咨询明细表
-     * @param ConsultantRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function consultantDetail(ConsultantRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->detail($request)
         );
     }
 

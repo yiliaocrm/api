@@ -819,7 +819,7 @@ Route::prefix('report')->group(function () {
     Route::post('customer/goods', [Web\ReportController::class, 'customerGoods']);
     Route::post('department/cashier', [Web\ReportCashierController::class, 'department']);
     Route::post('customer/refund', [Web\ReportController::class, 'customerRefund']);
-    Route::post('consultant/detail', [Web\ReportController::class, 'consultantDetail']);
+    Route::post('consultant/detail', [Web\ReportConsultantController::class, 'detail']);
     Route::post('consultant/order', [Web\ReportConsultantController::class, 'order']);
     Route::get('followup/statistics', [Web\ReportController::class, 'followupStatistics']);
     Route::post('purchase/detail', [Web\ReportPurchaseController::class, 'detail']);

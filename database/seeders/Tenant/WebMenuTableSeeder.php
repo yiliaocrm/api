@@ -827,6 +827,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '现场咨询明细表',
             'icon'       => 'iconfont if-consultant',
             'path'       => '/report/consultant-detail',
+            'url'        => '/new#/report/operation/consultant-detail',
             'meta'       => [
                 'title' => '现场咨询明细表'
             ],

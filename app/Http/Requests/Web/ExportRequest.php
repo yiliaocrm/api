@@ -52,6 +52,7 @@ class ExportRequest extends FormRequest
             'treatmentRecord' => $this->getTreatmentRecordRules(),
             'treatmentDetail' => $this->getTreatmentDetailRules(),
             'consultantOrder' => $this->getConsultantOrderRules(),
+            'consultantDetail' => $this->getConsultantDetailRules(),
             default => []
         };
     }
@@ -81,6 +82,7 @@ class ExportRequest extends FormRequest
             'treatmentRecord' => $this->getTreatmentRecordMessages(),
             'treatmentDetail' => $this->getTreatmentDetailMessages(),
             'consultantOrder' => $this->getConsultantOrderMessages(),
+            'consultantDetail' => $this->getConsultantDetailMessages(),
             default => []
         };
     }
@@ -710,6 +712,37 @@ class ExportRequest extends FormRequest
     {
         return [
             'filters.array'         => '[场景化筛选条件]格式不正确',
+            'created_at.required'   => '[查询时间]能为空',
+            'created_at.array'      => '[查询时间]格式不正确',
+            'created_at.size'       => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date'     => '[查询时间]格式不正确',
+            'keyword.string'        => '[顾客信息]格式错误',
+            'keyword.max'           => '[顾客信息]不能超过100个字符',
+            'fileName.string'       => '文件名称格式错误',
+            'fileName.max'          => '文件名称不能超过200个字符',
+        ];
+    }
+
+    private function getConsultantDetailRules(): array
+    {
+        return [
+            'filters'      => [
+                'nullable',
+                'array',
+                new SceneRule('ReportConsultantDetailIndex'),
+            ],
+            'created_at'   => 'required|array|size:2',
+            'created_at.*' => 'required|date',
+            'keyword'      => 'nullable|string|max:100',
+            'fileName'     => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getConsultantDetailMessages(): array
+    {
+        return [
+            'filters.array'         => '[场景化筛选条件]格式不正确',
             'created_at.required'   => '[查询时间]不能为空',
             'created_at.array'      => '[查询时间]格式不正确',
             'created_at.size'       => '[查询时间]格式不正确',
@@ -748,7 +781,7 @@ class ExportRequest extends FormRequest
             'erkaiDetail' => $this->only(['filters', 'keyword', 'created_at']),
             'treatmentRecord' => $this->only(['filters', 'keyword', 'date']),
             'treatmentDetail' => $this->only(['filters', 'keyword', 'date']),
-            'consultantOrder' => $this->only(['filters', 'created_at', 'keyword']),
+            'consultantOrder', 'consultantDetail' => $this->only(['filters', 'created_at', 'keyword']),
             default => []
         };
     }
