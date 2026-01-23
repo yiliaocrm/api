@@ -49,7 +49,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '顾客列表');
         $task = $request->createExportTask($name);
-        dispatch(new CustomerExport($request->all(), $task, user()->id));
+        dispatch(new CustomerExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -82,7 +82,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '顾客物品明细表');
         $task = $request->createExportTask($name);
-        dispatch(new CustomerGoodsExport($request->all(), $task));
+        dispatch(new CustomerGoodsExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -134,7 +134,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '职工工作明细表');
         $task = $request->createExportTask($name);
-        dispatch(new SalesPerformanceExport($request->all(), $task, user()->id));
+        dispatch(new SalesPerformanceExport($request->all(), $task, tenant('id'), user()->id));
         return response_success($task);
     }
 
@@ -183,7 +183,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '顾客退款明细表');
         $task = $request->createExportTask($name);
-        dispatch(new CashierRefundExport($request->all(), $task));
+        dispatch(new CashierRefundExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -222,7 +222,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '收费明细表');
         $task = $request->createExportTask($name);
-        dispatch(new ReportCashierListExport($request->all(), $task, user()->id));
+        dispatch(new ReportCashierListExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -235,7 +235,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '现场咨询明细表');
         $task = $request->createExportTask($name);
-        dispatch(new ConsultantDetailExport($request->all(), $task, user()->id));
+        dispatch(new ConsultantDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -248,7 +248,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '现场开单明细表');
         $task = $request->createExportTask($name);
-        dispatch(new ConsultantOrderExport($request->all(), $task, user()->id));
+        dispatch(new ConsultantOrderExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -274,7 +274,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '进货入库明细表');
         $task = $request->createExportTask($name);
-        dispatch(new PurchaseDetailExport($request->all(), $task, user()->id));
+        dispatch(new PurchaseDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -346,7 +346,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '用料登记明细表');
         $task = $request->createExportTask($name);
-        dispatch(new ConsumableDetailExport($request->all(), $task, user()->id));
+        dispatch(new ConsumableDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -357,9 +357,9 @@ class ExportController extends Controller
      */
     public function departmentPickingDetail(ExportRequest $request): JsonResponse
     {
-        $name = $request->input('fileName', '科室领料明细表');
+        $name = $request->input('fileName', '室领料明细表');
         $task = $request->createExportTask($name);
-        dispatch(new DepartmentPickingDetailExport($request->all(), $task, user()->id));
+        dispatch(new DepartmentPickingDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -394,7 +394,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '顾客积分明细表');
         $task = $request->createExportTask($name);
-        dispatch(new CustomerIntegralExport($request->all(), $task));
+        dispatch(new CustomerIntegralExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 
@@ -407,7 +407,7 @@ class ExportController extends Controller
     {
         $name = $request->input('fileName', '员工列表');
         $task = $request->createExportTask($name);
-        dispatch(new UserExport($request->all(), $task, user()->id));
+        dispatch(new UserExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 

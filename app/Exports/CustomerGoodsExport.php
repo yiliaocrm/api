@@ -7,6 +7,7 @@ use Vtiful\Kernel\Excel;
 use App\Models\ExportTask;
 use Illuminate\Bus\Queueable;
 use App\Models\CustomerGoods;
+use App\Events\Web\ExportCompleted;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +19,8 @@ class CustomerGoodsExport implements ShouldQueue
 
     protected ExportTask $task;
     protected array $request;
+    protected int $user_id;
+    protected string $tenant_id;
 
     /**
      * 存储文件系统配置
@@ -37,10 +40,12 @@ class CustomerGoodsExport implements ShouldQueue
      */
     public int $timeout = 1200;
 
-    public function __construct(array $request, ExportTask $task)
+    public function __construct(array $request, ExportTask $task, string $tenant_id, int $user_id)
     {
-        $this->task    = $task;
-        $this->request = $request;
+        $this->task      = $task;
+        $this->request   = $request;
+        $this->user_id   = $user_id;
+        $this->tenant_id = $tenant_id;
     }
 
     public function handle(): void
@@ -161,11 +166,19 @@ class CustomerGoodsExport implements ShouldQueue
             // 关闭文件
             $excel->close();
 
+            // 如果使用云存储，上传文件到云端并删除本地文件
+            if (!$this->isLocalStorage()) {
+                $this->uploadToCloudAndDeleteLocalFile();
+            }
+
             // 更新任务状态为完成
             $this->task->update([
                 'status'       => 'completed',
                 'completed_at' => now(),
             ]);
+
+            // 触发导出完成事件
+            event(new ExportCompleted($this->task, $this->tenant_id, $this->user_id));
 
         } catch (Throwable $exception) {
             $this->task->update([
@@ -218,5 +231,28 @@ class CustomerGoodsExport implements ShouldQueue
     protected function isLocalStorage(): bool
     {
         return Storage::disk($this->disk)->getAdapter() instanceof LocalFilesystemAdapter;
+    }
+
+    /**
+     * 上传文件到云端存储并删除本地文件
+     *
+     * 当使用云存储（如 OSS、S3）时，xlswriter 生成的本地文件需要上传到云端，
+     * 然后删除本地临时文件以节省服务器存储空间。
+     */
+    protected function uploadToCloudAndDeleteLocalFile(): void
+    {
+        // 从本地 public 盘获取文件流
+        $stream = Storage::disk('public')->readStream($this->task->file_path);
+
+        // 将文件流式上传到默认的云存储
+        Storage::put($this->task->file_path, $stream);
+
+        // 关闭文件流
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
+        // 删除本地文件
+        Storage::disk('public')->delete($this->task->file_path);
     }
 }
