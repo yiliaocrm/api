@@ -823,7 +823,7 @@ Route::prefix('report')->group(function () {
     Route::post('consultant/order', [Web\ReportConsultantController::class, 'order']);
     Route::get('followup/statistics', [Web\ReportController::class, 'followupStatistics']);
     Route::post('purchase/detail', [Web\ReportPurchaseController::class, 'detail']);
-    Route::post('inventory/detail', [Web\ReportController::class, 'inventoryDetail']);
+    Route::post('inventory/detail', [Web\ReportErpController::class, 'inventoryDetail']);
     Route::post('cashier/list', [Web\ReportCashierController::class, 'list']);
     Route::get('cashier/collect', [Web\ReportCashierController::class, 'collect']);
     Route::post('cashier/deposit-received', [Web\ReportCashierController::class, 'depositReceived']);
@@ -862,7 +862,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::post('coupon/detail', 'couponDetail');
     Route::post('erkai/detail', 'erkaiDetail');
     Route::post('product/ranking', 'productRanking');
-    Route::get('inventory/detail', 'inventoryDetail');
+    Route::post('inventory/detail', 'inventoryDetail');
     Route::get('inventory/batch', 'inventoryBatch');
     Route::post('inventory/alarm', 'inventoryAlarm');
     Route::post('inventory/expiry', 'inventoryExpiry');

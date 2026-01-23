@@ -1060,6 +1060,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '库存变动明细表',
             'icon'       => 'icon-find-paid-det',
             'path'       => '/report/inventory-detail',
+            'url'        => '/new#/report/erp/inventory-detail',
             'meta'       => [
                 'title' => '库存变动明细表'
             ],

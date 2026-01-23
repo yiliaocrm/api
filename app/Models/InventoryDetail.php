@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InventoryDetail extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected $table = 'inventory_detail';
 
     protected function casts(): array

@@ -39,6 +39,7 @@ class ExportRequest extends FormRequest
             'inventoryBatch' => $this->getInventoryBatchRules(),
             'inventoryAlarm' => $this->getInventoryAlarmRules(),
             'inventoryExpiry' => $this->getInventoryExpiryRules(),
+            'inventoryDetail' => $this->getInventoryDetailRules(),
             'customerProduct' => $this->getCustomerProductRules(),
             'customerDepositDetail' => $this->getCustomerDepositDetailRules(),
             'salesPerformance' => $this->getSalesPerformanceRules(),
@@ -69,6 +70,7 @@ class ExportRequest extends FormRequest
             'inventoryBatch' => $this->getInventoryBatchMessages(),
             'inventoryAlarm' => $this->getInventoryAlarmMessages(),
             'inventoryExpiry' => $this->getInventoryExpiryMessages(),
+            'inventoryDetail' => $this->getInventoryDetailMessages(),
             'customerProduct' => $this->getCustomerProductMessages(),
             'customerDepositDetail' => $this->getCustomerDepositDetailMessages(),
             'salesPerformance' => $this->getSalesPerformanceMessages(),
@@ -148,6 +150,42 @@ class ExportRequest extends FormRequest
     {
         return [
             'filters.array' => '筛选条件必须是数组',
+        ];
+    }
+
+    private function getInventoryDetailRules(): array
+    {
+        return [
+            'filters'    => [
+                'nullable',
+                'array',
+                new SceneRule('ReportInventoryDetail')
+            ],
+            'date'       => 'required|array|size:2',
+            'date.*'     => 'required|date',
+            'goods_name' => 'nullable|string|max:200',
+            'sort'       => 'nullable|string',
+            'order'      => 'nullable|string|in:asc,desc',
+            'fileName'   => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getInventoryDetailMessages(): array
+    {
+        return [
+            'filters.array'     => '筛选条件必须是数组',
+            'date.required'     => '[查询日期]不能为空',
+            'date.array'        => '[查询日期]格式错误',
+            'date.size'         => '[查询日期]必须包含开始和结束日期',
+            'date.*.required'   => '[查询日期]不能为空',
+            'date.*.date'       => '[查询日期]格式错误',
+            'goods_name.string' => '[商品名称]格式错误',
+            'goods_name.max'    => '[商品名称]不能超过200个字符',
+            'sort.string'       => '[排序字段]格式错误',
+            'order.string'      => '[排序方向]格式错误',
+            'order.in'          => '[排序方向]值无效',
+            'fileName.string'   => '文件名称格式错误',
+            'fileName.max'      => '文件名称不能超过200个字符',
         ];
     }
 
@@ -763,7 +801,7 @@ class ExportRequest extends FormRequest
     {
         $method = request()->route()->getActionMethod();
 
-        // 根据不同方法返回不同参数
+        // 根��不同方法返回不同参数
         return match ($method) {
             'customer' => $this->only(['filters', 'keyword', 'group_id']),
             'customerLog' => $this->only(['created_at', 'customer_id', 'action', 'user_id']),
@@ -776,6 +814,7 @@ class ExportRequest extends FormRequest
             'productRanking' => $this->only(['created_at', 'medium_id', 'type_id', 'sort', 'order']),
             'inventoryAlarm' => $this->only(['warehouse_id', 'type_id', 'name', 'status', 'filterable']),
             'inventoryExpiry' => $this->only(['warehouse_id', 'type_id', 'name', 'status', 'expiry_diff']),
+            'inventoryDetail' => $this->only(['filters', 'date', 'goods_name', 'sort', 'order']),
             'user' => $this->only(['keyword', 'roles', 'department_id']),
             'appointment' => $this->only(['filters', 'keyword', 'created_at']),
             'erkaiDetail' => $this->only(['filters', 'keyword', 'created_at']),

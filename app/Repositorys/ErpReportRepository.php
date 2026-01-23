@@ -2,8 +2,6 @@
 
 namespace App\Repositorys;
 
-use App\Models\GoodsType;
-use App\Models\InventoryDetail;
 use App\Models\RetailOutboundDetail;
 
 use Illuminate\Http\Request;
@@ -14,51 +12,6 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class ErpReportRepository
 {
-    /**
-     * 库存变动明细表
-     * @param Request $request
-     * @return array
-     */
-    public function inventoryDetail(Request $request): array
-    {
-        $rows  = $request->input('rows', 100);
-        $sort  = $request->input('sort', 'id');
-        $order = $request->input('order', 'desc');
-        $query = InventoryDetail::query()
-            ->select('inventory_detail.*')
-            ->join('goods', 'goods.id', '=', 'inventory_detail.goods_id')
-            // 单据日期
-            ->when($request->input('date_start') && $request->input('date_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('date', [
-                    $request->input('date_start'),
-                    $request->input('date_end'),
-                ]);
-            })
-            // 商品名称
-            ->when($request->input('goods_name'), function (Builder $query) use ($request) {
-                $query->where('goods_name', 'like', '%' . $request->input('goods_name') . '%');
-            })
-            // 商品类别
-            ->when($request->input('goods_type_id'), function (Builder $query) use ($request) {
-                $query->whereIn('goods.type_id', GoodsType::query()->find($request->input('goods_type_id'))->getAllChild()->pluck('id'));
-            })
-            // 业务类型
-            ->when($request->input('detailable_type'), function (Builder $query) use ($request) {
-                $query->where('detailable_type', $request->input('detailable_type'));
-            })
-            // 仓库
-            ->when($request->input('warehouse_id'), function (Builder $query) use ($request) {
-                $query->where('warehouse_id', $request->input('warehouse_id'));
-            })
-            ->orderBy($sort, $order)
-            ->paginate($rows);
-
-        return [
-            'rows'  => $query->items(),
-            'total' => $query->total()
-        ];
-    }
-
     /**
      * 零售出料明细表
      * @param Request $request

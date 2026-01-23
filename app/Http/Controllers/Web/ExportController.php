@@ -280,12 +280,15 @@ class ExportController extends Controller
 
     /**
      * 导出[库存变动明细表]
-     * @param Request $request
-     * @return InventoryDetailExport
+     * @param ExportRequest $request
+     * @return JsonResponse
      */
-    public function inventoryDetail(Request $request): InventoryDetailExport
+    public function inventoryDetail(ExportRequest $request): JsonResponse
     {
-        return new InventoryDetailExport($request);
+        $name = $request->input('fileName', '库存变动明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new InventoryDetailExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
     }
 
     /**

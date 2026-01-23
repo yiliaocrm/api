@@ -53,19 +53,6 @@ class ReportController extends Controller
     }
 
     /**
-     * 库存变动明细表
-     * @param ErpReportRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function inventoryDetail(ErpReportRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->inventoryDetail($request)
-        );
-    }
-
-    /**
      * 零售出料明细表
      * @param ErpReportRepository $report
      * @param Request $request

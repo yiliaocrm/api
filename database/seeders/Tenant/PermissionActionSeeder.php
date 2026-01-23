@@ -940,6 +940,16 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'erkaiDetail',
             ],
             [
+                'permission' => 'report.inventory.detail',
+                'controller' => 'App\Http\Controllers\Web\ReportErpController',
+                'action'     => 'inventoryDetail',
+            ],
+            [
+                'permission' => 'report.inventory.detail.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'inventoryDetail',
+            ],
+            [
                 'permission' => 'permission.query.index',
                 'controller' => 'App\Http\Controllers\Web\PermissionQueryController',
                 'action'     => '*',
