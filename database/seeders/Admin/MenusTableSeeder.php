@@ -5094,12 +5094,12 @@ class MenusTableSeeder extends Seeder
                 'child' => 1,
                 'permission' => '',
                 'permission_scope' => '[]',
-                'order' => 1,
+                'order' => 2,
                 'keyword' => 'xianchangzixunmingxibiao,xczxmxb,现场咨询明细表',
                 'remark' => NULL,
                 'tree' => '0-10-168-239',
                 'created_at' => '2026-01-21 22:43:45',
-                'updated_at' => '2026-01-22 15:33:11',
+                'updated_at' => '2026-01-23 15:05:48',
             ),
             231 =>
             array (
@@ -5188,6 +5188,28 @@ class MenusTableSeeder extends Seeder
                 'tree' => '0-10-162-167-243',
                 'created_at' => '2026-01-22 17:47:28',
                 'updated_at' => '2026-01-22 17:47:28',
+            ),
+            235 =>
+            array (
+                'id' => 244,
+                'parentid' => 168,
+                'name' => 'ReportReceptionProductAnalysisIndex',
+                'title' => '咨询成功率分析表',
+                'path' => '/report/operation/reception-product-analysis',
+                'meta' => '{"hidden":false,"hiddenBreadcrumb":false,"fullpage":false,"type":"menu","title":"\\u54a8\\u8be2\\u6210\\u529f\\u7387\\u5206\\u6790\\u8868","icon":"el-icon-data-line","active":null,"color":null,"tag":null}',
+                'component' => 'report/reception-product-analysis/index',
+                'redirect' => NULL,
+                'type' => 'web',
+                'menu_type' => 'menu',
+                'child' => 1,
+                'permission' => 'report.reception.product.analysis',
+                'permission_scope' => '[]',
+                'order' => 1,
+                'keyword' => 'zixunchenggonglvfenxibiao,zxcglfxb,咨询成功率分析表',
+                'remark' => NULL,
+                'tree' => '0-10-168-244',
+                'created_at' => '2026-01-23 15:07:01',
+                'updated_at' => '2026-01-23 16:48:25',
             ),
         ));
 
