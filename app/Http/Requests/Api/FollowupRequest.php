@@ -174,7 +174,12 @@ class FollowupRequest extends FormRequest
     private function getExecuteRules(): array
     {
         return [
-            'id' => 'required|exists:followup'
+            'id'     => 'required|exists:followup',
+            'date'   => 'required|date_format:Y-m-d',
+            'title'  => 'required|string',
+            'type'   => 'required|exists:followup_type,id',
+            'tool'   => 'required|exists:followup_tool,id',
+            'remark' => 'required|string',
         ];
     }
 
@@ -183,7 +188,20 @@ class FollowupRequest extends FormRequest
      */
     private function getExecuteMessages(): array
     {
-        return [];
+        return [
+            'id.required'      => '[回访ID]不能为空!',
+            'id.exists'        => '[回访记录]不存在!',
+            'date.required'    => '[回访日期]不能为空!',
+            'date.date_format' => '[回访日期]格式错误，必须为Y-m-d格式!',
+            'title.required'   => '[回访标题]不能为空!',
+            'title.string'     => '[回访标题]必须是字符串!',
+            'type.required'    => '[回访类型]不能为空!',
+            'type.exists'      => '[回访类型]不存在!',
+            'tool.required'    => '[回访工具]不能为空!',
+            'tool.exists'      => '[回访工具]不存在!',
+            'remark.required'  => '[回访备注]不能为空!',
+            'remark.string'    => '[回访备注]必须是字符串!',
+        ];
     }
 
     /**
@@ -192,6 +210,7 @@ class FollowupRequest extends FormRequest
     private function getExecuteFormData(): array
     {
         return [
+            'date'         => $this->input('date'),
             'title'        => $this->input('title'),
             'type'         => $this->input('type'),
             'tool'         => $this->input('tool'),
