@@ -119,6 +119,8 @@ class FollowupController extends Controller
             ]);
         }
 
+        $followup->load(['customer:id,name,idcard,sex']);
+
         return response_success($followup);
     }
 
@@ -144,7 +146,7 @@ class FollowupController extends Controller
         ]);
 
         $followup->load(['customer:id,name,idcard,sex']);
-        
+
         return response_success($followup);
     }
 }
