@@ -19,7 +19,8 @@ class UserExport implements ShouldQueue
 
     protected ExportTask $task;
     protected array $request;
-    protected ?int $user_id;
+    protected int $user_id;
+    protected string $tenant_id;
 
     /**
      * 分批处理数据的大小
@@ -33,11 +34,12 @@ class UserExport implements ShouldQueue
      */
     public int $timeout = 1200;
 
-    public function __construct(array $request, ExportTask $task, int $user_id)
+    public function __construct(array $request, ExportTask $task, string $tenant_id, int $user_id)
     {
-        $this->task    = $task;
-        $this->request = $request;
-        $this->user_id = $user_id;
+        $this->task      = $task;
+        $this->request   = $request;
+        $this->user_id   = $user_id;
+        $this->tenant_id = $tenant_id;
     }
 
     public function handle(): void
@@ -141,7 +143,7 @@ class UserExport implements ShouldQueue
             ]);
 
             // 触发导出完成事件，通知前端
-            ExportCompleted::dispatch($this->task, tenant('id'), $this->user_id);
+            ExportCompleted::dispatch($this->task, $this->tenant_id, $this->user_id);
 
         } catch (Throwable $exception) {
             $this->task->update([
