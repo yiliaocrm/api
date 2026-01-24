@@ -971,6 +971,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '应收账款表',
             'icon'       => 'icon-inv-search',
             'path'       => '/report/cashier-arrearage',
+            'url'        => '/new#/report/finance/cashier-arrearage',
             'meta'       => [
                 'title' => '应收账款表'
             ],
