@@ -950,6 +950,16 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'inventoryDetail',
             ],
             [
+                'permission' => 'report.retail.outbound.detail',
+                'controller' => 'App\Http\Controllers\Web\ReportErpController',
+                'action'     => 'retailOutboundDetail',
+            ],
+            [
+                'permission' => 'report.retail.outbound.detail.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'retailOutboundDetail',
+            ],
+            [
                 'permission' => 'permission.query.index',
                 'controller' => 'App\Http\Controllers\Web\PermissionQueryController',
                 'action'     => '*',

@@ -20,6 +20,7 @@ use App\Exports\ProductRankingExport;
 use App\Exports\PurchaseDetailExport;
 use App\Exports\InventoryAlarmExport;
 use App\Exports\InventoryBatchExport;
+use App\Exports\RetailOutboundDetailExport;
 use App\Exports\TreatmentRecordExport;
 use App\Exports\TreatmentDetailExport;
 use App\Exports\InventoryDetailExport;
@@ -275,6 +276,19 @@ class ExportController extends Controller
         $name = $request->input('fileName', '进货入库明细表');
         $task = $request->createExportTask($name);
         dispatch(new PurchaseDetailExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
+    }
+
+    /**
+     * 导出[零售出料明细表]
+     * @param ExportRequest $request
+     * @return JsonResponse
+     */
+    public function retailOutboundDetail(ExportRequest $request): JsonResponse
+    {
+        $name = $request->input('fileName', '零售出料明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new RetailOutboundDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 

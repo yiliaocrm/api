@@ -7,7 +7,6 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Repositorys\FollowupRepository;
 use App\Http\Requests\Web\ReportRequest;
-use App\Repositorys\ErpReportRepository;
 use App\Repositorys\ReceptionRepository;
 use App\Repositorys\CustomerReportRepository;
 
@@ -49,19 +48,6 @@ class ReportController extends Controller
     {
         return response_success(
             $repository->refund($request)
-        );
-    }
-
-    /**
-     * 零售出料明细表
-     * @param ErpReportRepository $report
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function retailOutboundDetail(ErpReportRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->retailOutboundDetail($request)
         );
     }
 

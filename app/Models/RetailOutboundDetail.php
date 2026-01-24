@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RetailOutboundDetail extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected $table = 'retail_outbound_detail';
 
     protected function casts(): array
@@ -79,5 +82,32 @@ class RetailOutboundDetail extends BaseModel
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * 出料科室
+     * @return BelongsTo
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * 出料仓库
+     * @return BelongsTo
+     */
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    /**
+     * 出料人员
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -1047,6 +1047,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '零售出料明细表',
             'icon'       => 'icon-paper-money',
             'path'       => '/report/retail-outbound-detail',
+            'url'        => '/new#/report/erp/retail-outbound-detail',
             'meta'       => [
                 'title' => '零售出料明细表'
             ],
