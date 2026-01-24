@@ -378,4 +378,93 @@ class ReportCashierController extends Controller
             'footer' => $footer
         ]);
     }
+
+    /**
+     * 应收账款表
+     * @param ReportCashierRequest $request
+     * @return JsonResponse
+     */
+    public function arrearage(ReportCashierRequest $request): JsonResponse
+    {
+        $date    = $request->input('date');
+        $rows    = $request->input('rows', 10);
+        $prefix  = DB::getTablePrefix();
+        $keyword = $request->input('keyword');
+
+        $startDate = Carbon::parse($date[0])->startOfDay();
+        $endDate   = Carbon::parse($date[1])->endOfDay();
+
+        // 计算期初欠款（查询日期开始前该顾客的累计欠款）
+        $beginning = DB::table('cashier_arrearage as a')
+            ->select(DB::raw("COALESCE(SUM({$prefix}a.leftover), 0)"))
+            ->where('a.customer_id', '=', DB::raw("{$prefix}c.customer_id"))
+            ->where('a.created_at', '<', $startDate);
+
+        // 计算期末欠款（查询日期结束时该顾客的累计欠款）
+        $ending = DB::table('cashier_arrearage as b')
+            ->select(DB::raw("COALESCE(SUM({$prefix}b.leftover), 0)"))
+            ->where('b.customer_id', '=', DB::raw("{$prefix}c.customer_id"))
+            ->where('b.created_at', '<=', $endDate);
+
+        // 构建查询 - 从欠款表开始，按顾客分组
+        $builder = DB::table('cashier_arrearage as c')
+            ->select([
+                'c.customer_id',
+                DB::raw("{$prefix}customer.name as customer_name"),
+                DB::raw("{$prefix}customer.idcard"),
+            ])
+            ->selectSub($beginning, 'beginning_arrearage')
+            ->selectSub($ending, 'ending_arrearage')
+            ->addSelect(DB::raw("SUM(CASE WHEN {$prefix}c.created_at >= '{$startDate->toDateTimeString()}' AND {$prefix}c.created_at <= '{$endDate->toDateTimeString()}' THEN {$prefix}c.arrearage ELSE 0 END) AS new_arrearage"))
+            ->addSelect(DB::raw("(SELECT COALESCE(SUM({$prefix}cad.income), 0) FROM {$prefix}cashier_arrearage_detail {$prefix}cad JOIN {$prefix}cashier_arrearage {$prefix}ca_ref ON {$prefix}ca_ref.id = {$prefix}cad.cashier_arrearage_id WHERE {$prefix}ca_ref.customer_id = {$prefix}c.customer_id AND {$prefix}cad.created_at >= '{$startDate->toDateTimeString()}' AND {$prefix}cad.created_at <= '{$endDate->toDateTimeString()}') AS repayment"))
+            ->addSelect(DB::raw("SUM(CASE WHEN {$prefix}c.status = 3 AND {$prefix}c.created_at >= '{$startDate->toDateTimeString()}' AND {$prefix}c.created_at <= '{$endDate->toDateTimeString()}' THEN {$prefix}c.leftover ELSE 0 END) AS waiver"))
+            ->addSelect(DB::raw("COUNT(DISTINCT CASE WHEN {$prefix}c.status = 1 AND {$prefix}c.leftover > 0 THEN {$prefix}c.id END) AS arrearage_count"))
+            ->leftJoin('customer', 'customer.id', '=', 'c.customer_id')
+            ->where('c.created_at', '<=', $endDate)
+            ->when($keyword, function ($query) use ($keyword) {
+                $query->where('customer.name', 'like', "%{$keyword}%")
+                    ->orWhere('customer.idcard', 'like', "%{$keyword}%");
+            })
+            ->groupBy('c.customer_id', 'customer.id', 'customer.name', 'customer.idcard')
+            ->orderByDesc('ending_arrearage');
+
+        // 查询
+        $result = $builder->clone()
+            ->having('ending_arrearage', '>', 0)
+            ->orHaving('new_arrearage', '>', 0)
+            ->orHaving('repayment', '>', 0)
+            ->orHaving('waiver', '>', 0)
+            ->paginate($rows);
+
+        // 合计
+        $items = collect($result->items());
+        $table = DB::query()->fromSub($builder->clone(), 'sub');
+
+        $footer = [
+            [
+                'idcard'              => '页小计:',
+                'beginning_arrearage' => floatval($items->sum('beginning_arrearage')),
+                'new_arrearage'       => floatval($items->sum('new_arrearage')),
+                'repayment'           => floatval($items->sum('repayment')),
+                'waiver'              => floatval($items->sum('waiver')),
+                'ending_arrearage'    => floatval($items->sum('ending_arrearage')),
+                'arrearage_count'     => floatval($items->sum('arrearage_count')),
+            ],
+            [
+                'idcard'              => '总合计:',
+                'beginning_arrearage' => floatval($table->sum('beginning_arrearage')),
+                'new_arrearage'       => floatval($table->sum('new_arrearage')),
+                'repayment'           => floatval($table->sum('repayment')),
+                'waiver'              => floatval($table->sum('waiver')),
+                'ending_arrearage'    => floatval($table->sum('ending_arrearage')),
+                'arrearage_count'     => floatval($table->sum('arrearage_count')),
+            ]
+        ];
+
+        return response_success([
+            'rows'   => $result->items(),
+            'total'  => $result->total(),
+            'footer' => $footer
+        ]);
+    }
 }

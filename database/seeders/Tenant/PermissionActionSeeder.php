@@ -915,6 +915,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'customerDepositDetail',
             ],
             [
+                'permission' => 'report.cashier.arrearage',
+                'controller' => 'App\Http\Controllers\Web\ReportCashierController',
+                'action'     => 'arrearage',
+            ],
+            [
                 'permission' => 'report.performance.sales',
                 'controller' => 'App\Http\Controllers\Web\ReportPerformanceController',
                 'action'     => 'index',
