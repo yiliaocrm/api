@@ -24,6 +24,7 @@ class ReportCashierRequest extends FormRequest
             'depositReceived' => $this->getDepositReceivedRules(),
             'list' => $this->getListRules(),
             'arrearage' => $this->getArrearageRules(),
+            'arrearageDetail' => $this->getArrearageDetailRules(),
         };
     }
 
@@ -36,6 +37,7 @@ class ReportCashierRequest extends FormRequest
             'depositReceived' => $this->getDepositReceivedMessages(),
             'list' => $this->getListMessages(),
             'arrearage' => $this->getArrearageMessages(),
+            'arrearageDetail' => $this->getArrearageDetailMessages(),
         };
     }
 
@@ -187,6 +189,43 @@ class ReportCashierRequest extends FormRequest
             'date.*.date_format' => '[日期范围]格式必须为 Y-m-d',
             'keyword.string'     => '[关键词]必须是字符串',
             'keyword.max'        => '[关键词]最多255个字符',
+        ];
+    }
+
+    /**
+     * 应收账款明细表验证规则
+     */
+    private function getArrearageDetailRules(): array
+    {
+        return [
+            'page'    => 'nullable|integer|min:1',
+            'rows'    => 'nullable|integer|min:1|max:100',
+            'date'    => 'required|array|size:2',
+            'date.*'  => 'date_format:Y-m-d',
+            'keyword' => 'nullable|string|max:255',
+            'type'    => 'nullable|string|in:arrearage,repayment',
+        ];
+    }
+
+    /**
+     * 应收账款明细表错误消息
+     */
+    private function getArrearageDetailMessages(): array
+    {
+        return [
+            'page.integer'       => '[页码]必须是整数',
+            'page.min'           => '[页码]必须大于0',
+            'rows.integer'       => '[每页条数]必须是整数',
+            'rows.min'           => '[每页条数]必须大于0',
+            'rows.max'           => '[每页条数]不能超过100',
+            'date.required'      => '[日期范围]不能为空',
+            'date.array'         => '[日期范围]格式错误',
+            'date.size'          => '[日期范围]必须包含开始和结束日期',
+            'date.*.date_format' => '[日期范围]格式必须为 Y-m-d',
+            'keyword.string'     => '[关键词]必须是字符串',
+            'keyword.max'        => '[关键词]最多255个字符',
+            'type.string'        => '[单据类型]必须是字符串',
+            'type.in'            => '[单据类型]只能是 arrearage 或 repayment',
         ];
     }
 }

@@ -38,6 +38,24 @@ class CashierArrearage extends BaseModel
     }
 
     /**
+     * 结算科室
+     * @return BelongsTo
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * 结单人员
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
      * 还款记录
      * @return HasMany
      */

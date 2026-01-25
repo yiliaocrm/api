@@ -33,6 +33,7 @@ use App\Exports\ConsumableDetailExport;
 use App\Exports\FollowupStatisticExport;
 use App\Exports\ReportCashierListExport;
 use App\Exports\CustomerDepositDetailExport;
+use App\Exports\ReportCashierArrearageDetailExport;
 use App\Exports\DepartmentPickingDetailExport;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -435,6 +436,19 @@ class ExportController extends Controller
         $name = $request->input('fileName', '预约记录表');
         $task = $request->createExportTask($name);
         dispatch(new AppointmentExport($request->all(), $task, tenant('id'), user()->id));
+        return response_success();
+    }
+
+    /**
+     * 导出[应收账款明细表]
+     * @param ExportRequest $request
+     * @return JsonResponse
+     */
+    public function arrearageDetail(ExportRequest $request): JsonResponse
+    {
+        $name = $request->input('fileName', '应收账款明细表');
+        $task = $request->createExportTask($name);
+        dispatch(new ReportCashierArrearageDetailExport($request->all(), $task, tenant('id'), user()->id));
         return response_success();
     }
 }

@@ -829,6 +829,7 @@ Route::prefix('report')->group(function () {
     Route::post('cashier/deposit-received', [Web\ReportCashierController::class, 'depositReceived']);
     Route::post('cashier/deposit-received-detail', [Web\ReportCashierController::class, 'depositReceivedDetail']);
     Route::post('cashier/arrearage', [Web\ReportCashierController::class, 'arrearage']);
+    Route::post('cashier/arrearage-detail', [Web\ReportCashierController::class, 'arrearageDetail']);
     Route::post('retail-outbound/detail', [Web\ReportErpController::class, 'retailOutboundDetail']);
     Route::post('treatment/detail', [Web\ReportTreatmentController::class, 'detail']);
     Route::post('erkai/detail', [Web\ReportErkaiController::class, 'detail']);
@@ -872,6 +873,7 @@ Route::controller(Web\ExportController::class)->prefix('export')->group(function
     Route::post('consumable/detail', 'consumableDetail');
     Route::post('retail-outbound/detail', 'retailOutboundDetail');
     Route::post('department-picking/detail', 'departmentPickingDetail');
+    Route::post('cashier/arrearage-detail', 'arrearageDetail');
 });
 
 Route::controller(Web\CouponController::class)->prefix('coupon')->group(function () {

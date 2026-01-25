@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class ReportCashierController extends Controller
 {
@@ -421,10 +422,7 @@ class ReportCashierController extends Controller
             ->addSelect(DB::raw("COUNT(DISTINCT CASE WHEN {$prefix}c.status = 1 AND {$prefix}c.leftover > 0 THEN {$prefix}c.id END) AS arrearage_count"))
             ->leftJoin('customer', 'customer.id', '=', 'c.customer_id')
             ->where('c.created_at', '<=', $endDate)
-            ->when($keyword, function ($query) use ($keyword) {
-                $query->where('customer.name', 'like', "%{$keyword}%")
-                    ->orWhere('customer.idcard', 'like', "%{$keyword}%");
-            })
+            ->when($keyword, fn(QueryBuilder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->groupBy('c.customer_id', 'customer.id', 'customer.name', 'customer.idcard')
             ->orderByDesc('ending_arrearage');
 
@@ -464,6 +462,136 @@ class ReportCashierController extends Controller
         return response_success([
             'rows'   => $result->items(),
             'total'  => $result->total(),
+            'footer' => $footer
+        ]);
+    }
+
+    /**
+     * 应收账款明细表
+     * @param ReportCashierRequest $request
+     * @return JsonResponse
+     */
+    public function arrearageDetail(ReportCashierRequest $request): JsonResponse
+    {
+        $date    = $request->input('date');
+        $rows    = $request->input('rows', 10);
+        $page    = $request->input('page', 1);
+        $keyword = $request->input('keyword');
+        $type    = $request->input('type');
+
+        $startDate = Carbon::parse($date[0])->startOfDay();
+        $endDate   = Carbon::parse($date[1])->endOfDay();
+
+        // 欠款单查询
+        $arrearageQuery = DB::table('cashier_arrearage as ca')
+            ->select([
+                'ca.id',
+                'ca.created_at',
+                DB::raw("'arrearage' as type"),
+                DB::raw("'欠款单' as type_name"),
+                'ca.customer_id',
+                'customer.name as customer_name',
+                'customer.idcard',
+                'ca.package_name',
+                'ca.product_name',
+                'ca.goods_name',
+                'ca.times',
+                'ca.specs',
+                'ca.arrearage as income',
+                DB::raw('NULL as remark'),
+                'ca.salesman',
+                'ca.department_id',
+                'ca.user_id',
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'ca.customer_id')
+            ->whereBetween('ca.created_at', [$startDate, $endDate])
+            ->when($keyword, fn($query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
+            ->when($type === 'arrearage' || $type === null || $type === '', fn($q) => $q)
+            ->when($type === 'repayment', fn($q) => $q->whereRaw('1=0')); // 过滤掉欠款单
+
+        // 还款单查询
+        $repaymentQuery = DB::table('cashier_arrearage_detail as cad')
+            ->select([
+                'cad.id',
+                'cad.created_at',
+                DB::raw("'repayment' as type"),
+                DB::raw("'还款单' as type_name"),
+                'cad.customer_id',
+                'customer.name as customer_name',
+                'customer.idcard',
+                'cad.package_name',
+                'cad.product_name',
+                'cad.goods_name',
+                'cad.times',
+                'cad.specs',
+                'cad.income',
+                'cad.remark',
+                'cad.salesman',
+                'cad.department_id',
+                'cad.user_id',
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'cad.customer_id')
+            ->whereBetween('cad.created_at', [$startDate, $endDate])
+            ->when($keyword, fn(QueryBuilder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
+            ->when($type === 'repayment' || $type === null || $type === '', fn($q) => $q)
+            ->when($type === 'arrearage', fn($q) => $q->whereRaw('1=0')); // 过滤掉还款单
+
+        // 合并查询
+        $query = DB::query()->fromSub($arrearageQuery, 'arrearage')->unionAll($repaymentQuery);
+
+        // 获取所有数据
+        $allData = DB::table(DB::raw("({$query->toSql()}) as combined_data"))
+            ->mergeBindings($query)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 手动分页
+        $total  = $allData->count();
+        $offset = ($page - 1) * $rows;
+        $items  = $allData->slice($offset, $rows)->values();
+
+        // 获取科室名称和用户名称
+        $departmentIds = $items->pluck('department_id')->unique()->filter();
+        $userIds       = $items->pluck('user_id')->unique()->filter();
+
+        $departments = [];
+        $users       = [];
+
+        if ($departmentIds->isNotEmpty()) {
+            $departments = Department::whereIn('id', $departmentIds)
+                ->pluck('name', 'id')
+                ->toArray();
+        }
+
+        if ($userIds->isNotEmpty()) {
+            $users = DB::table('users')
+                ->whereIn('id', $userIds)
+                ->pluck('name', 'id')
+                ->toArray();
+        }
+
+        // 填充科室和用户名称
+        $items->transform(function ($item) use ($departments, $users) {
+            $item->department_name = $departments[$item->department_id] ?? '';
+            $item->user_name       = $users[$item->user_id] ?? '';
+            return $item;
+        });
+
+        // 计算合计
+        $footer = [
+            [
+                'type_name' => '页小计:',
+                'income'    => floatval($items->sum('income')),
+            ],
+            [
+                'type_name' => '总合计:',
+                'income'    => floatval($allData->sum('income')),
+            ]
+        ];
+
+        return response_success([
+            'rows'   => $items,
+            'total'  => $total,
             'footer' => $footer
         ]);
     }

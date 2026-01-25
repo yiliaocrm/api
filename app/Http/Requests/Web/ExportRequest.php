@@ -55,6 +55,7 @@ class ExportRequest extends FormRequest
             'treatmentDetail' => $this->getTreatmentDetailRules(),
             'consultantOrder' => $this->getConsultantOrderRules(),
             'consultantDetail' => $this->getConsultantDetailRules(),
+            'arrearageDetail' => $this->getArrearageDetailRules(),
             default => []
         };
     }
@@ -87,6 +88,7 @@ class ExportRequest extends FormRequest
             'treatmentDetail' => $this->getTreatmentDetailMessages(),
             'consultantOrder' => $this->getConsultantOrderMessages(),
             'consultantDetail' => $this->getConsultantDetailMessages(),
+            'arrearageDetail' => $this->getArrearageDetailMessages(),
             default => []
         };
     }
@@ -831,6 +833,34 @@ class ExportRequest extends FormRequest
         ];
     }
 
+    private function getArrearageDetailRules(): array
+    {
+        return [
+            'date'     => 'required|array|size:2',
+            'date.*'   => 'required|date',
+            'keyword'  => 'nullable|string|max:200',
+            'type'     => 'nullable|string|in:arrearage,repayment',
+            'fileName' => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getArrearageDetailMessages(): array
+    {
+        return [
+            'date.required'       => '[业务日期]不能为空',
+            'date.array'          => '[业务日期]格式错误',
+            'date.size'           => '[业务日期]必须包含开始和结束日期',
+            'date.*.required'     => '[业务日期]不能为空',
+            'date.*.date'         => '[业务日期]格式错误',
+            'keyword.string'      => '[顾客信息]格式错误',
+            'keyword.max'         => '[顾客信息]不能超过200个字符',
+            'type.string'         => '[单据类型]格式错误',
+            'type.in'             => '[单据类型]值无效',
+            'fileName.string'     => '文件名称格式错误',
+            'fileName.max'        => '文件名称不能超过200个字符',
+        ];
+    }
+
     /**
      * 获取导出请求参数
      * @return array
@@ -859,6 +889,7 @@ class ExportRequest extends FormRequest
             'treatmentRecord' => $this->only(['filters', 'keyword', 'date']),
             'treatmentDetail' => $this->only(['filters', 'keyword', 'date']),
             'consultantOrder', 'consultantDetail' => $this->only(['filters', 'created_at', 'keyword']),
+            'arrearageDetail' => $this->only(['date', 'keyword', 'type']),
             default => []
         };
     }

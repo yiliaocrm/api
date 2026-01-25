@@ -920,6 +920,16 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'arrearage',
             ],
             [
+                'permission' => 'report.cashier.arrearage.detail',
+                'controller' => 'App\Http\Controllers\Web\ReportCashierController',
+                'action'     => 'arrearageDetail',
+            ],
+            [
+                'permission' => 'report.cashier.arrearage.detail.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action'     => 'arrearageDetail',
+            ],
+            [
                 'permission' => 'report.performance.sales',
                 'controller' => 'App\Http\Controllers\Web\ReportPerformanceController',
                 'action'     => 'index',
