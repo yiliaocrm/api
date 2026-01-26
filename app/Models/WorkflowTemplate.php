@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CustomerSopTemplate extends BaseModel
+class WorkflowTemplate extends BaseModel
 {
     protected $casts = [
         'config' => 'json'
@@ -15,6 +15,6 @@ class CustomerSopTemplate extends BaseModel
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(CustomerSopTemplateCategory::class, 'category_id');
+        return $this->belongsTo(WorkflowTemplateCategory::class, 'category_id');
     }
 }

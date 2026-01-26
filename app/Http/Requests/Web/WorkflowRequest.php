@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Web;
 
-use App\Models\CustomerSop;
-use App\Models\CustomerSopCategory;
+use App\Models\Workflow;
+use App\Models\WorkflowCategory;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CustomerSopRequest extends FormRequest
+class WorkflowRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -61,7 +61,7 @@ class CustomerSopRequest extends FormRequest
     private function getUpdateCategoryRules(): array
     {
         return [
-            'id'   => 'required|integer|exists:customer_sop_categories,id',
+            'id'   => 'required|integer|exists:workflow_categories,id',
             'name' => 'required|string|max:255',
         ];
     }
@@ -84,11 +84,11 @@ class CustomerSopRequest extends FormRequest
             'id' => [
                 'required',
                 'integer',
-                'exists:customer_sop_categories,id',
-                // 判断是否有旅程使用该分类
+                'exists:workflow_categories,id',
+                // 判断是否有工作流使用该分类
                 function ($attribute, $value, $fail) {
-                    if (CustomerSop::query()->where('category_id', $value)->exists()) {
-                        $fail('该分类下有旅程，不能删除');
+                    if (Workflow::query()->where('category_id', $value)->exists()) {
+                        $fail('该分类下有工作流，不能删除');
                         return;
                     }
                 },
@@ -102,15 +102,15 @@ class CustomerSopRequest extends FormRequest
             'id.required' => '分类ID不能为空',
             'id.integer'  => '分类ID必须是整数',
             'id.exists'   => '分类ID不存在',
-            'id.custom'   => '该分类下有旅程，不能删除',
+            'id.custom'   => '该分类下有工作流，不能删除',
         ];
     }
 
     private function getSwapCategoryRules(): array
     {
         return [
-            'id1' => 'required|integer|exists:customer_sop_categories,id',
-            'id2' => 'required|integer|exists:customer_sop_categories,id',
+            'id1' => 'required|integer|exists:workflow_categories,id',
+            'id2' => 'required|integer|exists:workflow_categories,id',
         ];
     }
 
@@ -134,7 +134,7 @@ class CustomerSopRequest extends FormRequest
                 'nullable',
                 'integer',
                 function ($attribute, $value, $fail) {
-                    if ($value && !CustomerSopCategory::query()->where('id', $value)->exists()) {
+                    if ($value && !WorkflowCategory::query()->where('id', $value)->exists()) {
                         $fail('分类ID不存在');
                     }
                 },
@@ -145,8 +145,8 @@ class CustomerSopRequest extends FormRequest
     private function getIndexMessages(): array
     {
         return [
-            'name.string'         => '旅程名称必须是字符串',
-            'name.max'            => '旅程名称不能超过255个字符',
+            'name.string'         => '工作流名称必须是字符串',
+            'name.max'            => '工作流名称不能超过255个字符',
             'category_id.integer' => '分类ID必须是整数',
             'category_id.exists'  => '分类ID不存在',
         ];
@@ -155,7 +155,7 @@ class CustomerSopRequest extends FormRequest
     private function getTemplateListRules(): array
     {
         return [
-            'category_id' => 'nullable|integer|exists:customer_sop_template_categories,id',
+            'category_id' => 'nullable|integer|exists:workflow_template_categories,id',
         ];
     }
 

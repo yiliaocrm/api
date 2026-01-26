@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\CustomerSop;
-use App\Models\CustomerSopCategory;
-use App\Models\CustomerSopTemplate;
-use App\Models\CustomerSopTemplateCategory;
+use App\Models\Workflow;
+use App\Models\WorkflowCategory;
+use App\Models\WorkflowTemplate;
+use App\Models\WorkflowTemplateCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Requests\Web\CustomerSopRequest;
+use App\Http\Requests\Web\WorkflowRequest;
 
-class CustomerSopController extends Controller
+class WorkflowController extends Controller
 {
     /**
-     * 旅程分类
+     * 工作流分类
      * @return JsonResponse
      */
     public function categories(): JsonResponse
     {
-        $categories = CustomerSopCategory::query()
+        $categories = WorkflowCategory::query()
             ->orderBy('sort')
             ->orderBy('id')
             ->get();
@@ -28,12 +28,12 @@ class CustomerSopController extends Controller
 
     /**
      * 添加分类
-     * @param CustomerSopRequest $request
+     * @param WorkflowRequest $request
      * @return JsonResponse
      */
-    public function addCategory(CustomerSopRequest $request): JsonResponse
+    public function addCategory(WorkflowRequest $request): JsonResponse
     {
-        $category = CustomerSopCategory::query()->create([
+        $category = WorkflowCategory::query()->create([
             'name' => $request->input('name'),
         ]);
         return response_success($category);
@@ -41,12 +41,12 @@ class CustomerSopController extends Controller
 
     /**
      * 更新分类
-     * @param CustomerSopRequest $request
+     * @param WorkflowRequest $request
      * @return JsonResponse
      */
-    public function updateCategory(CustomerSopRequest $request): JsonResponse
+    public function updateCategory(WorkflowRequest $request): JsonResponse
     {
-        $category = CustomerSopCategory::query()->findOrFail(
+        $category = WorkflowCategory::query()->findOrFail(
             $request->input('id')
         );
         $category->update([
@@ -57,27 +57,27 @@ class CustomerSopController extends Controller
 
     /**
      * 删除分类
-     * @param CustomerSopRequest $request
+     * @param WorkflowRequest $request
      * @return JsonResponse
      */
-    public function removeCategory(CustomerSopRequest $request): JsonResponse
+    public function removeCategory(WorkflowRequest $request): JsonResponse
     {
-        CustomerSopCategory::query()->find($request->input('id'))->delete();
+        WorkflowCategory::query()->find($request->input('id'))->delete();
         return response_success();
     }
 
 
     /**
      * 交换分群分类顺序
-     * @param CustomerSopRequest $request
+     * @param WorkflowRequest $request
      * @return JsonResponse
      */
-    public function swapCategory(CustomerSopRequest $request): JsonResponse
+    public function swapCategory(WorkflowRequest $request): JsonResponse
     {
-        $category1 = CustomerSopCategory::query()->find(
+        $category1 = WorkflowCategory::query()->find(
             $request->input('id1')
         );
-        $category2 = CustomerSopCategory::query()->find(
+        $category2 = WorkflowCategory::query()->find(
             $request->input('id2')
         );
         $update1   = [
@@ -92,16 +92,16 @@ class CustomerSopController extends Controller
     }
 
     /**
-     * 旅程列表
-     * @param CustomerSopRequest $request
+     * 工作流列表
+     * @param WorkflowRequest $request
      * @return JsonResponse
      */
-    public function index(CustomerSopRequest $request): JsonResponse
+    public function index(WorkflowRequest $request): JsonResponse
     {
         $rows  = $request->input('rows', 10);
         $sort  = $request->input('sort', 'created_at');
         $order = $request->input('order', 'desc');
-        $query = CustomerSop::query()
+        $query = Workflow::query()
             ->with([
                 'category',
                 'createUser:id,name',
@@ -126,7 +126,7 @@ class CustomerSopController extends Controller
      */
     public function templateCategory(): JsonResponse
     {
-        $category = CustomerSopTemplateCategory::query()
+        $category = WorkflowTemplateCategory::query()
             ->withCount('templates')
             ->orderBy('id')
             ->get();
@@ -134,14 +134,14 @@ class CustomerSopController extends Controller
     }
 
     /**
-     * 旅程模板列表
-     * @param CustomerSopRequest $request
+     * 工作流模板列表
+     * @param WorkflowRequest $request
      * @return JsonResponse
      */
-    public function templateList(CustomerSopRequest $request): JsonResponse
+    public function templateList(WorkflowRequest $request): JsonResponse
     {
         $category_id = $request->input('category_id');
-        $templates   = CustomerSopTemplate::query()
+        $templates   = WorkflowTemplate::query()
             ->with([
                 'category:id,name',
             ])
