@@ -73,7 +73,7 @@ class AppointmentController extends Controller
     {
         $date        = $request->input('date');
         $view        = $request->input('view');
-        $resourceIds = $request->input('resource_id', []);
+        $resourceIds = $request->input('resource_id') ?? [];
 
         return response_success([
             'events'    => $request->structEvents(),
