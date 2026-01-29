@@ -2,43 +2,46 @@
 
 namespace App\Exports;
 
-use Throwable;
-use Carbon\Carbon;
-use App\Models\Reception;
-use Vtiful\Kernel\Excel;
-use App\Models\ExportTask;
-use Illuminate\Bus\Queueable;
 use App\Events\Web\ExportCompleted;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\ExportTask;
+use App\Models\Reception;
+use Carbon\Carbon;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use Throwable;
+use Vtiful\Kernel\Excel;
 
 class ConsultantDetailExport implements ShouldQueue
 {
     use Queueable;
 
     protected ExportTask $task;
+
     protected array $request;
-    protected ?int $user_id;
+
+    protected int $user_id;
+
+    protected string $tenant_id;
 
     /**
      * 分批处理数据的大小
-     * @var int
      */
     protected int $chunkSize = 1000;
 
     /**
      * 设置任务超时时间
-     * @var int
      */
     public int $timeout = 1200;
 
-    public function __construct(array $request, ExportTask $task, int $user_id)
+    public function __construct(array $request, ExportTask $task, string $tenant_id, int $user_id)
     {
-        $this->task    = $task;
+        $this->task = $task;
         $this->request = $request;
         $this->user_id = $user_id;
+        $this->tenant_id = $tenant_id;
     }
 
     public function handle(): void
@@ -46,7 +49,7 @@ class ConsultantDetailExport implements ShouldQueue
         try {
             // 更新任务状态为处理中
             $this->task->update([
-                'status'     => 'processing',
+                'status' => 'processing',
                 'started_at' => now(),
             ]);
 
@@ -54,7 +57,7 @@ class ConsultantDetailExport implements ShouldQueue
             $path = Storage::disk('public')->path(dirname($this->task->file_path));
 
             // 确保目录存在
-            if (!is_dir($path)) {
+            if (! is_dir($path)) {
                 mkdir($path, 0755, true);
             }
 
@@ -81,7 +84,7 @@ class ConsultantDetailExport implements ShouldQueue
                 '助诊医生',
                 '分诊接待',
                 '录单人员',
-                '录单时间'
+                '录单时间',
             ];
             $sheet->header($headers);
 
@@ -107,7 +110,7 @@ class ConsultantDetailExport implements ShouldQueue
                     $batchData[] = $this->mapRow($row);
                 }
                 // 每一批数据直接写入文件
-                if (!empty($batchData)) {
+                if (! empty($batchData)) {
                     $sheet->data($batchData);
                 }
             });
@@ -123,7 +126,7 @@ class ConsultantDetailExport implements ShouldQueue
 
             // 更新任务状态为完成
             $this->task->update([
-                'status'       => 'completed',
+                'status' => 'completed',
                 'completed_at' => now(),
             ]);
 
@@ -132,8 +135,8 @@ class ConsultantDetailExport implements ShouldQueue
 
         } catch (Throwable $exception) {
             $this->task->update([
-                'status'        => 'failed',
-                'failed_at'     => now(),
+                'status' => 'failed',
+                'failed_at' => now(),
                 'error_message' => $exception->getMessage(),
             ]);
         }
@@ -141,11 +144,11 @@ class ConsultantDetailExport implements ShouldQueue
 
     protected function getQuery(): Builder
     {
-        $filters    = $this->request['filters'] ?? [];
-        $keyword    = $this->request['keyword'] ?? null;
+        $filters = $this->request['filters'] ?? [];
+        $keyword = $this->request['keyword'] ?? null;
         $created_at = $this->request['created_at'];
-        $sort       = $this->request['sort'] ?? 'created_at';
-        $order      = $this->request['order'] ?? 'desc';
+        $sort = $this->request['sort'] ?? 'created_at';
+        $order = $this->request['order'] ?? 'desc';
 
         return Reception::query()
             ->with([
@@ -168,16 +171,16 @@ class ConsultantDetailExport implements ShouldQueue
             ->queryConditions('ReportConsultantDetailIndex', $filters)
             ->whereBetween('reception.created_at', [
                 Carbon::parse($created_at[0])->startOfDay(),
-                Carbon::parse($created_at[1])->endOfDay()
+                Carbon::parse($created_at[1])->endOfDay(),
             ])
-            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
+            ->when($keyword, fn (Builder $query) => $query->where('customer.keyword', 'like', '%'.$keyword.'%'))
             ->orderBy("reception.{$sort}", $order);
     }
 
     protected function mapRow($row): array
     {
         $statusConfig = config('setting.reception.status');
-        $statusValue  = $row->status instanceof \BackedEnum ? $row->status->value : $row->status;
+        $statusValue = $row->status instanceof \BackedEnum ? $row->status->value : $row->status;
 
         return [
             $statusConfig[$statusValue] ?? '',
@@ -201,15 +204,13 @@ class ConsultantDetailExport implements ShouldQueue
 
     /**
      * 任务失败时调用
-     * @param Throwable $exception
-     * @return void
      */
     public function failed(Throwable $exception): void
     {
         $this->task->update([
-            'status'        => 'failed',
-            'failed_at'     => now(),
-            'error_message' => '导出任务执行失败: ' . $exception->getMessage(),
+            'status' => 'failed',
+            'failed_at' => now(),
+            'error_message' => '导出任务执行失败: '.$exception->getMessage(),
         ]);
     }
 

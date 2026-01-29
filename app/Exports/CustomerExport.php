@@ -2,43 +2,46 @@
 
 namespace App\Exports;
 
+use App\Events\Web\ExportCompleted;
+use App\Models\Customer;
+use App\Models\CustomerPhone;
+use App\Models\ExportTask;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Throwable;
 use Vtiful\Kernel\Excel;
-use App\Models\Customer;
-use App\Models\ExportTask;
-use App\Models\CustomerPhone;
-use Illuminate\Bus\Queueable;
-use App\Events\Web\ExportCompleted;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class CustomerExport implements ShouldQueue
 {
     use Queueable;
 
     protected ExportTask $task;
+
     protected array $request;
-    protected ?int $user_id;
+
+    protected int $user_id;
+
+    protected string $tenant_id;
 
     /**
      * 分批处理数据的大小
-     * @var int
      */
     protected int $chunkSize = 1000;
 
     /**
      * 设置任务超时时间
-     * @var int
      */
     public int $timeout = 1200;
 
-    public function __construct(array $request, ExportTask $task, int $user_id)
+    public function __construct(array $request, ExportTask $task, string $tenant_id, int $user_id)
     {
-        $this->task    = $task;
+        $this->task = $task;
         $this->request = $request;
         $this->user_id = $user_id;
+        $this->tenant_id = $tenant_id;
     }
 
     public function handle(): void
@@ -46,7 +49,7 @@ class CustomerExport implements ShouldQueue
         try {
             // 更新任务状态为处理中
             $this->task->update([
-                'status'     => 'processing',
+                'status' => 'processing',
                 'started_at' => now(),
             ]);
 
@@ -54,7 +57,7 @@ class CustomerExport implements ShouldQueue
             $path = Storage::disk('public')->path(dirname($this->task->file_path));
 
             // 确保目录存在
-            if (!is_dir($path)) {
+            if (! is_dir($path)) {
                 mkdir($path, 0755, true);
             }
 
@@ -123,7 +126,7 @@ class CustomerExport implements ShouldQueue
                         $row->sex == 1 ? '男' : ($row->sex == 2 ? '女' : '未知'),
                         $row->birthday,
                         $row->age,
-                        $row->phones->map(fn(CustomerPhone $customerPhone) => $customerPhone->getRawOriginal('phone'))->implode(','),
+                        $row->phones->map(fn (CustomerPhone $customerPhone) => $customerPhone->getRawOriginal('phone'))->implode(','),
                         $row->address_id,
                         $row->level_id,
                         get_medium_name($row->medium_id),
@@ -144,7 +147,7 @@ class CustomerExport implements ShouldQueue
                     ];
                 }
                 // 每一批数据直接写入文件
-                if (!empty($batchData)) {
+                if (! empty($batchData)) {
                     $sheet->data($batchData);
                 }
             });
@@ -160,7 +163,7 @@ class CustomerExport implements ShouldQueue
 
             // 更新任务状态为完成
             $this->task->update([
-                'status'       => 'completed',
+                'status' => 'completed',
                 'completed_at' => now(),
             ]);
 
@@ -169,8 +172,8 @@ class CustomerExport implements ShouldQueue
 
         } catch (Throwable $exception) {
             $this->task->update([
-                'status'        => 'failed',
-                'failed_at'     => now(),
+                'status' => 'failed',
+                'failed_at' => now(),
                 'error_message' => $exception->getMessage(),
             ]);
         }
@@ -178,20 +181,20 @@ class CustomerExport implements ShouldQueue
 
     protected function getQuery()
     {
-        $keyword  = $this->request['keyword'] ?? null;
-        $filters  = $this->request['filters'] ?? [];
+        $keyword = $this->request['keyword'] ?? null;
+        $filters = $this->request['filters'] ?? [];
         $group_id = ($this->request['group_id'] ?? 'all') === 'all' ? null : $this->request['group_id'];
 
         return Customer::query()
             ->select(['customer.*'])
             ->with(['phones'])
-            ->when($keyword, fn(Builder $query) => $query->where('keyword', 'like', "%{$keyword}%"))
-            ->when($group_id, fn(Builder $query) => $query->leftJoin('customer_group_details', 'customer_group_details.customer_id', '=', 'customer.id')
+            ->when($keyword, fn (Builder $query) => $query->where('keyword', 'like', "%{$keyword}%"))
+            ->when($group_id, fn (Builder $query) => $query->leftJoin('customer_group_details', 'customer_group_details.customer_id', '=', 'customer.id')
                 ->where('customer_group_details.customer_group_id', $group_id)
             )
             ->queryConditions('CustomerIndex', $filters)
             // 权限限制
-            ->when(!user($this->user_id)->hasAnyAccess(['superuser', 'customer.view.all']), function (Builder $query) {
+            ->when(! user($this->user_id)->hasAnyAccess(['superuser', 'customer.view.all']), function (Builder $query) {
                 $ids = user($this->user_id)->getCustomerViewUsersPermission();
                 $query->where(function ($query) use ($ids) {
                     $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
@@ -202,15 +205,13 @@ class CustomerExport implements ShouldQueue
 
     /**
      * 任务失败时调用
-     * @param Throwable $exception
-     * @return void
      */
     public function failed(Throwable $exception): void
     {
         $this->task->update([
-            'status'        => 'failed',
-            'failed_at'     => now(),
-            'error_message' => '导出任务执行失败: ' . $exception->getMessage(),
+            'status' => 'failed',
+            'failed_at' => now(),
+            'error_message' => '导出任务执行失败: '.$exception->getMessage(),
         ]);
     }
 

@@ -2,50 +2,54 @@
 
 namespace App\Exports;
 
-use Throwable;
-use Carbon\Carbon;
-use App\Models\Cashier;
-use App\Models\Accounts;
-use Vtiful\Kernel\Excel;
-use App\Models\ExportTask;
-use Illuminate\Bus\Queueable;
 use App\Events\Web\ExportCompleted;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Accounts;
+use App\Models\Cashier;
+use App\Models\ExportTask;
+use Carbon\Carbon;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use Throwable;
+use Vtiful\Kernel\Excel;
 
 class ReportCashierListExport implements ShouldQueue
 {
     use Queueable;
 
     protected ExportTask $task;
+
     protected array $request;
-    protected ?int $user_id;
+
+    protected int $user_id;
+
+    protected string $tenant_id;
 
     /**
      * 分批处理数据的大小
-     * @var int
      */
     protected int $chunkSize = 1000;
 
     /**
      * 设置任务超时时间
-     * @var int
      */
     public int $timeout = 1200;
 
     /**
      * 收费账户
+     *
      * @var \Illuminate\Database\Eloquent\Collection
      */
     protected $accounts;
 
-    public function __construct(array $request, ExportTask $task, int $user_id)
+    public function __construct(array $request, ExportTask $task, string $tenant_id, int $user_id)
     {
-        $this->task     = $task;
-        $this->request  = $request;
-        $this->user_id  = $user_id;
+        $this->task = $task;
+        $this->request = $request;
+        $this->user_id = $user_id;
+        $this->tenant_id = $tenant_id;
         $this->accounts = Accounts::query()->orderBy('id', 'asc')->get();
     }
 
@@ -54,7 +58,7 @@ class ReportCashierListExport implements ShouldQueue
         try {
             // 更新任务状态为处理中
             $this->task->update([
-                'status'     => 'processing',
+                'status' => 'processing',
                 'started_at' => now(),
             ]);
 
@@ -62,7 +66,7 @@ class ReportCashierListExport implements ShouldQueue
             $path = Storage::disk('public')->path(dirname($this->task->file_path));
 
             // 确保目录存在
-            if (!is_dir($path)) {
+            if (! is_dir($path)) {
                 mkdir($path, 0755, true);
             }
 
@@ -74,7 +78,7 @@ class ReportCashierListExport implements ShouldQueue
 
             // 设置表头
             $accounts_name = $this->accounts->pluck('name')->toArray();
-            $headers       = [
+            $headers = [
                 '收费单号',
                 '单据编号',
                 '顾客姓名',
@@ -87,7 +91,7 @@ class ReportCashierListExport implements ShouldQueue
                 '实收金额',
                 ...$accounts_name,
                 '录单时间',
-                '收费时间'
+                '收费时间',
             ];
             $sheet->header($headers);
 
@@ -109,7 +113,7 @@ class ReportCashierListExport implements ShouldQueue
                     $batchData[] = $this->mapRow($row);
                 }
                 // 每一批数据直接写入文件
-                if (!empty($batchData)) {
+                if (! empty($batchData)) {
                     $sheet->data($batchData);
                 }
             });
@@ -125,7 +129,7 @@ class ReportCashierListExport implements ShouldQueue
 
             // 更新任务状态为完成
             $this->task->update([
-                'status'       => 'completed',
+                'status' => 'completed',
                 'completed_at' => now(),
             ]);
 
@@ -134,8 +138,8 @@ class ReportCashierListExport implements ShouldQueue
 
         } catch (Throwable $exception) {
             $this->task->update([
-                'status'        => 'failed',
-                'failed_at'     => now(),
+                'status' => 'failed',
+                'failed_at' => now(),
                 'error_message' => $exception->getMessage(),
             ]);
         }
@@ -143,34 +147,34 @@ class ReportCashierListExport implements ShouldQueue
 
     protected function getQuery(): Builder
     {
-        $filters    = $this->request['filters'] ?? [];
-        $keyword    = $this->request['keyword'] ?? null;
+        $filters = $this->request['filters'] ?? [];
+        $keyword = $this->request['keyword'] ?? null;
         $created_at = $this->request['created_at'];
-        $sort       = $this->request['sort'] ?? 'created_at';
-        $order      = $this->request['order'] ?? 'desc';
+        $sort = $this->request['sort'] ?? 'created_at';
+        $order = $this->request['order'] ?? 'desc';
 
         return Cashier::query()
             ->with([
                 'pay',
                 'customer:id,name,idcard',
                 'user:id,name',
-                'operatorUser:id,name'
+                'operatorUser:id,name',
             ])
             ->select('cashier.*')
             ->leftJoin('customer', 'customer.id', '=', 'cashier.customer_id')
             ->where('status', 2)
             ->whereBetween('cashier.created_at', [
                 Carbon::parse($created_at[0])->startOfDay(),
-                Carbon::parse($created_at[1])->endOfDay()
+                Carbon::parse($created_at[1])->endOfDay(),
             ])
-            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
+            ->when($keyword, fn (Builder $query) => $query->where('customer.keyword', 'like', '%'.$keyword.'%'))
             ->queryConditions('ReportCashierList', $filters)
             ->orderBy("cashier.{$sort}", $order);
     }
 
     protected function mapRow($row): array
     {
-        $type     = config('setting.cashier.cashierable_type');
+        $type = config('setting.cashier.cashierable_type');
         $accounts = [];
 
         $this->accounts->each(function ($v) use ($row, &$accounts) {
@@ -196,15 +200,13 @@ class ReportCashierListExport implements ShouldQueue
 
     /**
      * 任务失败时调用
-     * @param Throwable $exception
-     * @return void
      */
     public function failed(Throwable $exception): void
     {
         $this->task->update([
-            'status'        => 'failed',
-            'failed_at'     => now(),
-            'error_message' => '导出任务执行失败: ' . $exception->getMessage(),
+            'status' => 'failed',
+            'failed_at' => now(),
+            'error_message' => '导出任务执行失败: '.$exception->getMessage(),
         ]);
     }
 
