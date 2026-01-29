@@ -487,7 +487,6 @@ Route::controller(Web\ErkaiController::class)->prefix('erkai')->group(function (
 
 Route::controller(Web\CashierController::class)->prefix('cashier')->group(function () {
     Route::get('info', 'info');
-//    Route::get('dashboard', 'dashboard');
     Route::post('manage', 'manage');
     Route::post('consultant-charge', 'consultantCharge');
     Route::post('erkai-charge', 'erkaiCharge');
@@ -1009,14 +1008,34 @@ Route::controller(Web\QufriendController::class)->prefix('qufriend')->group(func
 });
 
 Route::controller(Web\WorkflowController::class)->prefix('workflow')->group(function () {
+    Route::get('nodes', 'nodes');
     Route::get('categories', 'categories');
     Route::post('add-category', 'addCategory');
     Route::get('swap-category', 'swapCategory');
     Route::get('remove-category', 'removeCategory');
     Route::post('update-category', 'updateCategory');
-    Route::get('index', 'index');
     Route::get('template-list', 'templateList');
     Route::get('template-category', 'templateCategory');
+
+    // 工作流 CRUD
+    Route::get('index', 'index');
+    Route::post('create', 'create');
+    Route::post('update', 'update');
+    Route::get('remove', 'remove');
+    Route::get('detail', 'detail');
+    Route::post('activate', 'activate');
+    Route::post('deactivate', 'deactivate');
+    Route::post('duplicate', 'duplicate');
+    Route::post('update-nodes', 'updateNodes');
+    Route::post('update-connections', 'updateConnections');
+});
+
+// 工作流执行记录路由
+Route::controller(Web\WorkflowExecutionController::class)->prefix('workflow/execution')->group(function () {
+    Route::get('index', 'index');
+    Route::get('detail', 'detail');
+    Route::post('retry', 'retry');
+    Route::post('cancel', 'cancel');
 });
 
 Route::controller(Web\PermissionQueryController::class)->prefix('permission-query')->group(function () {
@@ -1074,4 +1093,3 @@ Route::prefix('attachment')->controller(Web\AttachmentController::class)->group(
     Route::post('group/update', 'updateGroup');
     Route::delete('group/remove', 'removeGroup');
 });
-

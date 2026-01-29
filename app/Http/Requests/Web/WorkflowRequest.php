@@ -20,6 +20,11 @@ class WorkflowRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             'index' => $this->getIndexRules(),
+            'create' => $this->getCreateRules(),
+            'update' => $this->getUpdateRules(),
+            'remove', 'detail', 'activate', 'deactivate', 'duplicate' => $this->getIdRules(),
+            'updateNodes' => $this->getUpdateNodesRules(),
+            'updateConnections' => $this->getUpdateConnectionsRules(),
             'addCategory' => $this->getAddCategoryRules(),
             'swapCategory' => $this->getSwapCategoryRules(),
             'updateCategory' => $this->getUpdateCategoryRules(),
@@ -53,15 +58,15 @@ class WorkflowRequest extends FormRequest
     {
         return [
             'name.required' => '分类名称不能为空',
-            'name.string'   => '分类名称必须是字符串',
-            'name.max'      => '分类名称不能超过255个字符',
+            'name.string' => '分类名称必须是字符串',
+            'name.max' => '分类名称不能超过255个字符',
         ];
     }
 
     private function getUpdateCategoryRules(): array
     {
         return [
-            'id'   => 'required|integer|exists:workflow_categories,id',
+            'id' => 'required|integer|exists:workflow_categories,id',
             'name' => 'required|string|max:255',
         ];
     }
@@ -69,12 +74,12 @@ class WorkflowRequest extends FormRequest
     private function getUpdateCategoryMessages(): array
     {
         return [
-            'id.required'   => '分类ID不能为空',
-            'id.integer'    => '分类ID必须是整数',
-            'id.exists'     => '分类ID不存在',
+            'id.required' => '分类ID不能为空',
+            'id.integer' => '分类ID必须是整数',
+            'id.exists' => '分类ID不存在',
             'name.required' => '分类名称不能为空',
-            'name.string'   => '分类名称必须是字符串',
-            'name.max'      => '分类名称不能超过255个字符',
+            'name.string' => '分类名称必须是字符串',
+            'name.max' => '分类名称不能超过255个字符',
         ];
     }
 
@@ -89,6 +94,7 @@ class WorkflowRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     if (Workflow::query()->where('category_id', $value)->exists()) {
                         $fail('该分类下有工作流，不能删除');
+
                         return;
                     }
                 },
@@ -100,9 +106,9 @@ class WorkflowRequest extends FormRequest
     {
         return [
             'id.required' => '分类ID不能为空',
-            'id.integer'  => '分类ID必须是整数',
-            'id.exists'   => '分类ID不存在',
-            'id.custom'   => '该分类下有工作流，不能删除',
+            'id.integer' => '分类ID必须是整数',
+            'id.exists' => '分类ID不存在',
+            'id.custom' => '该分类下有工作流，不能删除',
         ];
     }
 
@@ -118,23 +124,23 @@ class WorkflowRequest extends FormRequest
     {
         return [
             'id1.required' => '第一个分类ID不能为空',
-            'id1.integer'  => '第一个分类ID必须是整数',
-            'id1.exists'   => '第一个分类ID不存在',
+            'id1.integer' => '第一个分类ID必须是整数',
+            'id1.exists' => '第一个分类ID不存在',
             'id2.required' => '第二个分类ID不能为空',
-            'id2.integer'  => '第二个分类ID必须是整数',
-            'id2.exists'   => '第二个分类ID不存在',
+            'id2.integer' => '第二个分类ID必须是整数',
+            'id2.exists' => '第二个分类ID不存在',
         ];
     }
 
     private function getIndexRules(): array
     {
         return [
-            'name'        => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
             'category_id' => [
                 'nullable',
                 'integer',
                 function ($attribute, $value, $fail) {
-                    if ($value && !WorkflowCategory::query()->where('id', $value)->exists()) {
+                    if ($value && ! WorkflowCategory::query()->where('id', $value)->exists()) {
                         $fail('分类ID不存在');
                     }
                 },
@@ -145,10 +151,10 @@ class WorkflowRequest extends FormRequest
     private function getIndexMessages(): array
     {
         return [
-            'name.string'         => '工作流名称必须是字符串',
-            'name.max'            => '工作流名称不能超过255个字符',
+            'name.string' => '工作流名称必须是字符串',
+            'name.max' => '工作流名称不能超过255个字符',
             'category_id.integer' => '分类ID必须是整数',
-            'category_id.exists'  => '分类ID不存在',
+            'category_id.exists' => '分类ID不存在',
         ];
     }
 
@@ -163,7 +169,79 @@ class WorkflowRequest extends FormRequest
     {
         return [
             'category_id.integer' => '模板分类ID必须是整数',
-            'category_id.exists'  => '模板分类ID不存在',
+            'category_id.exists' => '模板分类ID不存在',
+        ];
+    }
+
+    private function getCreateRules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:workflow_categories,id',
+            'type' => 'required|in:trigger,periodic',
+            'all_customer' => 'boolean',
+            'customer_group_ids' => 'array',
+            'customer_group_ids.*' => 'exists:customer_groups,id',
+            'nodes' => 'nullable',
+            'connections' => 'nullable',
+            'settings' => 'nullable',
+            'tags' => 'nullable',
+            'cron' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if ($this->input('type') === 'periodic' && empty($value)) {
+                        $fail('周期型工作流必须设置执行时间点');
+                    }
+                },
+            ],
+            'start_at' => 'nullable|date',
+            'end_at' => 'nullable|date|after:start_at',
+        ];
+    }
+
+    private function getUpdateRules(): array
+    {
+        return [
+            'id' => 'required|exists:workflows,id',
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'sometimes|required|exists:workflow_categories,id',
+            'type' => 'sometimes|required|in:trigger,periodic',
+            'all_customer' => 'boolean',
+            'customer_group_ids' => 'array',
+            'customer_group_ids.*' => 'exists:customer_groups,id',
+            'nodes' => 'nullable',
+            'connections' => 'nullable',
+            'settings' => 'nullable',
+            'tags' => 'nullable',
+            'cron' => 'nullable|string',
+            'start_at' => 'nullable|date',
+            'end_at' => 'nullable|date|after:start_at',
+        ];
+    }
+
+    private function getIdRules(): array
+    {
+        return [
+            'id' => 'required|exists:workflows,id',
+        ];
+    }
+
+    private function getUpdateNodesRules(): array
+    {
+        return [
+            'id' => 'required|exists:workflows,id',
+            'nodes' => 'required',
+        ];
+    }
+
+    private function getUpdateConnectionsRules(): array
+    {
+        return [
+            'id' => 'required|exists:workflows,id',
+            'connections' => 'required',
         ];
     }
 }

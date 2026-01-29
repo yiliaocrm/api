@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\Tenant as Tenant;
 
 class TenantSeeder extends Seeder
 {
@@ -57,6 +56,7 @@ class TenantSeeder extends Seeder
             Tenant\CustomerGroupFieldsTableSeeder::class,
             Tenant\CustomerGroupCategoryTableSeeder::class,
             Tenant\QufriendSeeder::class,
+            Tenant\WorkflowNodeSeeder::class,
             Tenant\WorkflowCategorySeeder::class,
             Tenant\CustomerPhoneRelationshipSeeder::class,
             Tenant\SmsCategorySeeder::class,
