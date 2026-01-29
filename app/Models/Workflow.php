@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class CustomerSop extends BaseModel
+class Workflow extends BaseModel
 {
     protected function casts(): array
     {
@@ -20,7 +20,7 @@ class CustomerSop extends BaseModel
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(CustomerSopCategory::class, 'category_id');
+        return $this->belongsTo(WorkflowCategory::class, 'category_id');
     }
 
     /**
@@ -33,11 +33,11 @@ class CustomerSop extends BaseModel
     }
 
     /**
-     * 客户旅程目标人群
+     * 工作流目标人群
      * @return BelongsToMany
      */
     public function customerGroups(): BelongsToMany
     {
-        return $this->belongsToMany(CustomerGroup::class, 'customer_sop_customer_groups', 'sop_id', 'customer_group_id');
+        return $this->belongsToMany(CustomerGroup::class, 'workflow_customer_groups', 'workflow_id', 'customer_group_id');
     }
 }

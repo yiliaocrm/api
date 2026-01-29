@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class CustomerSopCategory extends BaseModel
+class WorkflowCategory extends BaseModel
 {
     /**
      * 模型启动方法

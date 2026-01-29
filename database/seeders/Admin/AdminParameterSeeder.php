@@ -212,6 +212,54 @@ class AdminParameterSeeder extends Seeder
                 'type' => 'string',
                 'remark' => '高德地图安全密钥',
             ],
+            [
+                'name'   => 'n8n_api_base_url',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => 'N8N API基础地址',
+            ],
+            [
+                'name'   => 'n8n_api_key',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => 'N8N API密钥',
+            ],
+            [
+                'name'   => 'n8n_webhook_base_url',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => 'N8N Webhook基础地址',
+            ],
+            [
+                'name'   => 'n8n_webhook_username',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => 'N8N Webhook用户名',
+            ],
+            [
+                'name'   => 'n8n_webhook_password',
+                'value'  => '',
+                'type'   => 'string',
+                'remark' => 'N8N Webhook密码',
+            ],
+            [
+                'name'   => 'n8n_timeout',
+                'value'  => 30,
+                'type'   => 'number',
+                'remark' => 'N8N请求超时时间(秒)',
+            ],
+            [
+                'name'   => 'n8n_throw',
+                'value'  => 'true',
+                'type'   => 'boolean',
+                'remark' => 'N8N请求失败时是否抛出异常',
+            ],
+            [
+                'name'   => 'n8n_retry',
+                'value'  => 3,
+                'type'   => 'number',
+                'remark' => 'N8N请求失败时重试次数',
+            ],
         ];
         // 添加或更新参数
         foreach ($parameters as $parameter) {

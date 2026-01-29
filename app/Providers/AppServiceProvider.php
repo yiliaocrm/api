@@ -41,6 +41,14 @@ class AppServiceProvider extends ServiceProvider
             'aws_endpoint'                => 'filesystems.disks.s3.endpoint',
             'aws_signed_url'              => 'filesystems.disks.s3.signed_url',
             'aws_use_path_style_endpoint' => 'filesystems.disks.s3.use_path_style_endpoint',
+            'n8n_api_base_url'            => 'n8n.api.base_url',
+            'n8n_api_key'                 => 'n8n.api.key',
+            'n8n_webhook_base_url'        => 'n8n.webhook.base_url',
+            'n8n_webhook_username'        => 'n8n.webhook.username',
+            'n8n_webhook_password'        => 'n8n.webhook.password',
+            'n8n_timeout'                 => 'n8n.timeout',
+            'n8n_throw'                   => 'n8n.throw',
+            'n8n_retry'                   => 'n8n.retry',
         ];
 
         // 遍历映射，设置配置

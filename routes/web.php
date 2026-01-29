@@ -1008,7 +1008,7 @@ Route::controller(Web\QufriendController::class)->prefix('qufriend')->group(func
     Route::post('create', 'create');
 });
 
-Route::controller(Web\CustomerSopController::class)->prefix('customer-sop')->group(function () {
+Route::controller(Web\WorkflowController::class)->prefix('workflow')->group(function () {
     Route::get('categories', 'categories');
     Route::post('add-category', 'addCategory');
     Route::get('swap-category', 'swapCategory');
