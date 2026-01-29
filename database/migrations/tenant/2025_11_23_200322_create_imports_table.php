@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -13,7 +14,7 @@ return new class extends Migration {
         Schema::create('import_templates', function (Blueprint $table) {
             $table->id();
             $table->string('title')->comment('名称');
-            $table->string('template')->comment('导入模板');
+            $table->string('template')->comment('导入模板路径');
             $table->integer('chunk_size')->comment('分块读入数量')->default(10);
             $table->integer('async_limit')->default(0)->comment('大于等于 n 启用异步');
             $table->string('use_import')->comment('使用的导入类');

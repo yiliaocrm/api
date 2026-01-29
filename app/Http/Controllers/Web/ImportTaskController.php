@@ -2,52 +2,48 @@
 
 namespace App\Http\Controllers\Web;
 
-use Throwable;
+use App\Exports\ImportTaskDetailExport;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\ImportTaskRequest;
 use App\Models\ImportTask;
+use App\Models\ImportTaskDetail;
 use App\Models\ImportTemplate;
 use App\Services\ImportService;
-use App\Models\ImportTaskDetail;
-use App\Http\Controllers\Controller;
-use App\Exports\ImportTaskDetailExport;
-use App\Http\Requests\Web\ImportTaskRequest;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class ImportTaskController extends Controller
 {
     /**
      * 导入任务列表
-     * @param ImportTaskRequest $request
-     * @return JsonResponse
      */
     public function index(ImportTaskRequest $request): JsonResponse
     {
-        $rows      = $request->input('rows', 10);
-        $sort      = $request->input('sort', 'id');
-        $order     = $request->input('order', 'desc');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'desc');
         $file_name = $request->input('file_name');
 
         $query = ImportTask::query()
             ->with([
                 'template:id,title',
             ])
-            ->when($file_name, fn(Builder $query) => $query->whereLike('file_name', '%' . $file_name . '%'))
+            ->when($file_name, fn (Builder $query) => $query->whereLike('file_name', '%'.$file_name.'%'))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         $query->append(['status_text']);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 创建导入任务
-     * @param ImportTaskRequest $request
-     * @param ImportService $importService
-     * @return JsonResponse
      */
     public function create(ImportTaskRequest $request, ImportService $importService): JsonResponse
     {
@@ -56,23 +52,24 @@ class ImportTaskController extends Controller
         );
         try {
             $importService->prepare($template, $request->file('file'));
+
             return response_success();
         } catch (Throwable $e) {
+            report($e);
+
             return response_error(msg: $e->getMessage());
         }
     }
 
     /**
      * 导入任务明细
-     * @param ImportTaskRequest $request
-     * @return JsonResponse
      */
     public function details(ImportTaskRequest $request): JsonResponse
     {
         $taskId = $request->input('id');
-        $rows   = $request->input('rows', 10);
-        $sort   = $request->input('sort', 'id');
-        $order  = $request->input('order', 'desc');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'desc');
         $status = $request->input('status');
 
         // 查询任务主表信息
@@ -83,7 +80,7 @@ class ImportTaskController extends Controller
         // 查询明细表数据，支持分页和状态筛选
         $detailsQuery = ImportTaskDetail::query()
             ->where('task_id', $taskId)
-            ->when($status !== null, fn(Builder $query) => $query->where('status', $status))
+            ->when($status !== null, fn (Builder $query) => $query->where('status', $status))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
@@ -91,18 +88,17 @@ class ImportTaskController extends Controller
         $detailsQuery->append(['status_text']);
 
         return response_success([
-            'task'    => $task,
+            'task' => $task,
             'details' => [
-                'rows'  => $detailsQuery->items(),
-                'total' => $detailsQuery->total()
-            ]
+                'rows' => $detailsQuery->items(),
+                'total' => $detailsQuery->total(),
+            ],
         ]);
     }
 
     /**
      * 执行导入任务
-     * @param ImportTaskRequest $request
-     * @param ImportService $importService
+     *
      * @return JsonResponse
      */
     public function import(ImportTaskRequest $request, ImportService $importService)
@@ -110,13 +106,14 @@ class ImportTaskController extends Controller
         $importService->import(
             $request->input('id')
         );
+
         return response_success();
     }
 
     /**
      * 导出明细数据
-     * @param ImportTaskRequest $request
-     * @return JsonResponse
+     *
+     * @throws ValidationException
      */
     public function export(ImportTaskRequest $request): JsonResponse
     {
@@ -125,7 +122,7 @@ class ImportTaskController extends Controller
         // 获取导入任务信息用于文件命名
         $task = ImportTask::query()->find($request->input('task_id'));
         if ($task) {
-            $name = $task->file_name . '_导入明细';
+            $name = $task->file_name.'_导入明细';
         }
 
         // 创建导出任务
@@ -139,8 +136,6 @@ class ImportTaskController extends Controller
 
     /**
      * 删除导入任务
-     * @param ImportTaskRequest $request
-     * @return JsonResponse
      */
     public function remove(ImportTaskRequest $request): JsonResponse
     {

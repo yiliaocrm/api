@@ -2,78 +2,66 @@
 
 namespace App\Imports;
 
-use Exception;
-use App\Models\ImportTask;
-use App\Models\ImportTemplate;
+use App\Enums\ImportTaskDetailStatus;
 use App\Enums\ImportTaskStatus;
+use App\Models\ImportTask;
 use App\Models\ImportTaskDetail;
+use App\Models\ImportTemplate;
+use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use App\Enums\ImportTaskDetailStatus;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Events\BeforeImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\HeadingRowImport;
+use Throwable;
 
-abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkReading, WithValidation, WithEvents, SkipsOnFailure
+abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkReading, WithEvents, WithHeadingRow, WithValidation
 {
-    use SkipsFailures, RegistersEventListeners;
+    use RegistersEventListeners, SkipsFailures;
 
     /**
      * 模板 ID
-     *
-     * @var int
      */
     protected int $templateId = 0;
 
     /**
      * 文件大小
-     *
-     * @var int
      */
-    protected int $filesize;
+    protected int $fileSize;
 
     /**
      * 文件地址
-     *
-     * @var string
      */
     protected string $file;
 
     /**
      * 原始文件名
-     *
-     * @var string
      */
     protected string $originalFileName;
 
     /**
      * 任务记录 ID
-     *
-     * @var int
      */
     protected int $taskId;
 
     /**
      * 成功行数
-     *
-     * @var int
      */
     protected int $successRows = 0;
 
     /**
      * 模板ID
      *
-     * @param $id
      * @return $this
      */
     public function setTemplateId($id): static
@@ -85,23 +73,24 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
 
     /**
      * 子类必须实现的 handle 方法
-     *
      * 处理实际数据入库
-     *
-     * @param Collection $collection
-     * @return mixed
      */
     abstract protected function handle(Collection $collection): mixed;
 
     /**
      * 外部导入
      *
-     * @param $taskId
-     * @return true
      * @throws Exception
      */
     public function import($taskId): true
     {
+        $this->taskId = $taskId;
+
+        // 更新状态为导入中
+        ImportTask::query()->where('id', $taskId)->update([
+            'status' => ImportTaskStatus::IMPORTING,
+        ]);
+
         try {
             ImportTaskDetail::query()
                 ->where('task_id', $taskId)
@@ -109,18 +98,42 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
                 ->chunk($this->chunkSize(), function ($records) {
                     $this->handle($records);
                 });
+
+            // 导入完成，更新状态和统计信息
+            $this->updateTaskStatus($taskId);
+
             return true;
-        } catch (\Throwable $e) {
-            Log::error('导入数据错误:' . $e->getMessage());
+        } catch (Throwable $e) {
+            Log::error('导入数据错误:'.$e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
 
     /**
+     * 更新任务状态为已完成
+     */
+    protected function updateTaskStatus(int $taskId): void
+    {
+        $failCount = ImportTaskDetail::query()
+            ->where('task_id', $taskId)
+            ->where('status', ImportTaskDetailStatus::FAILED)
+            ->count();
+
+        $successCount = ImportTaskDetail::query()
+            ->where('task_id', $taskId)
+            ->where('status', ImportTaskDetailStatus::SUCCESS)
+            ->count();
+
+        ImportTask::query()->where('id', $taskId)->update([
+            'status' => ImportTaskStatus::COMPLETED,
+            'fail_rows' => $failCount,
+            'success_rows' => $successCount,
+        ]);
+    }
+
+    /**
      * 预检测
      *
-     * @param UploadedFile|string $file
-     * @return bool
      * @throws Exception
      */
     public function prepare(UploadedFile|string $file): bool
@@ -133,68 +146,60 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
 
         // 更新导入任务的数据
         ImportTask::query()->where('id', $this->taskId)->update([
-            'fail_rows'    => $this->dealWithFailureRows(),
-            'success_rows' => $this->successRows
+            'fail_rows' => $this->dealWithFailureRows(),
+            'success_rows' => $this->successRows,
         ]);
 
         return true;
     }
 
     /**
-     * @param UploadedFile|string $file
-     * @return void
      * @throws Exception
      */
     protected function saveFile(UploadedFile|string $file): void
     {
         // 导入前先把文件信息记录下来
         if (is_string($file)) {
-            if (!file_exists($file)) {
+            if (! file_exists($file)) {
                 throw new Exception("文件 {$file} 不存在");
             }
-            $this->filesize         = filesize($file);
-            $this->file             = $file;
+            $this->fileSize = filesize($file);
+            $this->file = $file;
             $this->originalFileName = pathinfo($file, PATHINFO_BASENAME);
         } else {
-            $this->filesize         = $file->getSize();
+            $this->fileSize = $file->getSize();
             $this->originalFileName = $file->getClientOriginalName();
-            $path                   = Storage::disk('import')->putFile(date('Y-m-d'), $file);
-            $this->file             = Storage::disk('import')->path($path);
+            $path = Storage::disk('import')->putFile(date('Y-m-d'), $file);
+            $this->file = Storage::disk('import')->path($path);
         }
     }
 
-
     /**
      * 处理错误行数
-     *
-     * @return int
      */
     protected function dealWithFailureRows(): int
     {
         // 收集错误行数
-        $failures       = $this->failures();
+        $failures = $this->failures();
         $failureRecords = [];
         foreach ($failures as $failure) {
             $failureRecords[] = [
-                'task_id'    => $this->taskId,
-                'status'     => ImportTaskDetailStatus::FAILED,
-                'row_data'   => json_encode($failure->values(), JSON_UNESCAPED_UNICODE),
-                'error_msg'  => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
+                'task_id' => $this->taskId,
+                'status' => ImportTaskDetailStatus::FAILED,
+                'row_data' => json_encode($failure->values(), JSON_UNESCAPED_UNICODE),
+                'error_msg' => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
         }
 
-        array_map(fn($record) => ImportTaskDetail::query()->insert($record), array_chunk($failureRecords, 100));
+        array_map(fn ($record) => ImportTaskDetail::query()->insert($record), array_chunk($failureRecords, 100));
 
         return count($failureRecords);
     }
 
-
     /**
      * 块的大小
-     *
-     * @return int
      */
     public function chunkSize(): int
     {
@@ -205,9 +210,6 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
 
     /**
      * 做校验写入到 records 表里面
-     *
-     * @param Collection $collection
-     * @return void
      */
     public function collection(Collection $collection): void
     {
@@ -216,9 +218,9 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
         // TODO: Implement collection() method.
         foreach ($collection as $item) {
             $records[] = [
-                'task_id'    => $this->taskId,
-                'row_data'   => json_encode($item, JSON_UNESCAPED_UNICODE),
-                'status'     => ImportTaskDetailStatus::PENDING,
+                'task_id' => $this->taskId,
+                'row_data' => json_encode($item, JSON_UNESCAPED_UNICODE),
+                'status' => ImportTaskDetailStatus::PENDING,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
@@ -238,27 +240,24 @@ abstract class BaseImport implements ToCollection, WithHeadingRow, WithChunkRead
     {
         return [
             // Handle by a closure.
-            BeforeImport::class => fn(BeforeImport $event) => $this->saveImportHistory($event)
+            BeforeImport::class => fn (BeforeImport $event) => $this->saveImportHistory($event),
         ];
     }
 
     /**
      * 导入之前保存一份导入任务的数据
-     *
-     * @param BeforeImport $event
-     * @return void
      */
     protected function saveImportHistory(BeforeImport $event): void
     {
-        $task                 = new ImportTask();
-        $task->template_id    = $this->templateId;
-        $task->file_size      = $this->filesize;
-        $task->import_header  = json_encode(new HeadingRowImport()->toCollection($this->file)->first()->first());
-        $task->file_name      = $this->originalFileName;
-        $task->file_path      = $this->file;
-        $task->file_type      = pathinfo($this->file, PATHINFO_EXTENSION);
-        $task->status         = ImportTaskStatus::PENDING;
-        $task->total_rows     = array_values($event->reader->getTotalRows())[0] - 1;
+        $task = new ImportTask;
+        $task->template_id = $this->templateId;
+        $task->file_size = $this->fileSize;
+        $task->import_header = json_encode(new HeadingRowImport()->toCollection($this->file)->first()->first());
+        $task->file_name = $this->originalFileName;
+        $task->file_path = $this->file;
+        $task->file_type = pathinfo($this->file, PATHINFO_EXTENSION);
+        $task->status = ImportTaskStatus::PENDING;
+        $task->total_rows = array_values($event->reader->getTotalRows())[0] - 1;
         $task->create_user_id = 0;
         $task->save();
 
