@@ -42,6 +42,15 @@ class ImportTemplateSeeder extends Seeder
                 'async_limit' => 1000,
                 'create_user_id' => 1,
             ],
+            [
+                'icon' => 'el-icon-collection-tag',
+                'title' => '收费项目分类',
+                'template' => 'template/product_type.xlsx',
+                'use_import' => 'ProductTypeImport',
+                'chunk_size' => 1000,
+                'async_limit' => 1000,
+                'create_user_id' => 1,
+            ],
         ];
 
         foreach ($templates as $template) {
