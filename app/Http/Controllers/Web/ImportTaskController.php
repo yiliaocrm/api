@@ -151,4 +151,16 @@ class ImportTaskController extends Controller
 
         return response_success();
     }
+
+    /**
+     * 获取导入模板列表
+     */
+    public function templates(): JsonResponse
+    {
+        $templates = ImportTemplate::query()
+            ->select(['id', 'title', 'template', 'icon'])
+            ->get();
+
+        return response_success($templates);
+    }
 }

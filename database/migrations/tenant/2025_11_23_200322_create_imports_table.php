@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('import_templates', function (Blueprint $table) {
             $table->id();
+            $table->string('icon')->nullable()->comment('模板图标');
             $table->string('title')->comment('名称');
             $table->string('template')->comment('导入模板路径');
             $table->integer('chunk_size')->comment('分块读入数量')->default(10);

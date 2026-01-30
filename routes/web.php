@@ -1076,6 +1076,7 @@ Route::controller(Web\ImportTaskController::class)->prefix('import-task')->group
     Route::get('import', 'import');
     Route::get('export', 'export');
     Route::get('remove', 'remove');
+    Route::get('templates', 'templates');
 });
 
 // 附件管理
