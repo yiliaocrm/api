@@ -95,9 +95,9 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
             ImportTaskDetail::query()
                 ->where('task_id', $taskId)
                 ->where('status', ImportTaskDetailStatus::PENDING)
-                ->chunk($this->chunkSize(), function ($records) {
+                ->chunkById($this->chunkSize(), function ($records) {
                     $this->handle($records);
-                });
+                }, 'id');
 
             // 导入完成，更新状态和统计信息
             $this->updateTaskStatus($taskId);
