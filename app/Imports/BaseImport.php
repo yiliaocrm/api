@@ -55,9 +55,9 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
     protected int $taskId;
 
     /**
-     * 成功行数
+     * 校验通过行数（待导入）
      */
-    protected int $successRows = 0;
+    protected int $pendingRows = 0;
 
     /**
      * 模板ID
@@ -126,8 +126,8 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
 
         ImportTask::query()->where('id', $taskId)->update([
             'status' => ImportTaskStatus::COMPLETED,
-            'fail_rows' => $failCount,
-            'success_rows' => $successCount,
+            'imported_rows' => $successCount,
+            'imported_fail_rows' => $failCount,
         ]);
     }
 
@@ -146,8 +146,8 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
 
         // 更新导入任务的数据
         ImportTask::query()->where('id', $this->taskId)->update([
-            'fail_rows' => $this->dealWithFailureRows(),
-            'success_rows' => $this->successRows,
+            'validated_fail_rows' => $this->dealWithFailureRows(),
+            'pending_rows' => $this->pendingRows,
         ]);
 
         return true;
@@ -187,7 +187,7 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
                 'task_id' => $this->taskId,
                 'status' => ImportTaskDetailStatus::FAILED,
                 'row_data' => json_encode($failure->values(), JSON_UNESCAPED_UNICODE),
-                'error_msg' => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
+                'validate_error_msg' => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
@@ -227,7 +227,7 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
         }
 
         if (ImportTaskDetail::query()->insert($records)) {
-            $this->successRows += count($records);
+            $this->pendingRows += count($records);
         }
     }
 

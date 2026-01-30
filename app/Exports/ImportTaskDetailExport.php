@@ -2,43 +2,43 @@
 
 namespace App\Exports;
 
+use App\Enums\ExportTaskStatus;
+use App\Events\Web\ExportCompleted;
+use App\Models\ExportTask;
+use App\Models\ImportTask;
+use App\Models\ImportTaskDetail;
 use Exception;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Throwable;
 use Vtiful\Kernel\Excel;
-use App\Models\ImportTask;
-use App\Models\ExportTask;
-use Illuminate\Bus\Queueable;
-use App\Enums\ExportTaskStatus;
-use App\Models\ImportTaskDetail;
-use App\Events\Web\ExportCompleted;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class ImportTaskDetailExport implements ShouldQueue
 {
     use Queueable;
 
     protected ExportTask $task;
+
     protected array $request;
+
     protected ?int $user_id;
 
     /**
      * 分批处理数据的大小
-     * @var int
      */
     protected int $chunkSize = 1000;
 
     /**
      * 设置任务超时时间
-     * @var int
      */
     public int $timeout = 1200;
 
     public function __construct(array $request, ExportTask $task, int $user_id)
     {
-        $this->task    = $task;
+        $this->task = $task;
         $this->request = $request;
         $this->user_id = $user_id;
     }
@@ -48,13 +48,13 @@ class ImportTaskDetailExport implements ShouldQueue
         try {
             // 更新任务状态为处理中
             $this->task->update([
-                'status'     => ExportTaskStatus::PROCESSING,
+                'status' => ExportTaskStatus::PROCESSING,
                 'started_at' => now(),
             ]);
 
             // 获取导入任务
             $importTask = ImportTask::query()->find($this->request['task_id']);
-            if (!$importTask) {
+            if (! $importTask) {
                 throw new Exception('导入任务不存在');
             }
 
@@ -62,7 +62,7 @@ class ImportTaskDetailExport implements ShouldQueue
             $path = Storage::disk('public')->path(dirname($this->task->file_path));
 
             // 确保目录存在
-            if (!is_dir($path)) {
+            if (! is_dir($path)) {
                 mkdir($path, 0755, true);
             }
 
@@ -77,21 +77,24 @@ class ImportTaskDetailExport implements ShouldQueue
 
             // 添加状态列和错误信息列
             $headers[] = '导入状态';
-            $headers[] = '错误信息';
+            $headers[] = '校验错误';
+            $headers[] = '导入错误';
 
             $sheet->header($headers);
 
             // 设置列宽
             $columnCount = count($headers);
-            for ($i = 0; $i < $columnCount - 2; $i++) {
+            for ($i = 0; $i < $columnCount - 3; $i++) {
                 $columnLetter = $this->getColumnLetter($i);
                 $sheet->setColumn("{$columnLetter}:{$columnLetter}", 15);
             }
             // 状态列和错误信息列设置更宽
-            $statusColumn = $this->getColumnLetter($columnCount - 2);
-            $errorColumn  = $this->getColumnLetter($columnCount - 1);
+            $statusColumn = $this->getColumnLetter($columnCount - 3);
+            $validateColumn = $this->getColumnLetter($columnCount - 2);
+            $importColumn = $this->getColumnLetter($columnCount - 1);
             $sheet->setColumn("{$statusColumn}:{$statusColumn}", 15);
-            $sheet->setColumn("{$errorColumn}:{$errorColumn}", 30);
+            $sheet->setColumn("{$validateColumn}:{$validateColumn}", 30);
+            $sheet->setColumn("{$importColumn}:{$importColumn}", 30);
 
             // 写入数据
             $query = $this->getQuery($importTask);
@@ -102,20 +105,32 @@ class ImportTaskDetailExport implements ShouldQueue
                 foreach ($records as $detail) {
                     $rowData = [];
                     // 从 row_data JSON 中按照表头顺序提取数据
-                    foreach (array_slice($headers, 0, -2) as $header) {
+                    foreach (array_slice($headers, 0, -3) as $header) {
                         $rowData[] = $detail->row_data[$header] ?? '';
                     }
 
                     // 添加状态
                     $rowData[] = $detail->status_text;
 
-                    // 添加错误信息
-                    $rowData[] = $detail->error_msg ?? '';
+                    // 添加校验错误信息（JSON 转字符串）
+                    $validateError = '';
+                    if ($detail->validate_error_msg) {
+                        $errors = json_decode($detail->validate_error_msg, true);
+                        if (is_array($errors)) {
+                            $validateError = implode('; ', $errors);
+                        } else {
+                            $validateError = $detail->validate_error_msg;
+                        }
+                    }
+                    $rowData[] = $validateError;
+
+                    // 添加导入错误信息
+                    $rowData[] = $detail->import_error_msg ?? '';
 
                     $batchData[] = $rowData;
                 }
                 // 每一批数据直接写入文件
-                if (!empty($batchData)) {
+                if (! empty($batchData)) {
                     $sheet->data($batchData);
                 }
             });
@@ -131,7 +146,7 @@ class ImportTaskDetailExport implements ShouldQueue
 
             // 更新任务状态为完成
             $this->task->update([
-                'status'       => ExportTaskStatus::COMPLETED,
+                'status' => ExportTaskStatus::COMPLETED,
                 'completed_at' => now(),
             ]);
 
@@ -140,8 +155,8 @@ class ImportTaskDetailExport implements ShouldQueue
 
         } catch (Throwable $exception) {
             $this->task->update([
-                'status'        => ExportTaskStatus::FAILED,
-                'failed_at'     => now(),
+                'status' => ExportTaskStatus::FAILED,
+                'failed_at' => now(),
                 'error_message' => $exception->getMessage(),
             ]);
         }
@@ -149,8 +164,6 @@ class ImportTaskDetailExport implements ShouldQueue
 
     /**
      * 获取查询构建器
-     * @param ImportTask $importTask
-     * @return Builder
      */
     protected function getQuery(ImportTask $importTask): Builder
     {
@@ -158,21 +171,19 @@ class ImportTaskDetailExport implements ShouldQueue
 
         return ImportTaskDetail::query()
             ->where('task_id', $importTask->id)
-            ->when($status !== null, fn(Builder $query) => $query->where('status', $status))
+            ->when($status !== null, fn (Builder $query) => $query->where('status', $status))
             ->orderBy('id', 'asc');
     }
 
     /**
      * 任务失败时调用
-     * @param Throwable $exception
-     * @return void
      */
     public function failed(Throwable $exception): void
     {
         $this->task->update([
-            'status'        => ExportTaskStatus::FAILED,
-            'failed_at'     => now(),
-            'error_message' => '导出任务执行失败: ' . $exception->getMessage(),
+            'status' => ExportTaskStatus::FAILED,
+            'failed_at' => now(),
+            'error_message' => '导出任务执行失败: '.$exception->getMessage(),
         ]);
     }
 
@@ -203,16 +214,17 @@ class ImportTaskDetailExport implements ShouldQueue
 
     /**
      * 获取列字母表示（A, B, C, ..., Z, AA, AB, ...）
-     * @param int $index 列索引（从0开始）
-     * @return string
+     *
+     * @param  int  $index  列索引（从0开始）
      */
     protected function getColumnLetter(int $index): string
     {
         $letter = '';
         while ($index >= 0) {
-            $letter = chr($index % 26 + 65) . $letter;
-            $index  = floor($index / 26) - 1;
+            $letter = chr($index % 26 + 65).$letter;
+            $index = floor($index / 26) - 1;
         }
+
         return $letter;
     }
 }

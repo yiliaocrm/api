@@ -17,8 +17,8 @@ class ImportTemplateSeeder extends Seeder
         $templates = [
             [
                 'icon' => 'el-icon-user-filled',
-                'title' => '顾客基础信息',
-                'template' => 'public/template/customer.xlsx',
+                'title' => '顾客信息',
+                'template' => 'template/customer.xlsx',
                 'use_import' => 'CustomerImport',
                 'chunk_size' => 1000,
                 'async_limit' => 1000,
@@ -27,7 +27,7 @@ class ImportTemplateSeeder extends Seeder
             [
                 'icon' => 'el-icon-connection',
                 'title' => '媒介来源',
-                'template' => 'public/template/medium.xlsx',
+                'template' => 'template/medium.xlsx',
                 'use_import' => 'MediumImport',
                 'chunk_size' => 1000,
                 'async_limit' => 1000,
@@ -36,7 +36,7 @@ class ImportTemplateSeeder extends Seeder
             [
                 'icon' => 'el-icon-location',
                 'title' => '地区信息',
-                'template' => 'public/template/address.xlsx',
+                'template' => 'template/address.xlsx',
                 'use_import' => 'AddressImport',
                 'chunk_size' => 1000,
                 'async_limit' => 1000,

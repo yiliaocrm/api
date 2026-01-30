@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('icon')->nullable()->comment('模板图标');
             $table->string('title')->comment('名称');
-            $table->string('template')->comment('导入模板路径');
+            $table->string('template')->comment('导入模板路径:放public目录下');
             $table->integer('chunk_size')->comment('分块读入数量')->default(10);
             $table->integer('async_limit')->default(0)->comment('大于等于 n 启用异步');
             $table->string('use_import')->comment('使用的导入类');
@@ -33,8 +33,10 @@ return new class extends Migration
             $table->string('file_type')->comment('文件类型');
             $table->tinyInteger('status')->comment('状态:0=未导入,1=导入中,2=导入完成');
             $table->integer('total_rows')->comment('总行数')->default(0);
-            $table->integer('success_rows')->comment('成功导入行数')->default(0);
-            $table->integer('fail_rows')->comment('未导入行数')->default(0);
+            $table->integer('pending_rows')->comment('校验通过')->default(0);
+            $table->integer('validated_fail_rows')->comment('校验失败')->default(0);
+            $table->integer('imported_rows')->comment('已导入')->default(0);
+            $table->integer('imported_fail_rows')->comment('导入失败')->default(0);
             $table->unsignedInteger('create_user_id')->default(1)->comment('创建人');
             $table->timestamps();
             $table->comment('导入任务表');
@@ -44,7 +46,8 @@ return new class extends Migration
             $table->integer('task_id')->comment('导入任务');
             $table->json('row_data')->comment('行数据');
             $table->tinyInteger('status')->comment('状态:0=未导入,1=成功,2=失败');
-            $table->string('error_msg')->nullable()->comment('错误信息');
+            $table->text('validate_error_msg')->nullable()->comment('校验错误');
+            $table->text('import_error_msg')->nullable()->comment('导入错误');
             $table->timestamps();
             $table->comment('导入任务明细表');
         });

@@ -37,7 +37,7 @@ class MediumImport extends BaseImport
 
                 $item->update([
                     'status' => ImportTaskDetailStatus::FAILED,
-                    'error_msg' => $e->getMessage(),
+                    'import_error_msg' => $e->getMessage(),
                 ]);
             }
         });
