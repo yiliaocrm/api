@@ -225,7 +225,6 @@ Route::controller(Web\ProductController::class)->prefix('product')->group(functi
     Route::post('create', 'create');
     Route::post('update', 'update');
     Route::post('remove', 'remove');
-    Route::post('import', 'import');
     Route::post('batch', 'batch');
     Route::get('export', 'export');
     Route::post('query', 'query');
