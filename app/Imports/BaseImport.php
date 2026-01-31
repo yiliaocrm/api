@@ -144,9 +144,11 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
         // 导入
         Excel::import($this, $this->file);
 
+        $failRows = $this->dealWithFailureRows();
+
         // 更新导入任务的数据
         ImportTask::query()->where('id', $this->taskId)->update([
-            'validated_fail_rows' => $this->dealWithFailureRows(),
+            'validated_fail_rows' => $failRows,
             'pending_rows' => $this->pendingRows,
         ]);
 
@@ -181,8 +183,18 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
     {
         // 收集错误行数
         $failures = $this->failures();
-        $failureRecords = [];
+
+        // 根据行号去重，避免 chunk 读取导致的重复
+        $uniqueFailures = [];
         foreach ($failures as $failure) {
+            $rowNum = $failure->row();
+            if (! isset($uniqueFailures[$rowNum])) {
+                $uniqueFailures[$rowNum] = $failure;
+            }
+        }
+
+        $failureRecords = [];
+        foreach ($uniqueFailures as $failure) {
             $failureRecords[] = [
                 'task_id' => $this->taskId,
                 'status' => ImportTaskDetailStatus::FAILED,
@@ -193,7 +205,9 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
             ];
         }
 
-        array_map(fn ($record) => ImportTaskDetail::query()->insert($record), array_chunk($failureRecords, 100));
+        if (! empty($failureRecords)) {
+            array_map(fn ($record) => ImportTaskDetail::query()->insert($record), array_chunk($failureRecords, 100));
+        }
 
         return count($failureRecords);
     }
@@ -215,8 +229,14 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
     {
         $records = [];
 
-        // TODO: Implement collection() method.
         foreach ($collection as $item) {
+            // 检查是否为空行（所有字段都为空）
+            $isEmptyRow = $item->filter(fn ($value) => ! empty($value))->isEmpty();
+
+            if ($isEmptyRow) {
+                continue;
+            }
+
             $records[] = [
                 'task_id' => $this->taskId,
                 'row_data' => json_encode($item, JSON_UNESCAPED_UNICODE),
@@ -249,6 +269,8 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
      */
     protected function saveImportHistory(BeforeImport $event): void
     {
+        $totalRows = array_values($event->reader->getTotalRows())[0] - 1;
+
         $task = new ImportTask;
         $task->template_id = $this->templateId;
         $task->file_size = $this->fileSize;
@@ -257,7 +279,7 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
         $task->file_path = $this->file;
         $task->file_type = pathinfo($this->file, PATHINFO_EXTENSION);
         $task->status = ImportTaskStatus::PENDING;
-        $task->total_rows = array_values($event->reader->getTotalRows())[0] - 1;
+        $task->total_rows = $totalRows;
         $task->create_user_id = 0;
         $task->save();
 
