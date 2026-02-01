@@ -85,23 +85,23 @@ class CustomerImport extends BaseImport
                     'name' => $row['顾客姓名'],
                     'sex' => (isset($row['顾客性别']) && $row['顾客性别'] == '男') ? 1 : 2,
                     'age' => empty($row['顾客年龄']) ? null : intval($row['顾客年龄']),
-                    'idcard' => $row['顾客卡号'] ?? date('Ymd').str_pad($count, 4, '0', STR_PAD_LEFT),
+                    'idcard' => ! empty($row['顾客卡号']) ? $row['顾客卡号'] : date('Ymd').str_pad($count, 4, '0', STR_PAD_LEFT),
                     'file_number' => $row['档案编号'] ?? null,
                     'sfz' => $row['身份证号'] ?? null,
                     'address_id' => $addressId,
                     'medium_id' => $mediumId,
-                    'job_id' => $job->where('name', $row['职业信息'])->first()?->id ?? null,
+                    'job_id' => $job->where('name', $row['职业信息'] ?? '')->first()?->id ?? null,
                     'birthday' => empty($row['顾客生日']) ? null : $row['顾客生日'],
                     'qq' => $row['联系QQ'] ?? null,
                     'wechat' => $row['微信号码'] ?? null,
                     'marital' => $row['婚姻状况'] ? $marital[$row['婚姻状况']] : null,
-                    'economic_id' => $economic->where('name', $row['经济能力'])->first()?->id ?? null,
+                    'economic_id' => $economic->where('name', $row['经济能力'] ?? '')->first()?->id ?? null,
                     'remark' => $row['顾客备注'] ?? null,
                     'user_id' => 1, // 创建人员
-                    'ascription' => $user->where('name', $row['开发人员'])->first()?->id ?? null,
-                    'consultant' => $user->where('name', $row['现场咨询'])->first()?->id ?? null,
-                    'balance' => $row['账户余额'] ?? 0,
-                    'amount' => $row['累计消费'] ?? 0,
+                    'ascription' => $user->where('name', $row['开发人员'] ?? '')->first()?->id ?? null,
+                    'consultant' => $user->where('name', $row['现场咨询'] ?? '')->first()?->id ?? null,
+                    'balance' => is_numeric($row['账户余额'] ?? '') ? floatval($row['账户余额']) : 0,
+                    'amount' => is_numeric($row['累计消费'] ?? '') ? floatval($row['累计消费']) : 0,
                     'first_time' => empty($row['初诊时间']) ? null : Carbon::parse($row['初诊时间'])->toDateTimeString(),
                     'last_time' => empty($row['最近光临']) ? null : Carbon::parse($row['最近光临'])->toDateTimeString(),
                     'last_followup' => empty($row['最近回访']) ? null : Carbon::parse($row['最近回访'])->toDateTimeString(),
@@ -128,6 +128,9 @@ class CustomerImport extends BaseImport
                         'id' => Str::uuid7()->toString(),
                         'phone' => $phone,
                         'customer_id' => $customer['id'],
+                        'relation_id' => 1,
+                        'created_at' => $now,
+                        'updated_at' => $now,
                     ];
                 }
 
@@ -182,6 +185,8 @@ class CustomerImport extends BaseImport
 
     /**
      * 导入行验证规则
+     *
+     * 支持所有 Laravel 验证规则，包括闭包验证
      */
     public function rules(): array
     {
@@ -189,10 +194,40 @@ class CustomerImport extends BaseImport
             '顾客姓名' => 'required',
             '顾客性别' => 'nullable|in:"男","女"',
             '顾客年龄' => 'nullable|integer|between:1,199',
-            '联系电话' => 'required|', // 需要加入联系电话验证PhoneValidate
+            '联系电话' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    // 自定义闭包验证：验证手机号格式
+                    if (empty($value)) {
+                        $fail('联系电话不能为空');
+
+                        return;
+                    }
+                    // 支持多个手机号用逗号分隔
+                    $phones = explode(',', $value);
+                    foreach ($phones as $phone) {
+                        $phone = trim($phone);
+                        if (! preg_match('/^1[3-9]\d{9}$/', $phone)) {
+                            $fail("手机号 {$phone} 格式不正确");
+
+                            return;
+                        }
+                    }
+                },
+            ],
             '顾客卡号' => 'nullable|unique:customer,idcard',
             '档案编号' => 'nullable|unique:customer,file_number',
-            '身份证号' => 'nullable|string|max:30',
+            '身份证号' => [
+                'nullable',
+                'string',
+                'max:30',
+                function ($attribute, $value, $fail) {
+                    // 自定义闭包验证：验证身份证号格式（简单校验）
+                    if (! empty($value) && ! preg_match('/^\d{17}[\dXx]$|^\d{15}$/', $value)) {
+                        $fail('身份证号格式不正确');
+                    }
+                },
+            ],
             '通讯地址' => 'nullable|string',
             '首次来源' => 'nullable|string',
             '职业信息' => 'nullable|exists:customer_job,name',
@@ -208,6 +243,64 @@ class CustomerImport extends BaseImport
             '初诊时间' => 'nullable|date',
             '最近光临' => 'nullable|date',
             '最近回访' => 'nullable|date',
+        ];
+    }
+
+    /**
+     * 自定义验证错误消息
+     */
+    public function messages(): array
+    {
+        return [
+            '顾客姓名.required' => '顾客姓名不能为空',
+            '顾客性别.in' => '顾客性别必须是"男"或"女"',
+            '顾客年龄.integer' => '顾客年龄必须是整数',
+            '顾客年龄.between' => '顾客年龄必须在 1-199 之间',
+            '顾客卡号.unique' => '顾客卡号已存在',
+            '档案编号.unique' => '档案编号已存在',
+            '身份证号.max' => '身份证号不能超过 30 个字符',
+            '职业信息.exists' => '职业信息不存在',
+            '顾客生日.date_format' => '顾客生日格式不正确，应为 Y-m-d',
+            '婚姻状况.in' => '婚姻状况必须是"未知"、"未婚"或"已婚"',
+            '经济能力.exists' => '经济能力不存在',
+            '现场咨询.exists' => '现场咨询人员不存在',
+            '开发人员.exists' => '开发人员不存在',
+            '账户余额.numeric' => '账户余额必须是数字',
+            '累计消费.numeric' => '累计消费必须是数字',
+            '初诊时间.date' => '初诊时间格式不正确',
+            '最近光临.date' => '最近光临时间格式不正确',
+            '最近回访.date' => '最近回访时间格式不正确',
+        ];
+    }
+
+    /**
+     * 字段名称映射
+     */
+    public function attributes(): array
+    {
+        return [
+            '顾客姓名' => 'customer name',
+            '顾客性别' => 'sex',
+            '顾客年龄' => 'age',
+            '联系电话' => 'phone number',
+            '顾客卡号' => 'customer card number',
+            '档案编号' => 'file number',
+            '身份证号' => 'ID card',
+            '通讯地址' => 'address',
+            '首次来源' => 'source',
+            '职业信息' => 'occupation',
+            '顾客生日' => 'birthday',
+            '联系QQ' => 'QQ',
+            '微信号码' => 'WeChat',
+            '婚姻状况' => 'marital status',
+            '经济能力' => 'economic status',
+            '现场咨询' => 'consultant',
+            '开发人员' => 'developer',
+            '账户余额' => 'account balance',
+            '累计消费' => 'total consumption',
+            '初诊时间' => 'first visit time',
+            '最近光临' => 'last visit time',
+            '最近回访' => 'last follow-up time',
         ];
     }
 

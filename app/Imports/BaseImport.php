@@ -12,23 +12,12 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Concerns\RegistersEventListeners;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\SkipsOnFailure;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Events\BeforeImport;
-use Maatwebsite\Excel\Facades\Excel;
-use Maatwebsite\Excel\HeadingRowImport;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
+use Vtiful\Kernel\Excel;
 
-abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkReading, WithEvents, WithHeadingRow, WithValidation
+abstract class BaseImport
 {
-    use RegistersEventListeners, SkipsFailures;
-
     /**
      * 模板 ID
      */
@@ -58,6 +47,16 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
      * 校验通过行数（待导入）
      */
     protected int $pendingRows = 0;
+
+    /**
+     * 校验失败行数
+     */
+    protected int $validatedFailRows = 0;
+
+    /**
+     * 导入表头
+     */
+    protected array $importHeader = [];
 
     /**
      * 模板ID
@@ -141,18 +140,217 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
         // 导入前先把文件信息记录下来
         $this->saveFile($file);
 
-        // 导入
-        Excel::import($this, $this->file);
+        // 创建导入任务记录
+        $this->createImportTask();
 
-        $failRows = $this->dealWithFailureRows();
+        // 使用 xlswriter 读取并处理数据
+        $this->processExcelWithXlswriter();
 
         // 更新导入任务的数据
         ImportTask::query()->where('id', $this->taskId)->update([
-            'validated_fail_rows' => $failRows,
+            'validated_fail_rows' => $this->validatedFailRows,
             'pending_rows' => $this->pendingRows,
         ]);
 
         return true;
+    }
+
+    /**
+     * 根据任务ID执行预检测（用于异步队列）
+     *
+     * @throws Exception
+     */
+    public function prepareByTaskId(int $taskId): bool
+    {
+        $this->taskId = $taskId;
+
+        // 获取任务信息
+        $task = ImportTask::query()->find($taskId);
+        if (! $task) {
+            throw new Exception("任务 {$taskId} 不存在");
+        }
+
+        $this->file = $task->file_path;
+        $this->fileSize = $task->file_size;
+        $this->originalFileName = $task->file_name;
+
+        // 使用 xlswriter 读取并处理数据
+        $this->processExcelWithXlswriter();
+
+        // 更新导入任务的数据
+        ImportTask::query()->where('id', $this->taskId)->update([
+            'validated_fail_rows' => $this->validatedFailRows,
+            'pending_rows' => $this->pendingRows,
+        ]);
+
+        return true;
+    }
+
+    /**
+     * 使用 xlswriter 处理 Excel 文件
+     *
+     * @throws Exception
+     */
+    protected function processExcelWithXlswriter(): void
+    {
+        $config = ['path' => dirname($this->file)];
+        $excel = new Excel($config);
+        $sheet = $excel->openFile(basename($this->file))
+            ->openSheet(null, Excel::SKIP_EMPTY_ROW);
+
+        // 读取表头
+        $headers = $sheet->nextRow();
+        $this->importHeader = $headers;
+
+        // 更新任务表头信息
+        ImportTask::query()->where('id', $this->taskId)->update([
+            'import_header' => json_encode($headers, JSON_UNESCAPED_UNICODE),
+        ]);
+
+        // 获取验证规则
+        $rules = method_exists($this, 'rules') ? $this->rules() : [];
+        $messages = method_exists($this, 'messages') ? $this->messages() : [];
+        $attributes = method_exists($this, 'attributes') ? $this->attributes() : [];
+
+        $records = [];
+        $failures = [];
+        $rowNumber = 2; // 从第2行开始（第1行是表头）
+
+        // 逐行读取并验证
+        while ($row = $sheet->nextRow()) {
+            // 转换为关联数组
+            $rowData = $this->combineHeadersWithRow($headers, $row);
+
+            // 检查空行
+            if ($this->isEmptyRow($rowData)) {
+                $rowNumber++;
+
+                continue;
+            }
+
+            // 验证数据
+            $validationResult = $this->validateRow($rowData, $rules, $messages, $attributes);
+
+            if ($validationResult['valid']) {
+                // 验证通过
+                $records[] = [
+                    'task_id' => $this->taskId,
+                    'row_data' => json_encode($rowData, JSON_UNESCAPED_UNICODE),
+                    'status' => ImportTaskDetailStatus::PENDING,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ];
+            } else {
+                // 验证失败
+                $failures[] = [
+                    'task_id' => $this->taskId,
+                    'row_data' => json_encode($rowData, JSON_UNESCAPED_UNICODE),
+                    'status' => ImportTaskDetailStatus::FAILED,
+                    'validate_error_msg' => json_encode($validationResult['errors'], JSON_UNESCAPED_UNICODE),
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ];
+            }
+
+            // 批量插入（每 100 条）
+            if (count($records) >= $this->chunkSize()) {
+                ImportTaskDetail::query()->insert($records);
+                $this->pendingRows += count($records);
+                $records = [];
+            }
+
+            // 批量插入失败记录
+            if (count($failures) >= 100) {
+                ImportTaskDetail::query()->insert($failures);
+                $this->validatedFailRows += count($failures);
+                $failures = [];
+            }
+
+            $rowNumber++;
+        }
+
+        // 插入剩余记录
+        if (! empty($records)) {
+            ImportTaskDetail::query()->insert($records);
+            $this->pendingRows += count($records);
+        }
+
+        if (! empty($failures)) {
+            ImportTaskDetail::query()->insert($failures);
+            $this->validatedFailRows += count($failures);
+        }
+
+        // 更新总行数
+        $totalRows = $rowNumber - 2;
+        ImportTask::query()->where('id', $this->taskId)->update([
+            'total_rows' => $totalRows,
+        ]);
+    }
+
+    /**
+     * 验证单行数据
+     */
+    protected function validateRow(
+        array $row,
+        array $rules,
+        array $messages = [],
+        array $attributes = []
+    ): array {
+        if (empty($rules)) {
+            return ['valid' => true];
+        }
+
+        $validator = Validator::make($row, $rules, $messages, $attributes);
+
+        if ($validator->fails()) {
+            return [
+                'valid' => false,
+                'errors' => $validator->errors()->all(),
+            ];
+        }
+
+        return ['valid' => true];
+    }
+
+    /**
+     * 将表头和行数据合并为关联数组
+     */
+    protected function combineHeadersWithRow(array $headers, array $row): array
+    {
+        $result = [];
+        foreach ($headers as $index => $header) {
+            $result[$header] = $row[$index] ?? null;
+        }
+
+        return $result;
+    }
+
+    /**
+     * 检查是否为空行
+     */
+    protected function isEmptyRow(array $rowData): bool
+    {
+        return collect($rowData)->filter(fn ($value) => ! empty($value))->isEmpty();
+    }
+
+    /**
+     * 创建导入任务记录
+     */
+    protected function createImportTask(): void
+    {
+        $task = new ImportTask;
+        $task->template_id = $this->templateId;
+        $task->file_size = $this->fileSize;
+        $task->file_name = $this->originalFileName;
+        $task->file_path = $this->file;
+        $task->file_type = pathinfo($this->file, PATHINFO_EXTENSION);
+        $task->import_header = '[]'; // 初始为空数组，将在读取表头后更新
+        $task->status = ImportTaskStatus::PENDING;
+        $task->total_rows = 0; // 将在处理完成后更新
+        $task->create_user_id = 0;
+        $task->save();
+
+        $this->taskId = $task->getKey();
     }
 
     /**
@@ -165,8 +363,8 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
             if (! file_exists($file)) {
                 throw new Exception("文件 {$file} 不存在");
             }
-            $this->fileSize = filesize($file);
             $this->file = $file;
+            $this->fileSize = filesize($file);
             $this->originalFileName = pathinfo($file, PATHINFO_BASENAME);
         } else {
             $this->fileSize = $file->getSize();
@@ -174,42 +372,6 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
             $path = Storage::disk('import')->putFile(date('Y-m-d'), $file);
             $this->file = Storage::disk('import')->path($path);
         }
-    }
-
-    /**
-     * 处理错误行数
-     */
-    protected function dealWithFailureRows(): int
-    {
-        // 收集错误行数
-        $failures = $this->failures();
-
-        // 根据行号去重，避免 chunk 读取导致的重复
-        $uniqueFailures = [];
-        foreach ($failures as $failure) {
-            $rowNum = $failure->row();
-            if (! isset($uniqueFailures[$rowNum])) {
-                $uniqueFailures[$rowNum] = $failure;
-            }
-        }
-
-        $failureRecords = [];
-        foreach ($uniqueFailures as $failure) {
-            $failureRecords[] = [
-                'task_id' => $this->taskId,
-                'status' => ImportTaskDetailStatus::FAILED,
-                'row_data' => json_encode($failure->values(), JSON_UNESCAPED_UNICODE),
-                'validate_error_msg' => json_encode($failure->errors(), JSON_UNESCAPED_UNICODE),
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        if (! empty($failureRecords)) {
-            array_map(fn ($record) => ImportTaskDetail::query()->insert($record), array_chunk($failureRecords, 100));
-        }
-
-        return count($failureRecords);
     }
 
     /**
@@ -223,66 +385,18 @@ abstract class BaseImport implements SkipsOnFailure, ToCollection, WithChunkRead
     }
 
     /**
-     * 做校验写入到 records 表里面
+     * 获取验证错误消息（子类可覆盖）
      */
-    public function collection(Collection $collection): void
+    public function messages(): array
     {
-        $records = [];
-
-        foreach ($collection as $item) {
-            // 检查是否为空行（所有字段都为空）
-            $isEmptyRow = $item->filter(fn ($value) => ! empty($value))->isEmpty();
-
-            if ($isEmptyRow) {
-                continue;
-            }
-
-            $records[] = [
-                'task_id' => $this->taskId,
-                'row_data' => json_encode($item, JSON_UNESCAPED_UNICODE),
-                'status' => ImportTaskDetailStatus::PENDING,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        if (ImportTaskDetail::query()->insert($records)) {
-            $this->pendingRows += count($records);
-        }
+        return [];
     }
 
     /**
-     * 注册事件
-     *
-     * @return mixed
+     * 获取字段名称映射（子类可覆盖）
      */
-    public function registerEvents(): array
+    public function attributes(): array
     {
-        return [
-            // Handle by a closure.
-            BeforeImport::class => fn (BeforeImport $event) => $this->saveImportHistory($event),
-        ];
-    }
-
-    /**
-     * 导入之前保存一份导入任务的数据
-     */
-    protected function saveImportHistory(BeforeImport $event): void
-    {
-        $totalRows = array_values($event->reader->getTotalRows())[0] - 1;
-
-        $task = new ImportTask;
-        $task->template_id = $this->templateId;
-        $task->file_size = $this->fileSize;
-        $task->import_header = json_encode(new HeadingRowImport()->toCollection($this->file)->first()->first());
-        $task->file_name = $this->originalFileName;
-        $task->file_path = $this->file;
-        $task->file_type = pathinfo($this->file, PATHINFO_EXTENSION);
-        $task->status = ImportTaskStatus::PENDING;
-        $task->total_rows = $totalRows;
-        $task->create_user_id = 0;
-        $task->save();
-
-        $this->taskId = $task->getKey();
+        return [];
     }
 }

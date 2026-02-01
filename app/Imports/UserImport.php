@@ -120,4 +120,44 @@ class UserImport extends BaseImport
             '备注' => 'nullable|string|max:255',
         ];
     }
+
+    /**
+     * 自定义验证错误消息
+     */
+    public function messages(): array
+    {
+        return [
+            '姓名.required' => '姓名不能为空',
+            '姓名.max' => '姓名不能超过 255 个字符',
+            '账号.required' => '账号不能为空',
+            '账号.max' => '账号不能超过 255 个字符',
+            '账号.unique' => '该账号已存在',
+            '账号.regex' => '账号格式不正确，只能包含字母、数字、下划线和横线',
+            '密码.required' => '密码不能为空',
+            '密码.min' => '密码最少需要 6 个字符',
+            '归属部门.required' => '归属部门不能为空',
+            '归属部门.exists' => '归属部门不存在',
+            '角色.required' => '角色不能为空',
+            '角色.exists' => '角色不存在',
+            '参与排班.required' => '参与排班不能为空',
+            '参与排班.in' => '参与排班必须是"是"或"否"',
+            '备注.max' => '备注不能超过 255 个字符',
+        ];
+    }
+
+    /**
+     * 字段名称映射
+     */
+    public function attributes(): array
+    {
+        return [
+            '姓名' => 'name',
+            '账号' => 'email',
+            '密码' => 'password',
+            '归属部门' => 'department',
+            '角色' => 'role',
+            '参与排班' => 'scheduleable',
+            '备注' => 'remark',
+        ];
+    }
 }

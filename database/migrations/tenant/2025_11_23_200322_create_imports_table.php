@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('title')->comment('名称');
             $table->string('template')->comment('导入模板路径:放public目录下');
             $table->integer('chunk_size')->comment('分块读入数量')->default(10);
-            $table->integer('async_limit')->default(0)->comment('大于等于 n 启用异步');
             $table->string('use_import')->comment('使用的导入类');
             $table->unsignedInteger('create_user_id')->default(1)->comment('创建人');
             $table->timestamps();
@@ -31,7 +30,7 @@ return new class extends Migration
             $table->string('file_path')->comment('文件路径');
             $table->string('file_size')->comment('文件大小');
             $table->string('file_type')->comment('文件类型');
-            $table->tinyInteger('status')->comment('状态:0=未导入,1=导入中,2=导入完成');
+            $table->tinyInteger('status')->comment('状态:0=待处理,1=导入中,2=导入完成,3=预检测中');
             $table->integer('total_rows')->comment('总行数')->default(0);
             $table->integer('pending_rows')->comment('校验通过')->default(0);
             $table->integer('validated_fail_rows')->comment('校验失败')->default(0);

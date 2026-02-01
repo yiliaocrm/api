@@ -16,12 +16,11 @@ class ImportTemplateSeeder extends Seeder
 
         $templates = [
             [
-                'icon' => 'el-icon-user-filled',
-                'title' => '顾客信息',
-                'template' => 'template/customer.xlsx',
-                'use_import' => 'CustomerImport',
+                'icon' => 'el-icon-avatar',
+                'title' => '员工资料',
+                'template' => 'template/user.xlsx',
+                'use_import' => 'UserImport',
                 'chunk_size' => 10,
-                'async_limit' => 0,
                 'create_user_id' => 1,
             ],
             [
@@ -30,7 +29,6 @@ class ImportTemplateSeeder extends Seeder
                 'template' => 'template/medium.xlsx',
                 'use_import' => 'MediumImport',
                 'chunk_size' => 10,
-                'async_limit' => 0,
                 'create_user_id' => 1,
             ],
             [
@@ -39,7 +37,6 @@ class ImportTemplateSeeder extends Seeder
                 'template' => 'template/address.xlsx',
                 'use_import' => 'AddressImport',
                 'chunk_size' => 10,
-                'async_limit' => 0,
                 'create_user_id' => 1,
             ],
             [
@@ -48,7 +45,6 @@ class ImportTemplateSeeder extends Seeder
                 'template' => 'template/product_type.xlsx',
                 'use_import' => 'ProductTypeImport',
                 'chunk_size' => 10,
-                'async_limit' => 0,
                 'create_user_id' => 1,
             ],
             [
@@ -57,16 +53,14 @@ class ImportTemplateSeeder extends Seeder
                 'template' => 'template/product.xlsx',
                 'use_import' => 'ProductImport',
                 'chunk_size' => 10,
-                'async_limit' => 0,
                 'create_user_id' => 1,
             ],
             [
-                'icon' => 'el-icon-avatar',
-                'title' => '员工资料',
-                'template' => 'template/user.xlsx',
-                'use_import' => 'UserImport',
+                'icon' => 'el-icon-user-filled',
+                'title' => '顾客信息',
+                'template' => 'template/customer.xlsx',
+                'use_import' => 'CustomerImport',
                 'chunk_size' => 10,
-                'async_limit' => 0,
                 'create_user_id' => 1,
             ],
         ];

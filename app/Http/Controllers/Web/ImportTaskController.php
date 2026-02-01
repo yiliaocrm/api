@@ -43,7 +43,7 @@ class ImportTaskController extends Controller
     }
 
     /**
-     * 创建导入任务
+     * 创建导入任务（异步预检测）
      */
     public function create(ImportTaskRequest $request, ImportService $importService): JsonResponse
     {
@@ -51,9 +51,9 @@ class ImportTaskController extends Controller
             $request->input('template_id')
         );
         try {
-            $importService->prepare($template, $request->file('file'));
+            $taskId = $importService->prepareAsync($template, $request->file('file'));
 
-            return response_success();
+            return response_success(['task_id' => $taskId]);
         } catch (Throwable $e) {
             report($e);
 
