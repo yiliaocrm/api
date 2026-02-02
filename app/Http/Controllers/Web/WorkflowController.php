@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\WorkflowRequest;
 use App\Models\Workflow;
 use App\Models\WorkflowCategory;
+use App\Models\WorkflowEvent;
 use App\Models\WorkflowNode;
 use App\Models\WorkflowTemplate;
 use App\Models\WorkflowTemplateCategory;
@@ -349,5 +350,49 @@ class WorkflowController extends Controller
             ->get();
 
         return response_success($templates);
+    }
+
+    /**
+     * 获取工作流事件列表（用于级联选择器）
+     *
+     * 从 workflow_events 表读取数据，返回格式：
+     * [
+     *   {
+     *     "value": "客户管理",
+     *     "label": "客户管理",
+     *     "children": [
+     *       { "value": "customer.created", "label": "客户创建" },
+     *       { "value": "customer.updated", "label": "客户更新" },
+     *       ...
+     *     ]
+     *   }
+     * ]
+     */
+    public function events(): JsonResponse
+    {
+        $events = WorkflowEvent::query()
+            ->select(['event', 'event_name', 'category_name'])
+            ->orderBy('category_name')
+            ->orderBy('event')
+            ->get();
+
+        // 按分类分组
+        $grouped = $events->groupBy('category_name');
+
+        $result = [];
+        foreach ($grouped as $categoryName => $categoryEvents) {
+            $children = $categoryEvents->map(fn ($item) => [
+                'value' => $item->event,
+                'label' => $item->event_name,
+            ])->values();
+
+            $result[] = [
+                'value' => $categoryName,
+                'label' => $categoryName,
+                'children' => $children,
+            ];
+        }
+
+        return response_success($result);
     }
 }
