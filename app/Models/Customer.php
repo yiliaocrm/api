@@ -2,38 +2,41 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use DateTimeInterface;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Facades\DB;
 use App\Observers\CustomerObserver;
 use App\Traits\QueryConditionsTrait;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\WorkflowTrait;
+use Carbon\Carbon;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\HasApiTokens;
 
 #[ObservedBy([CustomerObserver::class])]
 class Customer extends Authenticatable
 {
-    use HasUuids, HasApiTokens, QueryConditionsTrait;
+    use HasApiTokens, HasUuids, QueryConditionsTrait, WorkflowTrait;
 
     protected $table = 'customer';
+
     protected $hidden = ['keyword'];
+
     protected $guarded = [];
 
     protected function casts(): array
     {
         return [
-            'amount'        => 'float',
-            'balance'       => 'float',
-            'integral'      => 'float',
-            'arrearage'     => 'float',
-            'total_payment' => 'float'
+            'amount' => 'float',
+            'balance' => 'float',
+            'integral' => 'float',
+            'arrearage' => 'float',
+            'total_payment' => 'float',
         ];
     }
 
@@ -44,7 +47,6 @@ class Customer extends Authenticatable
 
     /**
      * 媒介来源
-     * @return BelongsTo
      */
     public function medium(): BelongsTo
     {
@@ -53,7 +55,6 @@ class Customer extends Authenticatable
 
     /**
      * 职业信息
-     * @return BelongsTo
      */
     public function job(): BelongsTo
     {
@@ -62,7 +63,6 @@ class Customer extends Authenticatable
 
     /**
      * 经济能力
-     * @return BelongsTo
      */
     public function economic(): BelongsTo
     {
@@ -71,7 +71,6 @@ class Customer extends Authenticatable
 
     /**
      * 生命周期
-     * @return MorphMany
      */
     public function cycle(): MorphMany
     {
@@ -80,7 +79,6 @@ class Customer extends Authenticatable
 
     /**
      * 顾客日志
-     * @return MorphMany
      */
     public function log(): MorphMany
     {
@@ -89,7 +87,6 @@ class Customer extends Authenticatable
 
     /**
      * 预存款变动明细
-     * @return BelongsToMany
      */
     public function depositDetails(): BelongsToMany
     {
@@ -98,7 +95,6 @@ class Customer extends Authenticatable
 
     /**
      * 回访记录
-     * @return HasMany
      */
     public function followup(): HasMany
     {
@@ -107,7 +103,6 @@ class Customer extends Authenticatable
 
     /**
      * 回访记录
-     * @return HasMany
      */
     public function followups(): HasMany
     {
@@ -116,7 +111,6 @@ class Customer extends Authenticatable
 
     /**
      * 治疗记录
-     * @return HasMany
      */
     public function treatments(): HasMany
     {
@@ -125,7 +119,6 @@ class Customer extends Authenticatable
 
     /**
      * 顾客物品明细
-     * @return HasMany
      */
     public function goods(): HasMany
     {
@@ -134,7 +127,6 @@ class Customer extends Authenticatable
 
     /**
      * 网电咨询记录
-     * @return HasMany
      */
     public function reservations(): HasMany
     {
@@ -143,7 +135,6 @@ class Customer extends Authenticatable
 
     /**
      * 分诊记录
-     * @return HasMany
      */
     public function receptions(): HasMany
     {
@@ -152,7 +143,6 @@ class Customer extends Authenticatable
 
     /**
      * 积分记录
-     * @return HasMany
      */
     public function integrals(): HasMany
     {
@@ -161,7 +151,6 @@ class Customer extends Authenticatable
 
     /**
      * 已购卡券列表
-     * @return HasMany
      */
     public function coupons(): HasMany
     {
@@ -170,7 +159,6 @@ class Customer extends Authenticatable
 
     /**
      * 顾客标签
-     * @return BelongsToMany
      */
     public function tags(): BelongsToMany
     {
@@ -181,7 +169,6 @@ class Customer extends Authenticatable
 
     /**
      * 咨询项目
-     * @return BelongsToMany
      */
     public function items(): BelongsToMany
     {
@@ -193,7 +180,6 @@ class Customer extends Authenticatable
     /**
      * 顾客主号码
      * 默认显示本人
-     * @return HasOne
      */
     public function phone(): HasOne
     {
@@ -204,7 +190,6 @@ class Customer extends Authenticatable
 
     /**
      * 顾客手机号码
-     * @return HasMany
      */
     public function phones(): HasMany
     {
@@ -213,7 +198,6 @@ class Customer extends Authenticatable
 
     /**
      * 预约记录
-     * @return HasMany
      */
     public function appointments(): HasMany
     {
@@ -222,7 +206,6 @@ class Customer extends Authenticatable
 
     /**
      * 成交项目明细
-     * @return HasMany
      */
     public function products(): HasMany
     {
@@ -231,7 +214,6 @@ class Customer extends Authenticatable
 
     /**
      * 业绩表
-     * @return HasMany
      */
     public function salesPerformances(): HasMany
     {
@@ -240,7 +222,6 @@ class Customer extends Authenticatable
 
     /**
      * 创建人员
-     * @return BelongsTo
      */
     public function createUser(): BelongsTo
     {
@@ -249,7 +230,6 @@ class Customer extends Authenticatable
 
     /**
      * 开发人员
-     * @return BelongsTo
      */
     public function ascriptionUser(): BelongsTo
     {
@@ -258,7 +238,6 @@ class Customer extends Authenticatable
 
     /**
      * 现场咨询
-     * @return BelongsTo
      */
     public function consultantUser(): BelongsTo
     {
@@ -267,7 +246,6 @@ class Customer extends Authenticatable
 
     /**
      * 专属客服
-     * @return BelongsTo
      */
     public function serviceUser(): BelongsTo
     {
@@ -276,7 +254,6 @@ class Customer extends Authenticatable
 
     /**
      * 主治医生
-     * @return BelongsTo
      */
     public function doctorUser(): BelongsTo
     {
@@ -285,7 +262,6 @@ class Customer extends Authenticatable
 
     /**
      * 推荐员工
-     * @return BelongsTo
      */
     public function referrerUser(): BelongsTo
     {
@@ -294,7 +270,6 @@ class Customer extends Authenticatable
 
     /**
      * 推荐客户
-     * @return BelongsTo
      */
     public function referrerCustomer(): BelongsTo
     {
@@ -305,13 +280,14 @@ class Customer extends Authenticatable
     {
         return $query->whereBetween('created_at', [
             Carbon::today(),
-            Carbon::today()->endOfDay()
+            Carbon::today()->endOfDay(),
         ]);
     }
 
     /**
      * 合并顾客
-     * @param string $customer_id 被合并顾客id
+     *
+     * @param  string  $customer_id  被合并顾客id
      */
     public function merge(string $customer_id): void
     {
@@ -326,11 +302,11 @@ class Customer extends Authenticatable
 
         // 合并customer表信息
         $this->update([
-            'total_payment'   => bcadd($this->total_payment, $customer->total_payment, 4),
-            'balance'         => bcadd($this->balance, $customer->balance, 4),
-            'amount'          => bcadd($this->amount, $customer->amount, 4),
-            'arrearage'       => bcadd($this->arrearage, $customer->arrearage, 4),
-            'integral'        => bcadd($this->integral, $customer->integral, 4),
+            'total_payment' => bcadd($this->total_payment, $customer->total_payment, 4),
+            'balance' => bcadd($this->balance, $customer->balance, 4),
+            'amount' => bcadd($this->amount, $customer->amount, 4),
+            'arrearage' => bcadd($this->arrearage, $customer->arrearage, 4),
+            'integral' => bcadd($this->integral, $customer->integral, 4),
             'expend_integral' => bcadd($this->expend_integral, $customer->expend_integral, 4),
         ]);
 
@@ -354,6 +330,7 @@ class Customer extends Authenticatable
 
     /**
      * 获取所有关联表
+     *
      * @return string[]
      */
     public function getTables(): array
@@ -404,15 +381,15 @@ class Customer extends Authenticatable
             'retail_outbound_detail',
             'sales_performance',
             'treatment',
-            'appointments'
+            'appointments',
         ];
     }
 
     /**
      * 生成顾客搜索关键词
-     * @param array $data 顾客信息
-     * @param array $phone 联系电话
-     * @return string
+     *
+     * @param  array  $data  顾客信息
+     * @param  array  $phone  联系电话
      */
     public static function generateKeyword(array $data, array $phone): string
     {
@@ -425,6 +402,7 @@ class Customer extends Authenticatable
             $data['file_number'] ?? '',
             implode(',', $phone),
         ];
+
         return implode(',', array_filter($keyword));
     }
 }
