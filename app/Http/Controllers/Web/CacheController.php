@@ -246,7 +246,7 @@ class CacheController extends Controller
                 $children = $groups->where('category_id', $category->id)->map(fn ($group) => [
                     'value' => $group->id,
                     'label' => $group->name,
-                ]);
+                ])->values()->all();
 
                 return [
                     'value' => $category->id,
