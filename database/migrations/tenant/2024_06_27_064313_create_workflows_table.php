@@ -27,8 +27,8 @@ return new class extends Migration
             $table->boolean('all_customer')->default(false)->comment('是否适用于全部客户');
             $table->enum('type', ['trigger', 'periodic'])->default('trigger')->comment('工作流类型:trigger触发型、periodic周期型');
             $table->enum('status', ['draft', 'pending', 'active', 'paused', 'completed'])->default('draft')->comment('工作流状态:draft草稿、pending未开始、active进行中、paused已暂停、completed已结束');
-            $table->timestamp('start_at')->nullable()->comment('工作流开始时间');
-            $table->timestamp('end_at')->nullable()->comment('工作流结束时间');
+            $table->timestamp('task_start_at')->nullable()->comment('任务开始时间');
+            $table->timestamp('task_end_at')->nullable()->comment('任务结束时间');
             $table->string('cron')->nullable()->comment('执行时间点,cron表达式,仅周期型工作流有效');
             $table->timestamp('last_run_at')->nullable()->comment('上次执行时间');
             $table->timestamp('next_run_at')->nullable()->comment('下次执行时间');
@@ -38,6 +38,15 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->comment('工作流主表');
+        });
+        Schema::create('workflow_configs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('workflow_id')->comment('所属工作流ID');
+            $table->string('config_type')->comment('配置类型:trigger/schedule');
+            $table->json('config_data')->comment('配置数据');
+            $table->timestamps();
+            $table->comment('工作流配置表');
+            $table->foreign('workflow_id')->references('id')->on('workflows')->onDelete('cascade');
         });
         Schema::create('workflow_customer_groups', function (Blueprint $table) {
             $table->id();
@@ -115,6 +124,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('workflows');
+        Schema::dropIfExists('workflow_configs');
         Schema::dropIfExists('workflow_nodes');
         Schema::dropIfExists('workflow_events');
         Schema::dropIfExists('workflow_template_categories');

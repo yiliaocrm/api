@@ -13,6 +13,8 @@ class Workflow extends BaseModel
 {
     use SoftDeletes;
 
+    protected $appends = ['taskTime'];
+
     protected function casts(): array
     {
         return [
@@ -27,11 +29,25 @@ class Workflow extends BaseModel
             'tags' => 'array',
             'config' => 'array',
             'rule_chain' => 'array',
-            'start_at' => 'datetime',
-            'end_at' => 'datetime',
+            'task_start_at' => 'datetime',
+            'task_end_at' => 'datetime',
             'last_run_at' => 'datetime',
             'next_run_at' => 'datetime',
         ];
+    }
+
+    /**
+     * 访问器：将 task_start_at 和 task_end_at 合并成 taskTime
+     */
+    public function getTaskTimeAttribute()
+    {
+        if ($this->task_start_at && $this->task_end_at) {
+            return [
+                $this->task_start_at->format('Y-m-d'),
+                $this->task_end_at->format('Y-m-d')
+            ];
+        }
+        return [];
     }
 
     /**
@@ -72,6 +88,30 @@ class Workflow extends BaseModel
     public function executions(): HasMany
     {
         return $this->hasMany(WorkflowExecution::class);
+    }
+
+    /**
+     * 工作流配置
+     */
+    public function configs(): HasMany
+    {
+        return $this->hasMany(WorkflowConfig::class);
+    }
+
+    /**
+     * 获取触发配置
+     */
+    public function triggerConfig()
+    {
+        return $this->configs()->where('config_type', 'trigger')->first();
+    }
+
+    /**
+     * 获取调度配置
+     */
+    public function scheduleConfig()
+    {
+        return $this->configs()->where('config_type', 'schedule')->first();
     }
 
     /**

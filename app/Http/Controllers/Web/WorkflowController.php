@@ -142,6 +142,13 @@ class WorkflowController extends Controller
         $data['active'] = false;
         $data['status'] = 'draft';
 
+        // 处理任务时间
+        if (isset($data['taskTime']) && is_array($data['taskTime']) && count($data['taskTime']) === 2) {
+            $data['task_start_at'] = $data['taskTime'][0];
+            $data['task_end_at'] = $data['taskTime'][1];
+        }
+        unset($data['taskTime']);
+
         // 处理 JSON 字段
         if (isset($data['nodes']) && is_string($data['nodes'])) {
             $data['nodes'] = json_decode($data['nodes'], true);
@@ -160,6 +167,12 @@ class WorkflowController extends Controller
         $customerGroupIds = $data['customer_group_ids'] ?? [];
         unset($data['customer_group_ids']);
 
+        // 提取配置数据
+        $triggerConfig = $data['trigger_config'] ?? null;
+        $scheduleConfig = $data['schedule_config'] ?? null;
+        unset($data['trigger_config']);
+        unset($data['schedule_config']);
+
         $workflow = Workflow::create($data);
 
         // 同步客户群组
@@ -167,7 +180,22 @@ class WorkflowController extends Controller
             $workflow->customerGroups()->sync($customerGroupIds);
         }
 
-        return response_success($workflow->load(['category', 'creator', 'customerGroups']));
+        // 保存配置数据
+        if ($triggerConfig) {
+            $workflow->configs()->create([
+                'config_type' => 'trigger',
+                'config_data' => is_string($triggerConfig) ? $triggerConfig : json_encode($triggerConfig),
+            ]);
+        }
+
+        if ($scheduleConfig) {
+            $workflow->configs()->create([
+                'config_type' => 'schedule',
+                'config_data' => is_string($scheduleConfig) ? $scheduleConfig : json_encode($scheduleConfig),
+            ]);
+        }
+
+        return response_success($workflow->load(['category', 'creator', 'customerGroups', 'configs']));
     }
 
     /**
@@ -177,6 +205,13 @@ class WorkflowController extends Controller
     {
         $workflow = Workflow::findOrFail($request->input('id'));
         $data = $request->validated();
+
+        // 处理任务时间
+        if (isset($data['taskTime']) && is_array($data['taskTime']) && count($data['taskTime']) === 2) {
+            $data['task_start_at'] = $data['taskTime'][0];
+            $data['task_end_at'] = $data['taskTime'][1];
+        }
+        unset($data['taskTime']);
 
         // 处理 JSON 字段
         if (isset($data['nodes']) && is_string($data['nodes'])) {
@@ -197,6 +232,12 @@ class WorkflowController extends Controller
         unset($data['customer_group_ids']);
         unset($data['id']);
 
+        // 提取配置数据
+        $triggerConfig = $data['trigger_config'] ?? null;
+        $scheduleConfig = $data['schedule_config'] ?? null;
+        unset($data['trigger_config']);
+        unset($data['schedule_config']);
+
         $workflow->update($data);
 
         // 同步客户群组
@@ -204,7 +245,36 @@ class WorkflowController extends Controller
             $workflow->customerGroups()->sync($customerGroupIds);
         }
 
-        return response_success($workflow->load(['category', 'creator', 'customerGroups']));
+        // 更新配置数据
+        if ($triggerConfig !== null) {
+            $config = $workflow->triggerConfig();
+            if ($config) {
+                $config->update([
+                    'config_data' => is_string($triggerConfig) ? $triggerConfig : json_encode($triggerConfig),
+                ]);
+            } else {
+                $workflow->configs()->create([
+                    'config_type' => 'trigger',
+                    'config_data' => is_string($triggerConfig) ? $triggerConfig : json_encode($triggerConfig),
+                ]);
+            }
+        }
+
+        if ($scheduleConfig !== null) {
+            $config = $workflow->scheduleConfig();
+            if ($config) {
+                $config->update([
+                    'config_data' => is_string($scheduleConfig) ? $scheduleConfig : json_encode($scheduleConfig),
+                ]);
+            } else {
+                $workflow->configs()->create([
+                    'config_type' => 'schedule',
+                    'config_data' => is_string($scheduleConfig) ? $scheduleConfig : json_encode($scheduleConfig),
+                ]);
+            }
+        }
+
+        return response_success($workflow->load(['category', 'creator', 'customerGroups', 'configs']));
     }
 
     /**
@@ -233,6 +303,7 @@ class WorkflowController extends Controller
             'category',
             'creator:id,name',
             'customerGroups:id,name',
+            'configs',
         ])->findOrFail($request->input('id'));
 
         return response_success($workflow);

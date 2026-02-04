@@ -196,8 +196,11 @@ class WorkflowRequest extends FormRequest
                     }
                 },
             ],
-            'start_at' => 'nullable|date',
-            'end_at' => 'nullable|date|after:start_at',
+            'trigger_config' => 'nullable|json',
+            'schedule_config' => 'nullable|json',
+            'taskTime' => 'required|array|size:2',
+            'taskTime.0' => 'required|date',
+            'taskTime.1' => 'required|date|after:taskTime.0',
         ];
     }
 
@@ -217,8 +220,9 @@ class WorkflowRequest extends FormRequest
             'settings' => 'nullable',
             'tags' => 'nullable',
             'cron' => 'nullable|string',
-            'start_at' => 'nullable|date',
-            'end_at' => 'nullable|date|after:start_at',
+            'taskTime' => 'required|array|size:2',
+            'taskTime.0' => 'required|date',
+            'taskTime.1' => 'required|date|after:taskTime.0',
         ];
     }
 
