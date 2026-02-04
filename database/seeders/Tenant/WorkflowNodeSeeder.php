@@ -31,15 +31,6 @@ class WorkflowNodeSeeder extends Seeder
                     ],
                 ],
             ],
-            [
-                'key' => 'end',
-                'name' => '结束',
-                'icon' => 'sc-icon-square-fill',
-                'color' => '#f56c6c',
-                'description' => '结束节点 - 工作流执行的终点。',
-                'dsl' => [],
-                'template' => [],
-            ],
         ];
         foreach ($nodes as $node) {
             WorkflowNode::query()->create($node);
