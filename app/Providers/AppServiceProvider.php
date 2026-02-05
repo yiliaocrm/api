@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // 系统未完成初始化安装
-        if (!file_exists(storage_path('install.lock'))) {
+        if (! file_exists(storage_path('install.lock'))) {
             return;
         }
 
@@ -29,26 +29,18 @@ class AppServiceProvider extends ServiceProvider
 
         // 定义参数名到配置项的映射
         $configMap = [
-            'sql_log_enabled'             => 'logging.query.enabled',
-            'sql_log_slower_than'         => 'logging.query.slower_than',
-            'central_admin_path'          => 'tenancy.admin_path',
-            'file_system_disk'            => 'filesystems.default',
-            'aws_access_key_id'           => 'filesystems.disks.s3.key',
-            'aws_secret_access_key'       => 'filesystems.disks.s3.secret',
-            'aws_default_region'          => 'filesystems.disks.s3.region',
-            'aws_bucket'                  => 'filesystems.disks.s3.bucket',
-            'aws_url'                     => 'filesystems.disks.s3.url',
-            'aws_endpoint'                => 'filesystems.disks.s3.endpoint',
-            'aws_signed_url'              => 'filesystems.disks.s3.signed_url',
+            'sql_log_enabled' => 'logging.query.enabled',
+            'sql_log_slower_than' => 'logging.query.slower_than',
+            'central_admin_path' => 'tenancy.admin_path',
+            'file_system_disk' => 'filesystems.default',
+            'aws_access_key_id' => 'filesystems.disks.s3.key',
+            'aws_secret_access_key' => 'filesystems.disks.s3.secret',
+            'aws_default_region' => 'filesystems.disks.s3.region',
+            'aws_bucket' => 'filesystems.disks.s3.bucket',
+            'aws_url' => 'filesystems.disks.s3.url',
+            'aws_endpoint' => 'filesystems.disks.s3.endpoint',
+            'aws_signed_url' => 'filesystems.disks.s3.signed_url',
             'aws_use_path_style_endpoint' => 'filesystems.disks.s3.use_path_style_endpoint',
-            'n8n_api_base_url'            => 'n8n.api.base_url',
-            'n8n_api_key'                 => 'n8n.api.key',
-            'n8n_webhook_base_url'        => 'n8n.webhook.base_url',
-            'n8n_webhook_username'        => 'n8n.webhook.username',
-            'n8n_webhook_password'        => 'n8n.webhook.password',
-            'n8n_timeout'                 => 'n8n.timeout',
-            'n8n_throw'                   => 'n8n.throw',
-            'n8n_retry'                   => 'n8n.retry',
         ];
 
         // 遍历映射，设置配置
@@ -81,20 +73,20 @@ class AppServiceProvider extends ServiceProvider
         }
         if (isset($parameters['reverb_app_id'])) {
             config([
-                'reverb.apps.apps.0.app_id'              => $parameters['reverb_app_id'],
-                'broadcasting.connections.reverb.app_id' => $parameters['reverb_app_id']
+                'reverb.apps.apps.0.app_id' => $parameters['reverb_app_id'],
+                'broadcasting.connections.reverb.app_id' => $parameters['reverb_app_id'],
             ]);
         }
         if (isset($parameters['reverb_app_key'])) {
             config([
-                'reverb.apps.apps.0.key'              => $parameters['reverb_app_key'],
-                'broadcasting.connections.reverb.key' => $parameters['reverb_app_key']
+                'reverb.apps.apps.0.key' => $parameters['reverb_app_key'],
+                'broadcasting.connections.reverb.key' => $parameters['reverb_app_key'],
             ]);
         }
         if (isset($parameters['reverb_app_secret'])) {
             config([
-                'reverb.apps.apps.0.secret'              => $parameters['reverb_app_secret'],
-                'broadcasting.connections.reverb.secret' => $parameters['reverb_app_secret']
+                'reverb.apps.apps.0.secret' => $parameters['reverb_app_secret'],
+                'broadcasting.connections.reverb.secret' => $parameters['reverb_app_secret'],
             ]);
         }
     }
