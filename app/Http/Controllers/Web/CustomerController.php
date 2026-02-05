@@ -204,6 +204,7 @@ class CustomerController extends Controller
                 'job:id,name',
                 'tags',
                 'phones',
+                'phones.relationship:id,name',
                 'economic:id,name',
                 'consultantUser:id,name',
                 'ascriptionUser:id,name',
