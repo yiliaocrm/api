@@ -41,6 +41,13 @@ class AppServiceProvider extends ServiceProvider
             'aws_endpoint' => 'filesystems.disks.s3.endpoint',
             'aws_signed_url' => 'filesystems.disks.s3.signed_url',
             'aws_use_path_style_endpoint' => 'filesystems.disks.s3.use_path_style_endpoint',
+            'workflow_api_url' => 'workflow.api_url',
+            'workflow_username' => 'workflow.username',
+            'workflow_password' => 'workflow.password',
+            'workflow_timeout' => 'workflow.timeout',
+            'workflow_redis_host' => 'workflow.redis.host',
+            'workflow_redis_password' => 'workflow.redis.password',
+            'workflow_redis_db' => 'workflow.redis.db',
         ];
 
         // 遍历映射，设置配置
