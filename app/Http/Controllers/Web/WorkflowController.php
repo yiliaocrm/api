@@ -21,7 +21,7 @@ class WorkflowController extends Controller
     public function nodes(): JsonResponse
     {
         $nodes = WorkflowNode::query()
-            ->select(['key', 'name', 'icon', 'color', 'description'])
+            ->select(['key', 'name', 'icon', 'color', 'description', 'output_schema', 'template'])
             ->orderBy('id')
             ->get();
 

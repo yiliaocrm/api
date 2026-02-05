@@ -46,7 +46,6 @@ return new class extends Migration
             $table->json('config_data')->comment('配置数据');
             $table->timestamps();
             $table->comment('工作流配置表');
-            $table->foreign('workflow_id')->references('id')->on('workflows')->onDelete('cascade');
         });
         Schema::create('workflow_customer_groups', function (Blueprint $table) {
             $table->id();
@@ -86,8 +85,8 @@ return new class extends Migration
             $table->string('icon')->nullable()->comment('节点类型图标');
             $table->string('color')->nullable()->comment('节点图标颜色');
             $table->string('description')->nullable()->comment('类型描述');
-            $table->json('dsl')->nullable()->comment('编排引擎DSL配置');
             $table->json('template')->nullable()->comment('模板配置');
+            $table->json('output_schema')->nullable()->comment('节点输出变量schema（用于上下文引用）');
             $table->timestamps();
             $table->comment('工作流节点类型表');
         });
