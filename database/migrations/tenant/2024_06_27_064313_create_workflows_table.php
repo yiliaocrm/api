@@ -17,13 +17,13 @@ return new class extends Migration
             $table->text('description')->nullable()->comment('工作流描述');
             $table->unsignedBigInteger('category_id')->comment('分类ID');
             $table->unsignedBigInteger('create_user_id')->comment('创建人员ID');
-            $table->string('n8n_id')->nullable()->unique()->comment('n8n工作流ID');
-            $table->boolean('active')->default(false)->comment('是否激活（对应n8n的active字段）');
-            $table->json('nodes')->nullable()->comment('节点配置（对应n8n的nodes数组）');
-            $table->json('connections')->nullable()->comment('节点连接配置（对应n8n的connections对象）');
-            $table->json('settings')->nullable()->comment('工作流设置（对应n8n的settings对象）');
-            $table->json('static_data')->nullable()->comment('静态数据存储（对应n8n的staticData）');
-            $table->json('tags')->nullable()->comment('标签数组（对应n8n的tags）');
+            $table->string('workflow_id')->nullable()->unique()->comment('工作流引擎ID');
+            $table->boolean('active')->default(false)->comment('是否激活（对应工作流引擎的active字段）');
+            $table->json('nodes')->nullable()->comment('节点配置（对应工作流引擎的nodes数组）');
+            $table->json('connections')->nullable()->comment('节点连接配置（对应工作流引擎的connections对象）');
+            $table->json('settings')->nullable()->comment('工作流设置（对应工作流引擎的settings对象）');
+            $table->json('static_data')->nullable()->comment('静态数据存储（对应工作流引擎的staticData）');
+            $table->json('tags')->nullable()->comment('标签数组（对应工作流引擎的tags）');
             $table->boolean('all_customer')->default(false)->comment('是否适用于全部客户');
             $table->enum('type', ['trigger', 'periodic'])->default('trigger')->comment('工作流类型:trigger触发型、periodic周期型');
             $table->enum('status', ['draft', 'pending', 'active', 'paused', 'completed'])->default('draft')->comment('工作流状态:draft草稿、pending未开始、active进行中、paused已暂停、completed已结束');
@@ -78,17 +78,17 @@ return new class extends Migration
             $table->timestamps();
             $table->comment('工作流模板分类表');
         });
-        Schema::create('workflow_nodes', function (Blueprint $table) {
+        Schema::create('workflow_components', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique()->comment('节点类型标识');
-            $table->string('name')->unique()->comment('节点类型名称');
-            $table->string('icon')->nullable()->comment('节点类型图标');
-            $table->string('color')->nullable()->comment('节点图标颜色');
+            $table->string('key')->unique()->comment('组件类型标识');
+            $table->string('name')->unique()->comment('组件类型名称');
+            $table->string('icon')->nullable()->comment('组件类型图标');
+            $table->string('color')->nullable()->comment('组件图标颜色');
             $table->string('description')->nullable()->comment('类型描述');
             $table->json('template')->nullable()->comment('模板配置');
-            $table->json('output_schema')->nullable()->comment('节点输出变量schema（用于上下文引用）');
+            $table->json('output_schema')->nullable()->comment('组件输出变量schema（用于上下文引用）');
             $table->timestamps();
-            $table->comment('工作流节点类型表');
+            $table->comment('工作流组件类型表');
         });
         Schema::create('workflow_events', function (Blueprint $table) {
             $table->id();
@@ -101,7 +101,7 @@ return new class extends Migration
         Schema::create('workflow_executions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('workflow_id')->comment('所属工作流ID');
-            $table->string('n8n_execution_id')->nullable()->comment('n8n执行ID');
+            $table->string('workflow_execution_id')->nullable()->comment('工作流引擎执行ID');
             $table->enum('status', ['running', 'success', 'error', 'waiting', 'canceled'])->default('running')->comment('执行状态');
             $table->timestamp('started_at')->nullable()->comment('开始时间');
             $table->timestamp('finished_at')->nullable()->comment('结束时间');
@@ -124,7 +124,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('workflows');
         Schema::dropIfExists('workflow_configs');
-        Schema::dropIfExists('workflow_nodes');
+        Schema::dropIfExists('workflow_components');
         Schema::dropIfExists('workflow_events');
         Schema::dropIfExists('workflow_template_categories');
         Schema::dropIfExists('workflow_templates');

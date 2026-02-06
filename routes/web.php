@@ -1007,8 +1007,8 @@ Route::controller(Web\QufriendController::class)->prefix('qufriend')->group(func
 });
 
 Route::controller(Web\WorkflowController::class)->prefix('workflow')->group(function () {
-    Route::get('nodes', 'nodes');
     Route::get('events', 'events');
+    Route::get('components', 'components');
     Route::get('categories', 'categories');
     Route::post('add-category', 'addCategory');
     Route::get('swap-category', 'swapCategory');

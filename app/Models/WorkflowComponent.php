@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class WorkflowNode extends BaseModel
+class WorkflowComponent extends BaseModel
 {
     protected function casts(): array
     {

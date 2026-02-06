@@ -57,7 +57,7 @@ class TenantSeeder extends Seeder
             Tenant\CustomerGroupCategoryTableSeeder::class,
             Tenant\QufriendSeeder::class,
             Tenant\WorkflowEventSeeder::class,
-            Tenant\WorkflowNodeSeeder::class,
+            Tenant\WorkflowComponentSeeder::class,
             Tenant\WorkflowCategorySeeder::class,
             Tenant\CustomerPhoneRelationshipSeeder::class,
             Tenant\SmsCategorySeeder::class,

@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\WorkflowRequest;
 use App\Models\Workflow;
 use App\Models\WorkflowCategory;
+use App\Models\WorkflowComponent;
 use App\Models\WorkflowEvent;
-use App\Models\WorkflowNode;
 use App\Models\WorkflowTemplate;
 use App\Models\WorkflowTemplateCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,16 +16,16 @@ use Illuminate\Http\JsonResponse;
 class WorkflowController extends Controller
 {
     /**
-     * 获取节点类型列表
+     * 获取组件类型列表
      */
-    public function nodes(): JsonResponse
+    public function components(): JsonResponse
     {
-        $nodes = WorkflowNode::query()
+        $components = WorkflowComponent::query()
             ->select(['key', 'name', 'icon', 'color', 'description', 'output_schema', 'template'])
             ->orderBy('id')
             ->get();
 
-        return response_success($nodes);
+        return response_success($components);
     }
 
     /**
