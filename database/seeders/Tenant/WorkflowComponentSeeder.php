@@ -21,7 +21,7 @@ class WorkflowComponentSeeder extends Seeder
                     'type' => 'delay',
                     'parameters' => [
                         'mode' => 'after', // 'at' 表示指定时间，'after' 表示相对时间
-                        'time' => null, // 指定时间（ISO8601 格式）
+                        'time' => null, // 指定时间（YYYY-MM-DD HH:mm:ss 格式）
                         'delay' => 1, // 延迟时间数值
                         'unit' => 'minutes', // 时间单位：seconds/minutes/hours/days
                         'overwrite' => false, // 是否覆盖待处理消息
