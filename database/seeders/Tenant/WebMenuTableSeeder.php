@@ -910,6 +910,7 @@ class WebMenuTableSeeder extends Seeder
             'parentid'   => $menu->id,
             'name'       => '回访情况统计表',
             'icon'       => 'iconfont if-followup',
+            'url'        => '/new#/report/operation/followup-statistics',
             'path'       => '/report/followup-statistics',
             'meta'       => [
                 'title' => '回访情况统计表'

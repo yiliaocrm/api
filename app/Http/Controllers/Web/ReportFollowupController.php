@@ -1,28 +1,25 @@
 <?php
 
+namespace App\Http\Controllers\Web;
 
-namespace App\Repositorys;
-
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\ReportFollowupRequest;
 use App\Models\Followup;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
-class FollowupRepository
+class ReportFollowupController extends Controller
 {
     /**
-     * 回访情况统计表
-     * @param Request $request
-     * @return array
+     * 回访情况统计
      */
-    public function statistics(Request $request): array
+    public function statistics(ReportFollowupRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'date');
-        $order = $request->input('order', 'desc');
-
-        $startDate = Carbon::parse($request->input('date_start'))->startOfDay();
-        $endDate   = Carbon::parse($request->input('date_end'))->endOfDay();
+        $rows = $request->input('rows', 10);
+        $date = $request->input('date');
+        $startDate = Carbon::parse($date[0])->startOfDay();
+        $endDate = Carbon::parse($date[1])->endOfDay();
 
         // 未执行记录(按提醒人)
         $undoQuery = DB::table('followup')
@@ -32,11 +29,11 @@ class FollowupRepository
                 DB::raw('1 as undo_count'),
                 DB::raw('0 as followup_count'),
                 DB::raw('0 as execute_count'),
-                DB::raw('0 as create_count')
+                DB::raw('0 as create_count'),
             ])
             ->whereBetween('followup.date', [$startDate, $endDate])
             ->where('status', 1)
-            ->when($request->input('department_id'), fn($query) => $query->leftJoin('users', 'users.id', '=', 'followup.followup_user')
+            ->when($request->input('department_id'), fn ($query) => $query->leftJoin('users', 'users.id', '=', 'followup.followup_user')
                 ->where('users.department_id', $request->input('department_id'))
             );
 
@@ -51,7 +48,7 @@ class FollowupRepository
                 DB::raw('0 as create_count'),
             ])
             ->whereBetween('followup.time', [$startDate, $endDate])
-            ->when($request->input('department_id'), fn($query) => $query->leftJoin('users', 'users.id', '=', 'followup.execute_user')
+            ->when($request->input('department_id'), fn ($query) => $query->leftJoin('users', 'users.id', '=', 'followup.execute_user')
                 ->where('users.department_id', $request->input('department_id'))
             );
 
@@ -63,10 +60,10 @@ class FollowupRepository
                 DB::raw('0 as undo_count'),
                 DB::raw('0 as followup_count'),
                 DB::raw('0 as execute_count'),
-                DB::raw('1 as create_count')
+                DB::raw('1 as create_count'),
             ])
             ->whereBetween('followup.created_at', [$startDate, $endDate])
-            ->when($request->input('department_id'), fn($query) => $query->leftJoin('users', 'users.id', '=', 'followup.user_id')
+            ->when($request->input('department_id'), fn ($query) => $query->leftJoin('users', 'users.id', '=', 'followup.user_id')
                 ->where('users.department_id', $request->input('department_id'))
             );
 
@@ -78,10 +75,10 @@ class FollowupRepository
                 DB::raw('0 as undo_count'),
                 DB::raw('1 as followup_count'),
                 DB::raw('0 as execute_count'),
-                DB::raw('0 as create_count')
+                DB::raw('0 as create_count'),
             ])
             ->whereBetween('followup.date', [$startDate, $endDate])
-            ->when($request->input('department_id'), fn($query) => $query->leftJoin('users', 'users.id', '=', 'followup.followup_user')
+            ->when($request->input('department_id'), fn ($query) => $query->leftJoin('users', 'users.id', '=', 'followup.followup_user')
                 ->where('users.department_id', $request->input('department_id'))
             )
             ->unionAll($undoQuery)
@@ -96,18 +93,19 @@ class FollowupRepository
                 DB::raw('SUM(undo_count) as undo_count'),
                 DB::raw('SUM(followup_count) as followup_count'),
                 DB::raw('SUM(execute_count) as execute_count'),
-                DB::raw('SUM(create_count) as create_count')
+                DB::raw('SUM(create_count) as create_count'),
             ])
             ->fromSub($subQuery, 'tabA')
-            ->whereBetween('date', [$request->input('date_start'), $request->input('date_end')])
-            ->when($request->input('user_id'), fn($query) => $query->where('user_id', $request->input('user_id')))
+            ->whereBetween('date', [$date[0], $date[1]])
+            ->when($request->input('user_id'), fn ($query) => $query->where('user_id', $request->input('user_id')))
             ->groupBy('date', 'user_id')
-            ->orderBy($sort, $order)
+            ->orderBy('user_id', 'desc')
+            ->orderBy('date', 'desc')
             ->paginate($rows);
 
-        return [
-            'rows'  => $query->items(),
-            'total' => $query->total()
-        ];
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
     }
 }

@@ -955,6 +955,11 @@ class PermissionActionSeeder extends Seeder
                 'action'     => 'erkaiDetail',
             ],
             [
+                'permission' => 'report.followup.statistics',
+                'controller' => 'App\Http\Controllers\Web\ReportFollowupController',
+                'action'     => 'statistics',
+            ],
+            [
                 'permission' => 'report.inventory.detail',
                 'controller' => 'App\Http\Controllers\Web\ReportErpController',
                 'action'     => 'inventoryDetail',
