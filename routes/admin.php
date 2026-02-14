@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\MenuController;
-use App\Http\Controllers\Admin\ConfigController;
-use App\Http\Controllers\Admin\TenantController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AdminMenuController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\ConfigController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\TenantLoginBannerController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'home'])->withoutMiddleware(['auth:sanctum']);
 
@@ -41,6 +41,7 @@ Route::controller(ConfigController::class)->prefix('config')->group(function () 
     Route::post('save', 'save');
     Route::get('secret', 'secret');
     Route::post('verify', 'verify');
+    Route::post('dist-sync', 'distSync');
 });
 
 // 租户后台菜单
