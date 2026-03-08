@@ -933,6 +933,14 @@ Route::controller(Web\CustomerPhotoController::class)->prefix('customer-photo')-
     Route::get('remove', 'remove');
 });
 
+Route::controller(Web\CustomerPhotoTypeController::class)->prefix('customer-photo-type')->group(function () {
+    Route::post('index', 'index');
+    Route::post('create', 'create');
+    Route::get('info', 'info');
+    Route::post('update', 'update');
+    Route::get('remove', 'remove');
+});
+
 Route::controller(Web\CustomerPhotoDetailController::class)->prefix('customer-photo-detail')->group(function () {
     Route::post('rename', 'rename');
     Route::get('remove', 'remove');

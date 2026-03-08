@@ -21,6 +21,7 @@ class TenantSeeder extends Seeder
             Tenant\ParametersTableSeeder::class,
             Tenant\AccountsTableSeeder::class,
             Tenant\ReceptionTypeTableSeeder::class,
+            Tenant\CustomerPhotoTypeSeeder::class,
             Tenant\TagsTableSeeder::class,
             Tenant\AddressTableSeeder::class,
             Tenant\MediumsTableSeeder::class,

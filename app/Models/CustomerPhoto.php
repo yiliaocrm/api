@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CustomerPhoto extends BaseModel
@@ -13,7 +13,6 @@ class CustomerPhoto extends BaseModel
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -21,8 +20,15 @@ class CustomerPhoto extends BaseModel
     }
 
     /**
+     * 照片类型
+     */
+    public function photoType(): BelongsTo
+    {
+        return $this->belongsTo(CustomerPhotoType::class);
+    }
+
+    /**
      * 顾客日志
-     * @return MorphMany
      */
     public function customerLog(): MorphMany
     {
@@ -31,7 +37,6 @@ class CustomerPhoto extends BaseModel
 
     /**
      * 相册图片详情
-     * @return HasMany
      */
     public function details(): HasMany
     {
@@ -40,7 +45,6 @@ class CustomerPhoto extends BaseModel
 
     /**
      * 创建人员
-     * @return BelongsTo
      */
     public function createUser(): BelongsTo
     {
