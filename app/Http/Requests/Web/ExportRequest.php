@@ -869,7 +869,7 @@ class ExportRequest extends FormRequest
     {
         $method = request()->route()->getActionMethod();
 
-        // 根��不同方法返回不同参数
+        // 根据不同方法返回不同参数
         return match ($method) {
             'customer' => $this->only(['filters', 'keyword', 'group_id']),
             'customerLog' => $this->only(['created_at', 'customer_id', 'action', 'user_id']),

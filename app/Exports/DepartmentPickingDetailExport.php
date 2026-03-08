@@ -262,7 +262,7 @@ class DepartmentPickingDetailExport implements ShouldQueue
     /**
      * 上传文件到云端存储并删除本地文件
      *
-     * 当使用云存储（如 OSS、S3）时，xlswriter 生成的本地文件需要��传到云端，
+     * 当使用云存储（如 OSS、S3）时，xlswriter 生成的本地文件需要上传到云端，
      * 然后删除本地临时文件以节省服务器存储空间。
      */
     protected function uploadToCloudAndDeleteLocalFile(): void

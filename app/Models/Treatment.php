@@ -4,29 +4,29 @@ namespace App\Models;
 
 use App\Enums\TreatmentStatus;
 use App\Traits\QueryConditionsTrait;
+use App\Traits\WorkflowTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Treatment extends BaseModel
 {
-    use HasUuids, QueryConditionsTrait;
+    use HasUuids, QueryConditionsTrait, WorkflowTrait;
 
     protected $table = 'treatment';
 
     protected function casts(): array
     {
         return [
-            'status'       => TreatmentStatus::class,
+            'status' => TreatmentStatus::class,
             'participants' => 'array',
         ];
     }
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -35,7 +35,6 @@ class Treatment extends BaseModel
 
     /**
      * 执行科室
-     * @return BelongsTo
      */
     public function department(): BelongsTo
     {
@@ -44,7 +43,6 @@ class Treatment extends BaseModel
 
     /**
      * 顾客项目明细表
-     * @return HasOne
      */
     public function customerProduct(): HasOne
     {
@@ -53,7 +51,6 @@ class Treatment extends BaseModel
 
     /**
      * 配台人员
-     * @return HasMany
      */
     public function treatmentParticipants(): HasMany
     {
@@ -62,7 +59,6 @@ class Treatment extends BaseModel
 
     /**
      * 业绩表
-     * @return HasMany
      */
     public function salesPerformance(): HasMany
     {
@@ -71,7 +67,6 @@ class Treatment extends BaseModel
 
     /**
      * 划扣人员
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -80,7 +75,6 @@ class Treatment extends BaseModel
 
     /**
      * 项目信息
-     * @return BelongsTo
      */
     public function product(): BelongsTo
     {
@@ -89,12 +83,11 @@ class Treatment extends BaseModel
 
     /**
      * 状态文字
-     * @return Attribute
      */
     protected function statusText(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->status?->getLabel(),
+            get: fn () => $this->status?->getLabel(),
         );
     }
 }

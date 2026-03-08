@@ -4,33 +4,86 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\WorkflowExecutionRequest;
+use App\Models\Workflow;
 use App\Models\WorkflowExecution;
+use App\Models\WorkflowVersion;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 
 class WorkflowExecutionController extends Controller
 {
     /**
+     * 工作流下拉选项
+     */
+    public function workflows(WorkflowExecutionRequest $request): JsonResponse
+    {
+        $keyword = trim($request->input('keyword', ''));
+
+        $workflows = Workflow::query()
+            ->select(['id', 'name'])
+            ->when($keyword !== '', fn (Builder $query) => $query->where('name', 'like', "%{$keyword}%"))
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return response_success($workflows);
+    }
+
+    /**
      * 执行记录列表
      */
     public function index(WorkflowExecutionRequest $request): JsonResponse
     {
         $rows = $request->input('rows', 10);
-        $sort = $request->input('sort', 'started_at');
-        $order = $request->input('order', 'desc');
+        $executionId = $request->input('execution_id', 0);
+        $workflowId = $request->input('workflow_id', 0);
+        $workflowVersionId = $request->input('workflow_version_id', 0);
+        $status = $request->input('status');
+        $triggerType = $request->input('trigger_type');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $latestVersionOnly = $request->boolean('latest_version_only');
+        $allowedSorts = ['id', 'status', 'started_at', 'finished_at', 'duration', 'created_at', 'updated_at'];
+        $sort = in_array($request->input('sort', 'started_at'), $allowedSorts, true)
+            ? $request->input('sort', 'started_at')
+            : 'started_at';
+
+        $order = strtolower($request->input('order', 'desc'));
+        $order = in_array($order, ['asc', 'desc'], true) ? $order : 'desc';
 
         $query = WorkflowExecution::query()
             ->with([
                 'workflow:id,name',
                 'triggerUser:id,name',
             ])
-            ->when($request->input('workflow_id'), fn (Builder $query) => $query->where('workflow_id', $request->input('workflow_id')))
-            ->when($request->input('status'), fn (Builder $query) => $query->where('status', $request->input('status')))
-            ->when($request->input('trigger_type'), fn (Builder $query) => $query->where('trigger_type', $request->input('trigger_type')))
-            ->when($request->input('start_date'), fn (Builder $query) => $query->where('started_at', '>=', $request->input('start_date')))
-            ->when($request->input('end_date'), fn (Builder $query) => $query->where('started_at', '<=', $request->input('end_date')))
-            ->orderBy($sort, $order)
-            ->paginate($rows);
+            ->when($executionId > 0, fn (Builder $query) => $query->where('id', $executionId))
+            ->when($workflowId, fn (Builder $query) => $query->where('workflow_id', $workflowId))
+            ->when($status, fn (Builder $query) => $query->where('status', $status))
+            ->when($triggerType, fn (Builder $query) => $query->where('trigger_type', $triggerType))
+            ->when($startDate, fn (Builder $query) => $query->where('started_at', '>=', Carbon::parse($startDate)->startOfDay()))
+            ->when($endDate, fn (Builder $query) => $query->where('started_at', '<=', Carbon::parse($endDate)->endOfDay()));
+
+        if ($workflowVersionId > 0) {
+            $query->where('workflow_version_id', $workflowVersionId);
+        } elseif ($latestVersionOnly && $workflowId > 0) {
+            $latestVersionId = (int) WorkflowVersion::query()
+                ->where('workflow_id', $workflowId)
+                ->orderByDesc('version_no')
+                ->orderByDesc('id')
+                ->value('id');
+
+            if ($latestVersionId <= 0) {
+                return response_success([
+                    'rows' => [],
+                    'total' => 0,
+                ]);
+            }
+
+            $query->where('workflow_version_id', $latestVersionId);
+        }
+
+        $query = $query->orderBy($sort, $order)->paginate($rows);
 
         return response_success([
             'rows' => $query->items(),
@@ -44,9 +97,20 @@ class WorkflowExecutionController extends Controller
     public function detail(WorkflowExecutionRequest $request): JsonResponse
     {
         $execution = WorkflowExecution::with([
-            'workflow:id,name,nodes,connections',
+            'workflow:id,name,rule_chain',
+            'workflowVersion:id,workflow_id,version_no,snapshot',
             'triggerUser:id,name',
+            'steps' => fn ($query) => $query->orderBy('id'),
         ])->findOrFail($request->input('id'));
+
+        // 批量解析所有步骤的输入数据
+        $resolver = app(\App\Services\Workflow\StepDataResolver::class);
+        $resolvedInputs = $resolver->getBatchInputs($execution->steps);
+
+        // 为每个步骤附加 resolved_input
+        $execution->steps->each(function ($step) use ($resolvedInputs) {
+            $step->resolved_input = $resolvedInputs[$step->id] ?? null;
+        });
 
         return response_success($execution);
     }

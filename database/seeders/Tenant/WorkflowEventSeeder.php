@@ -11,13 +11,11 @@ class WorkflowEventSeeder extends Seeder
      * 工作流事件配置
      */
     protected array $events = [
-        // 客户相关事件
         ['event' => 'customer.created', 'event_name' => '客户创建', 'category_name' => '客户管理'],
         ['event' => 'customer.updated', 'event_name' => '客户更新', 'category_name' => '客户管理'],
-
-        // 预约相关事件
         ['event' => 'reservation.created', 'event_name' => '预约创建', 'category_name' => '预约管理'],
         ['event' => 'reservation.updated', 'event_name' => '预约更新', 'category_name' => '预约管理'],
+        ['event' => 'treatment.created', 'event_name' => '治疗划扣', 'category_name' => '治疗管理'],
     ];
 
     /**

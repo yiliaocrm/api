@@ -1025,13 +1025,27 @@ Route::controller(Web\WorkflowController::class)->prefix('workflow')->group(func
     Route::get('detail', 'detail');
     Route::post('activate', 'activate');
     Route::post('deactivate', 'deactivate');
-    Route::post('duplicate', 'duplicate');
-    Route::post('update-nodes', 'updateNodes');
-    Route::post('update-connections', 'updateConnections');
+    Route::post('preview-node', 'previewNode');
+    Route::post('batch-preview', 'batchPreviewNodes');
+    Route::get('trigger-sample-data', 'triggerSampleData');
+    Route::get('condition-fields', 'conditionFields');
+    Route::post('invalidate-preview-data', 'invalidatePreviewData');
+    Route::get('history-list', 'historyList');
+    Route::get('history-detail', 'historyDetail');
+    Route::post('history-restore', 'historyRestore');
+});
+
+// 工作流任务批次路由
+Route::controller(Web\WorkflowRunController::class)->prefix('workflow/run')->group(function () {
+    Route::get('workflows', 'workflows');
+    Route::post('index', 'index');
+    Route::get('detail', 'detail');
+    Route::post('cancel', 'cancel');
 });
 
 // 工作流执行记录路由
 Route::controller(Web\WorkflowExecutionController::class)->prefix('workflow/execution')->group(function () {
+    Route::get('workflows', 'workflows');
     Route::get('index', 'index');
     Route::get('detail', 'detail');
     Route::post('retry', 'retry');

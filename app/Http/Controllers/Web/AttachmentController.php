@@ -111,7 +111,7 @@ class AttachmentController extends Controller
     }
 
     /**
-     * 删��文件
+     * 删除文件
      * @param AttachmentRequest $request
      * @return JsonResponse
      */

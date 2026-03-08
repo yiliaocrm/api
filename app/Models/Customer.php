@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
 #[ObservedBy([CustomerObserver::class])]
 class Customer extends Authenticatable
 {
-    use HasApiTokens, HasUuids, QueryConditionsTrait, WorkflowTrait;
+    use HasApiTokens, HasFactory, HasUuids, QueryConditionsTrait, WorkflowTrait;
 
     protected $table = 'customer';
 

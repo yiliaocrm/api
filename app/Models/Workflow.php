@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\WorkflowStatus;
 use App\Enums\WorkflowType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,41 +14,21 @@ class Workflow extends BaseModel
 {
     use SoftDeletes;
 
-    protected $appends = ['taskTime'];
-
     protected function casts(): array
     {
         return [
-            'active' => 'boolean',
             'all_customer' => 'boolean',
             'type' => WorkflowType::class,
             'status' => WorkflowStatus::class,
-            'nodes' => 'array',
-            'connections' => 'array',
-            'settings' => 'array',
-            'static_data' => 'array',
-            'tags' => 'array',
-            'config' => 'array',
+            'cron' => 'array',
             'rule_chain' => 'array',
-            'task_start_at' => 'datetime',
-            'task_end_at' => 'datetime',
             'last_run_at' => 'datetime',
             'next_run_at' => 'datetime',
+            'dispatch_chunk_size' => 'integer',
+            'dispatch_concurrency' => 'integer',
+            'execution_batch_size' => 'integer',
+            'max_queue_lag' => 'integer',
         ];
-    }
-
-    /**
-     * 访问器：将 task_start_at 和 task_end_at 合并成 taskTime
-     */
-    public function getTaskTimeAttribute()
-    {
-        if ($this->task_start_at && $this->task_end_at) {
-            return [
-                $this->task_start_at->format('Y-m-d'),
-                $this->task_end_at->format('Y-m-d')
-            ];
-        }
-        return [];
     }
 
     /**
@@ -79,7 +60,8 @@ class Workflow extends BaseModel
      */
     public function customerGroups(): BelongsToMany
     {
-        return $this->belongsToMany(CustomerGroup::class, 'workflow_customer_groups', 'workflow_id', 'customer_group_id');
+        return $this->belongsToMany(CustomerGroup::class, 'workflow_customer_groups', 'workflow_id', 'customer_group_id')
+            ->withTimestamps();
     }
 
     /**
@@ -91,59 +73,74 @@ class Workflow extends BaseModel
     }
 
     /**
-     * 工作流配置
+     * 工作流历史版本
      */
-    public function configs(): HasMany
+    public function versions(): HasMany
     {
-        return $this->hasMany(WorkflowConfig::class);
+        return $this->hasMany(WorkflowVersion::class, 'workflow_id');
     }
 
     /**
-     * 获取触发配置
+     * 工作流运行记录
      */
-    public function triggerConfig()
+    public function runs(): HasMany
     {
-        return $this->configs()->where('config_type', 'trigger')->first();
+        return $this->hasMany(WorkflowRun::class);
     }
 
     /**
-     * 获取调度配置
-     */
-    public function scheduleConfig()
-    {
-        return $this->configs()->where('config_type', 'schedule')->first();
-    }
-
-    /**
-     * 激活工作流
+     * 发布工作流
      */
     public function activate(): bool
     {
-        return $this->update(['active' => true, 'status' => WorkflowStatus::ACTIVE]);
+        return $this->update(['status' => WorkflowStatus::ACTIVE]);
     }
 
     /**
-     * 停用工作流
+     * 取消发布工作流
      */
     public function deactivate(): bool
     {
-        return $this->update(['active' => false, 'status' => WorkflowStatus::PAUSED]);
+        return $this->update(['status' => WorkflowStatus::PAUSED]);
     }
 
     /**
-     * 转换为 n8n 格式
+     * 从 rule_chain 中提取周期调度配置
+     *
+     * @return array<string, mixed>|null
      */
-    public function toN8nFormat(): array
+    public function getPeriodicConfigAttribute(): ?array
     {
-        return [
-            'id' => $this->n8n_id,
-            'name' => $this->name,
-            'active' => $this->active,
-            'nodes' => $this->nodes ?? [],
-            'connections' => $this->connections ?? [],
-            'settings' => $this->settings ?? [],
-            'staticData' => $this->static_data ?? [],
-            'tags' => $this->tags ?? [],
-        ];
+        $ruleChain = is_array($this->rule_chain) ? $this->rule_chain : [];
+        $nodes = is_array($ruleChain['nodes'] ?? null) ? $ruleChain['nodes'] : [];
+
+        foreach ($nodes as $node) {
+            if (($node['type'] ?? null) !== 'start_periodic') {
+                continue;
+            }
+
+            foreach (['parameters', 'formData', 'props'] as $field) {
+                $value = $node[$field] ?? null;
+                if (is_array($value)) {
+                    return $value;
+                }
+            }
+
+            return [];
+        }
+
+        return null;
+    }
+
+    /**
+     * 查询作用域：到期待调度的周期型工作流
+     */
+    public function scopePeriodicDue(Builder $query): Builder
+    {
+        return $query
+            ->where('type', WorkflowType::PERIODIC)
+            ->where('status', WorkflowStatus::ACTIVE)
+            ->whereNotNull('next_run_at')
+            ->where('next_run_at', '<=', now());
     }
 }

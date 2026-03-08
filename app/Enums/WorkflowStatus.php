@@ -4,20 +4,14 @@ namespace App\Enums;
 
 enum WorkflowStatus: string
 {
-    case DRAFT = 'draft';
-    case PENDING = 'pending';
     case ACTIVE = 'active';
     case PAUSED = 'paused';
-    case COMPLETED = 'completed';
 
     public function getLabel(): string
     {
         return match ($this) {
-            self::DRAFT => '草稿',
-            self::PENDING => '未开始',
-            self::ACTIVE => '进行中',
-            self::PAUSED => '已暂停',
-            self::COMPLETED => '已结束',
+            self::ACTIVE => '已发布',
+            self::PAUSED => '未发布',
         };
     }
 

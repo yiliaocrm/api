@@ -19,8 +19,8 @@ class WorkflowTriggerEvent implements ShouldBroadcast, ShouldDispatchAfterCommit
      */
     public function __construct(
         public string $eventName,
-        public string $entityType,
-        public string|int $entityId,
+        public string $modelType,
+        public string|int $modelId,
         public array $payload = []
     ) {
         // 使用 redis 连接进行广播
@@ -56,8 +56,8 @@ class WorkflowTriggerEvent implements ShouldBroadcast, ShouldDispatchAfterCommit
     {
         return [
             'event' => $this->eventName,
-            'entity_type' => $this->entityType,
-            'entity_id' => $this->entityId,
+            'model_type' => $this->modelType,
+            'model_id' => $this->modelId,
             'payload' => $this->payload,
             'tenant_id' => tenant('id'),
             'triggered_at' => now()->toIso8601String(),

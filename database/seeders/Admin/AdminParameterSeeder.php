@@ -260,48 +260,6 @@ class AdminParameterSeeder extends Seeder
                 'type' => 'string',
                 'remark' => '高德地图安全密钥',
             ],
-            [
-                'name' => 'workflow_api_url',
-                'value' => '',
-                'type' => 'string',
-                'remark' => '工作流API基础地址',
-            ],
-            [
-                'name' => 'workflow_username',
-                'value' => '',
-                'type' => 'string',
-                'remark' => '工作流API用户名',
-            ],
-            [
-                'name' => 'workflow_password',
-                'value' => '',
-                'type' => 'string',
-                'remark' => '工作流API密码',
-            ],
-            [
-                'name' => 'workflow_timeout',
-                'value' => 30,
-                'type' => 'number',
-                'remark' => '工作流请求超时时间(秒)',
-            ],
-            [
-                'name' => 'workflow_redis_host',
-                'value' => '127.0.0.1:6379',
-                'type' => 'string',
-                'remark' => 'Redis服务地址',
-            ],
-            [
-                'name' => 'workflow_redis_password',
-                'value' => '',
-                'type' => 'string',
-                'remark' => 'Redis密码',
-            ],
-            [
-                'name' => 'workflow_redis_db',
-                'value' => 0,
-                'type' => 'number',
-                'remark' => 'Redis数据库编号',
-            ],
         ];
         // 添加或更新参数
         foreach ($parameters as $parameter) {

@@ -9,6 +9,9 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:customer-group-computing-command')->dailyAt('00:01');
 Schedule::command('app:cleanup-export-files-command')->dailyAt('01:00');
+Schedule::command('app:cleanup-workflow-executions')->dailyAt('01:40');
 Schedule::command('app:customer-product-expired-command')->dailyAt('01:05');
 Schedule::command('app:cleanup-operation-logs')->dailyAt('01:20');
 Schedule::command('app:update-customer-age-command')->dailyAt('02:00');
+Schedule::command('app:workflow-dispatch-waiting-command')->everyMinute();
+Schedule::command('app:workflow-dispatch-periodic-command')->everyMinute()->withoutOverlapping();
