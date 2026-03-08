@@ -100,6 +100,8 @@ class CustomerPhotoController extends Controller
             $request->formData()
         );
 
+        $album->load('photoType:id,name');
+
         return response_success($album);
     }
 }

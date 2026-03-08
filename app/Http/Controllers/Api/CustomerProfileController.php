@@ -2,35 +2,33 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Customer;
-use App\Models\Followup;
-use App\Models\Reservation;
-use App\Models\CustomerPhone;
-use App\Models\CustomerPhoto;
-use App\Models\CustomerPhoneView;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CustomerProfileRequest;
-use Illuminate\Http\JsonResponse;
+use App\Models\Customer;
+use App\Models\CustomerPhone;
+use App\Models\CustomerPhoneView;
+use App\Models\CustomerPhoto;
+use App\Models\Followup;
+use App\Models\Reservation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 
 class CustomerProfileController extends Controller
 {
     /**
      * 加载顾客手机号
-     * @param CustomerProfileRequest $request
-     * @return JsonResponse
      */
     public function phone(CustomerProfileRequest $request): JsonResponse
     {
-        $id    = $request->input('id');
-        $show  = $request->input('show');
+        $id = $request->input('id');
+        $show = $request->input('show');
         $query = CustomerPhone::query()
             ->with([
-                'relationship:id,name'
+                'relationship:id,name',
             ])
             ->where('customer_id', $request->input('customer_id'));
 
-        if (!user()->hasAnyAccess(['superuser', 'app.customer.phone']) && $show) {
+        if (! user()->hasAnyAccess(['superuser', 'app.customer.phone']) && $show) {
             return response_error(msg: '没有权限查看顾客手机号码');
         }
 
@@ -49,8 +47,8 @@ class CustomerProfileController extends Controller
         // 记录查看日志
         if ($show && $id) {
             CustomerPhoneView::query()->create([
-                'phone'       => $data->phone,
-                'user_id'     => user()->id,
+                'phone' => $data->phone,
+                'user_id' => user()->id,
                 'customer_id' => $request->input('customer_id'),
             ]);
         }
@@ -60,8 +58,6 @@ class CustomerProfileController extends Controller
 
     /**
      * 用户画像
-     * @param CustomerProfileRequest $request
-     * @return JsonResponse
      */
     public function profile(CustomerProfileRequest $request): JsonResponse
     {
@@ -76,12 +72,12 @@ class CustomerProfileController extends Controller
         ]);
 
         return response_success([
-            'customer_id'  => $customer->id,
-            'tags'         => $customer->tags,
-            'assets'       => [
+            'customer_id' => $customer->id,
+            'tags' => $customer->tags,
+            'assets' => [
                 'total_payment' => $customer->total_payment,
-                'balance'       => $customer->balance,
-                'amount'        => $customer->amount,
+                'balance' => $customer->balance,
+                'amount' => $customer->amount,
             ],
             'affiliations' => [
                 'consultant' => $customer->consultantUser,
@@ -92,8 +88,6 @@ class CustomerProfileController extends Controller
 
     /**
      * 顾客概览
-     * @param CustomerProfileRequest $request
-     * @return JsonResponse
      */
     public function overview(CustomerProfileRequest $request): JsonResponse
     {
@@ -105,46 +99,44 @@ class CustomerProfileController extends Controller
                 'idcard',
             ])
             ->with([
-                'phone'
+                'phone',
             ])
             ->find($request->input('customer_id'));
+
         return response_success($customer);
     }
 
     /**
      * 顾客照片
-     * @param CustomerProfileRequest $request
-     * @return JsonResponse
      */
     public function photo(CustomerProfileRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
+        $rows = $request->input('rows', 10);
         $query = CustomerPhoto::query()
             ->with([
+                'photoType:id,name',
                 'details' => function ($query) {
                     $query->orderBy('created_at', 'asc');
-                }
+                },
             ])
             ->where('customer_id', $request->input('customer_id'))
+            ->when($request->input('photo_type_id'), fn ($q) => $q->where('photo_type_id', $request->input('photo_type_id')))
             ->orderBy('created_at', 'desc')
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
-
     /**
      * 查询顾客回访记录
-     * @param CustomerProfileRequest $request
-     * @return JsonResponse
      */
     public function followup(CustomerProfileRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'created_at');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'created_at');
         $order = $request->input('order', 'desc');
         $query = Followup::query()
             ->with([
@@ -153,25 +145,23 @@ class CustomerProfileController extends Controller
                 'followupUserInfo:id,name',
             ])
             ->where('customer_id', $request->input('customer_id'))
-            ->when($request->input('status'), fn(Builder $query) => $query->where('status', $request->input('status')))
+            ->when($request->input('status'), fn (Builder $query) => $query->where('status', $request->input('status')))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 报单记录
-     * @param CustomerProfileRequest $request
-     * @return JsonResponse
      */
     public function reservation(CustomerProfileRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'created_at');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'created_at');
         $order = $request->input('order', 'desc');
         $query = Reservation::query()
             ->where('customer_id', $request->input('customer_id'))
@@ -179,8 +169,8 @@ class CustomerProfileController extends Controller
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 }

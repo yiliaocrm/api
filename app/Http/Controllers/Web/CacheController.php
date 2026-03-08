@@ -11,6 +11,7 @@ use App\Models\CustomerGroup;
 use App\Models\CustomerGroupCategory;
 use App\Models\CustomerJob;
 use App\Models\CustomerPhoneRelationship;
+use App\Models\CustomerPhotoType;
 use App\Models\Department;
 use App\Models\DepartmentPickingType;
 use App\Models\ExpenseCategory;
@@ -525,6 +526,16 @@ class CacheController extends Controller
     {
         return response_success(
             CustomerPhoneRelationship::query()->get()
+        );
+    }
+
+    /**
+     * 照片分类
+     */
+    public function customerPhotoType(): JsonResponse
+    {
+        return response_success(
+            CustomerPhotoType::query()->get()
         );
     }
 

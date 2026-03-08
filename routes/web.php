@@ -327,6 +327,7 @@ Route::controller(Web\CacheController::class)->prefix('cache')->group(function (
     Route::get('product-package-type', 'productPackageType');
     Route::get('followup-template-type', 'followupTemplateType');
     Route::get('department-picking-type', 'departmentPickingType');
+    Route::get('customer-photo-type', 'customerPhotoType');
 });
 
 Route::controller(Web\MenuController::class)->prefix('menu')->group(function () {

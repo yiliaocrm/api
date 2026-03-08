@@ -411,6 +411,7 @@ class CustomerProfileController extends Controller
                 'details' => function ($query) {
                     $query->orderBy('created_at', 'asc');
                 },
+                'photoType:id,name',
             ])
             ->when($photoTypeId, fn (Builder $query) => $query->where('photo_type_id', $photoTypeId))
             ->where('customer_id', $request->input('customer_id'))
