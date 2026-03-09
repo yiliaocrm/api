@@ -6,13 +6,13 @@ namespace Tests\Unit\Services;
 
 use App\Services\Admin\HorizonService;
 use Illuminate\Bus\BatchRepository;
+use Illuminate\Support\Facades\Bus;
 use Laravel\Horizon\Contracts\JobRepository;
 use Laravel\Horizon\Contracts\MasterSupervisorRepository;
 use Laravel\Horizon\Contracts\MetricsRepository;
 use Laravel\Horizon\Contracts\SupervisorRepository;
 use Laravel\Horizon\Contracts\TagRepository;
 use Laravel\Horizon\Contracts\WorkloadRepository;
-use Illuminate\Support\Facades\Bus;
 use Laravel\Horizon\Jobs\RetryFailedJob;
 use Tests\TestCase;
 
