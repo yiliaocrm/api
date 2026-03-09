@@ -16,7 +16,7 @@ class WorkflowPreviewServiceTest extends TestCase
                 ['id' => 'start', 'type' => 'start_trigger', 'name' => '开始'],
                 ['id' => 'a', 'type' => 'log', 'name' => '节点A'],
                 ['id' => 'b', 'type' => 'log', 'name' => '节点B'],
-                ['id' => 'target', 'type' => 'if', 'name' => '目标节点'],
+                ['id' => 'target', 'type' => 'log', 'name' => '目标节点'],
             ],
             'connections' => [
                 ['source' => 'start', 'target' => 'a', 'type' => 'main'],

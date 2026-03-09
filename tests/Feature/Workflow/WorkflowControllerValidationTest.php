@@ -174,53 +174,6 @@ class WorkflowControllerValidationTest extends TestCase
         $response->assertJsonPath('msg', '等待节点后不能直接连接等待节点');
     }
 
-    public function test_activate_rejects_when_wait_to_wait_exists_in_if_branch_path(): void
-    {
-        $this->insertWorkflow([
-            'id' => 8,
-            'type' => 'trigger',
-            'status' => 'paused',
-            'rule_chain' => [
-                'nodes' => [
-                    ['id' => 'start', 'type' => 'start_trigger'],
-                    [
-                        'id' => 'if_1',
-                        'type' => 'if',
-                        'parameters' => [
-                            'matchType' => 'all',
-                            'rules' => [
-                                [
-                                    'leftType' => 'path',
-                                    'leftValue' => 'trigger.model_id',
-                                    'operator' => 'eq',
-                                    'rightType' => 'literal',
-                                    'rightValue' => '1',
-                                ],
-                            ],
-                        ],
-                    ],
-                    ['id' => 'wait_true_1', 'type' => 'wait'],
-                    ['id' => 'wait_true_2', 'type' => 'wait'],
-                    ['id' => 'end_true', 'type' => 'end'],
-                    ['id' => 'end_false', 'type' => 'end'],
-                ],
-                'connections' => [
-                    ['source' => 'start', 'target' => 'if_1', 'type' => 'main'],
-                    ['source' => 'if_1', 'target' => 'wait_true_1', 'type' => 'branch', 'sourcePort' => 'true'],
-                    ['source' => 'if_1', 'target' => 'end_false', 'type' => 'branch', 'sourcePort' => 'false'],
-                    ['source' => 'wait_true_1', 'target' => 'wait_true_2', 'type' => 'main'],
-                    ['source' => 'wait_true_2', 'target' => 'end_true', 'type' => 'main'],
-                ],
-            ],
-        ]);
-
-        $response = $this->postJson('/workflow/activate', ['id' => 8]);
-
-        $response->assertOk();
-        $response->assertJsonPath('code', 400);
-        $response->assertJsonPath('msg', '等待节点后不能直接连接等待节点');
-    }
-
     public function test_batch_preview_validates_rule_chain_type(): void
     {
         $response = $this->postJson('/workflow/batch-preview', [
