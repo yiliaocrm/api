@@ -6,6 +6,11 @@ use App\Http\Controllers\Admin\AdminMenuController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ConfigController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\Horizon\HorizonBatchesController;
+use App\Http\Controllers\Admin\Horizon\HorizonDashboardController;
+use App\Http\Controllers\Admin\Horizon\HorizonJobsController;
+use App\Http\Controllers\Admin\Horizon\HorizonMetricsController;
+use App\Http\Controllers\Admin\Horizon\HorizonMonitoringController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\TenantLoginBannerController;
@@ -72,4 +77,48 @@ Route::controller(TenantLoginBannerController::class)->prefix('tenant-login-bann
     Route::get('toggle', 'toggle');
     Route::post('create', 'create');
     Route::post('update', 'update');
+});
+
+// Horizon 队列监控
+Route::prefix('horizon')->group(function () {
+    // Dashboard
+    Route::controller(HorizonDashboardController::class)->group(function () {
+        Route::get('stats', 'stats');
+        Route::get('workload', 'workload');
+        Route::get('masters', 'masters');
+    });
+
+    // Metrics
+    Route::controller(HorizonMetricsController::class)->prefix('metrics')->group(function () {
+        Route::get('jobs', 'jobMetrics');
+        Route::get('jobs/detail', 'jobMetricDetail');
+        Route::get('queues', 'queueMetrics');
+        Route::get('queues/detail', 'queueMetricDetail');
+    });
+
+    // Jobs
+    Route::controller(HorizonJobsController::class)->prefix('jobs')->group(function () {
+        Route::get('pending', 'pending');
+        Route::get('completed', 'completed');
+        Route::get('failed', 'failed');
+        Route::get('failed/detail', 'failedDetail');
+        Route::get('retry', 'retry');
+        Route::get('silenced', 'silenced');
+        Route::get('detail', 'detail');
+    });
+
+    // Monitoring
+    Route::controller(HorizonMonitoringController::class)->prefix('monitoring')->group(function () {
+        Route::get('index', 'index');
+        Route::get('store', 'store');
+        Route::get('jobs', 'jobs');
+        Route::get('destroy', 'destroy');
+    });
+
+    // Batches
+    Route::controller(HorizonBatchesController::class)->prefix('batches')->group(function () {
+        Route::get('index', 'index');
+        Route::get('detail', 'detail');
+        Route::get('retry', 'retry');
+    });
 });
