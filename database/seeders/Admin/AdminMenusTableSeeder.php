@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders\Admin;
 
@@ -14,12 +14,12 @@ class AdminMenusTableSeeder extends Seeder
      */
     public function run()
     {
-
+        
 
         \DB::table('admin_menus')->delete();
-
+        
         \DB::table('admin_menus')->insert(array (
-            0 =>
+            0 => 
             array (
                 'id' => 1,
                 'parentid' => 0,
@@ -37,7 +37,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 16:15:40',
                 'updated_at' => '2025-05-04 16:59:00',
             ),
-            1 =>
+            1 => 
             array (
                 'id' => 2,
                 'parentid' => 1,
@@ -55,7 +55,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:25:25',
                 'updated_at' => '2025-05-04 16:58:06',
             ),
-            2 =>
+            2 => 
             array (
                 'id' => 3,
                 'parentid' => 0,
@@ -73,7 +73,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:30:17',
                 'updated_at' => '2024-05-22 19:30:29',
             ),
-            3 =>
+            3 => 
             array (
                 'id' => 4,
                 'parentid' => 3,
@@ -91,7 +91,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:31:44',
                 'updated_at' => '2025-05-05 10:39:24',
             ),
-            4 =>
+            4 => 
             array (
                 'id' => 5,
                 'parentid' => 3,
@@ -109,7 +109,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:33:30',
                 'updated_at' => '2025-05-05 10:39:30',
             ),
-            5 =>
+            5 => 
             array (
                 'id' => 6,
                 'parentid' => 0,
@@ -127,7 +127,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:42:00',
                 'updated_at' => '2024-05-22 19:42:00',
             ),
-            6 =>
+            6 => 
             array (
                 'id' => 7,
                 'parentid' => 6,
@@ -145,7 +145,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:53:27',
                 'updated_at' => '2025-09-18 01:05:49',
             ),
-            7 =>
+            7 => 
             array (
                 'id' => 8,
                 'parentid' => 6,
@@ -163,7 +163,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2024-05-22 19:54:15',
                 'updated_at' => '2025-09-18 03:41:45',
             ),
-            8 =>
+            8 => 
             array (
                 'id' => 10,
                 'parentid' => 1,
@@ -181,7 +181,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2025-05-04 17:28:33',
                 'updated_at' => '2025-05-04 17:28:33',
             ),
-            9 =>
+            9 => 
             array (
                 'id' => 11,
                 'parentid' => 3,
@@ -199,7 +199,7 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2025-05-05 10:38:48',
                 'updated_at' => '2025-05-05 10:39:19',
             ),
-            10 =>
+            10 => 
             array (
                 'id' => 12,
                 'parentid' => 3,
@@ -217,8 +217,170 @@ class AdminMenusTableSeeder extends Seeder
                 'created_at' => '2025-10-09 16:36:45',
                 'updated_at' => '2025-10-09 16:38:50',
             ),
+            11 => 
+            array (
+                'id' => 13,
+                'parentid' => 1,
+                'name' => 'horizon',
+                'title' => '队列监控',
+                'path' => '/horizon',
+                'meta' => '{"title":"\\u961f\\u5217\\u76d1\\u63a7","icon":"el-icon-monitor","active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => NULL,
+                'child' => 1,
+                'permission' => '',
+                'order' => 3,
+                'keyword' => 'duiliejiankong,dljk,队列监控',
+                'remark' => NULL,
+                'tree' => '0-1-13',
+                'created_at' => '2026-03-09 12:37:21',
+                'updated_at' => '2026-03-09 12:38:28',
+            ),
+            12 => 
+            array (
+                'id' => 14,
+                'parentid' => 13,
+                'name' => 'HorizonDashboardIndex',
+                'title' => '仪表盘',
+                'path' => '/horizon/dashboard',
+                'meta' => '{"title":"\\u4eea\\u8868\\u76d8","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/dashboard/index',
+                'child' => 0,
+                'permission' => '',
+                'order' => 1,
+                'keyword' => 'yibiaopan,ybp,仪表盘',
+                'remark' => '状态概览、KPI卡片、队列负载',
+                'tree' => '0-1-13-14',
+                'created_at' => '2026-03-09 12:38:28',
+                'updated_at' => '2026-03-09 12:47:59',
+            ),
+            13 => 
+            array (
+                'id' => 15,
+                'parentid' => 13,
+                'name' => 'HorizonJobsPending',
+                'title' => '待处理任务',
+                'path' => '/horizon/jobs/pending',
+                'meta' => '{"title":"\\u5f85\\u5904\\u7406\\u4efb\\u52a1","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/jobs/pending',
+                'child' => 0,
+                'permission' => '',
+                'order' => 2,
+                'keyword' => 'daichulirenwu,dclrw,待处理任务',
+                'remark' => '等待执行的任务列表',
+                'tree' => '0-1-13-15',
+                'created_at' => '2026-03-09 12:40:38',
+                'updated_at' => '2026-03-09 12:48:08',
+            ),
+            14 => 
+            array (
+                'id' => 16,
+                'parentid' => 13,
+                'name' => 'HorizonJobsCompleted',
+                'title' => '已完成任务',
+                'path' => '/horizon/jobs/completed',
+                'meta' => '{"title":"\\u5df2\\u5b8c\\u6210\\u4efb\\u52a1","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/jobs/completed',
+                'child' => 0,
+                'permission' => '',
+                'order' => 3,
+                'keyword' => 'yiwanchengrenwu,ywcrw,已完成任务',
+                'remark' => '已完成的任务列表',
+                'tree' => '0-1-13-16',
+                'created_at' => '2026-03-09 12:41:54',
+                'updated_at' => '2026-03-09 12:48:24',
+            ),
+            15 => 
+            array (
+                'id' => 17,
+                'parentid' => 13,
+                'name' => 'HorizonJobsFailed',
+                'title' => '失败任务',
+                'path' => '/horizon/jobs/failed',
+                'meta' => '{"title":"\\u5931\\u8d25\\u4efb\\u52a1","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/jobs/failed',
+                'child' => 0,
+                'permission' => '',
+                'order' => 4,
+                'keyword' => 'shibairenwu,sbrw,失败任务',
+                'remark' => '失败任务列表，支持重试',
+                'tree' => '0-1-13-17',
+                'created_at' => '2026-03-09 12:42:26',
+                'updated_at' => '2026-03-09 12:48:32',
+            ),
+            16 => 
+            array (
+                'id' => 18,
+                'parentid' => 13,
+                'name' => 'HorizonJobsSilenced',
+                'title' => '静默任务',
+                'path' => '/horizon/jobs/silenced',
+                'meta' => '{"title":"\\u9759\\u9ed8\\u4efb\\u52a1","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/jobs/silenced',
+                'child' => 0,
+                'permission' => '',
+                'order' => 5,
+                'keyword' => 'jingmorenwu,jmrw,静默任务',
+                'remark' => '被静默的任务列表',
+                'tree' => '0-1-13-18',
+                'created_at' => '2026-03-09 12:43:04',
+                'updated_at' => '2026-03-09 12:48:41',
+            ),
+            17 => 
+            array (
+                'id' => 19,
+                'parentid' => 13,
+                'name' => 'HorizonMetricsIndex',
+                'title' => '性能指标',
+                'path' => '/horizon/metrics/index',
+                'meta' => '{"title":"\\u6027\\u80fd\\u6307\\u6807","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/metrics/index',
+                'child' => 0,
+                'permission' => '',
+                'order' => 6,
+                'keyword' => 'xingnengzhibiao,xnzb,性能指标',
+                'remark' => 'Job/队列性能图表',
+                'tree' => '0-1-13-19',
+                'created_at' => '2026-03-09 12:43:32',
+                'updated_at' => '2026-03-09 12:48:48',
+            ),
+            18 => 
+            array (
+                'id' => 20,
+                'parentid' => 13,
+                'name' => 'HorizonBatchesIndex',
+                'title' => '批处理',
+                'path' => '/horizon/batches/index',
+                'meta' => '{"title":"\\u6279\\u5904\\u7406","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/batches/index',
+                'child' => 0,
+                'permission' => '',
+                'order' => 7,
+                'keyword' => 'pichuli,pcl,批处理',
+                'remark' => '批处理任务管理',
+                'tree' => '0-1-13-20',
+                'created_at' => '2026-03-09 12:44:22',
+                'updated_at' => '2026-03-09 12:44:22',
+            ),
+            19 => 
+            array (
+                'id' => 21,
+                'parentid' => 13,
+                'name' => 'HorizonMonitoringIndex',
+                'title' => '标签监控',
+                'path' => '/horizon/monitoring/index',
+                'meta' => '{"title":"\\u6807\\u7b7e\\u76d1\\u63a7","icon":null,"active":null,"color":null,"type":"menu","fullpage":false,"tag":null}',
+                'component' => 'horizon/monitoring/index',
+                'child' => 0,
+                'permission' => '',
+                'order' => 8,
+                'keyword' => 'biaoqianjiankong,bqjk,标签监控',
+                'remark' => '标签监控增删查',
+                'tree' => '0-1-13-21',
+                'created_at' => '2026-03-09 12:45:03',
+                'updated_at' => '2026-03-09 12:45:03',
+            ),
         ));
-
-
+        
+        
     }
 }
