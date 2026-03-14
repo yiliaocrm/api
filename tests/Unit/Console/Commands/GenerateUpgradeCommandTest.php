@@ -13,7 +13,7 @@ class GenerateUpgradeCommandTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->command = new GenerateUpgradeCommand();
+        $this->command = new GenerateUpgradeCommand;
     }
 
     /**
@@ -250,7 +250,7 @@ class GenerateUpgradeCommandTest extends TestCase
             '    public function up(): void',                       // line 8
             '    {',                                                 // line 9
             "        Schema::create('customer_photos', function (Blueprint \$table) {", // line 10
-            "            \$table->id();",                           // line 11
+            '            $table->id();',                           // line 11
             "            \$table->string('name');",                 // line 12
             '        });',                                           // line 13
             '    }',                                                 // line 14
@@ -475,9 +475,9 @@ class GenerateUpgradeCommandTest extends TestCase
     {
         $changes = [
             [
-                'action'         => 'replace',
-                'column'         => 'desc',
-                'definition'     => "\$table->text('desc')",
+                'action' => 'replace',
+                'column' => 'desc',
+                'definition' => "\$table->text('desc')",
                 'old_definition' => "\$table->string('desc')",
             ],
         ];
@@ -494,9 +494,9 @@ class GenerateUpgradeCommandTest extends TestCase
     {
         $changes = [
             [
-                'action'         => 'comment',
-                'column'         => 'status',
-                'definition'     => "\$table->tinyInteger('status')->comment('新注释')",
+                'action' => 'comment',
+                'column' => 'status',
+                'definition' => "\$table->tinyInteger('status')->comment('新注释')",
                 'old_definition' => "\$table->tinyInteger('status')->comment('旧注释')",
             ],
         ];
@@ -584,9 +584,13 @@ class GenerateUpgradeCommandTest extends TestCase
 
         $this->assertStringContainsString('class Version200 extends BaseVersion', $code);
         $this->assertStringContainsString("return '2.0.0'", $code);
-        $this->assertStringContainsString('updateHisVersion', $code);
-        $this->assertStringContainsString("'his_version'", $code);
-        $this->assertStringContainsString("'2.0.0'", $code);
+        // 不再生成 updateHisVersion（由命令自动管理）
+        $this->assertStringNotContainsString('updateHisVersion', $code);
+        // 不再引入 Tenancy 和 AdminParameter
+        $this->assertStringNotContainsString('use Stancl\Tenancy\Facades\Tenancy', $code);
+        $this->assertStringNotContainsString('use App\Models\Admin\AdminParameter', $code);
+        // 应包含 globalUp TODO 占位
+        $this->assertStringContainsString('globalUp', $code);
         // 无 Schema 操作时不导入 Blueprint/Schema
         $this->assertStringNotContainsString('use Illuminate\Database\Schema\Blueprint', $code);
         $this->assertStringNotContainsString('use Illuminate\Support\Facades\Schema', $code);
@@ -606,23 +610,31 @@ class GenerateUpgradeCommandTest extends TestCase
         $this->assertStringContainsString('use Illuminate\Database\Schema\Blueprint;', $code);
         $this->assertStringContainsString('use Illuminate\Support\Facades\Schema;', $code);
         $this->assertStringContainsString('创建表 items', $code);
-        $this->assertStringContainsString("Schema::create('items'", $code);
-        $this->assertStringNotContainsString('Admin 迁移', $code);
+        // 应使用 createTableIfNotExists 替代 Schema::create
+        $this->assertStringContainsString('createTableIfNotExists', $code);
+        // 应在 tenantUp 方法内
+        $this->assertStringContainsString('public function tenantUp()', $code);
+        // 应使用 tenantInfo 而非 $tenantTag
+        $this->assertStringContainsString('tenantInfo', $code);
+        $this->assertStringNotContainsString('$tenantTag', $code);
+        // 不应包含 centralUp 非空方法体（无 admin 操作）
+        $this->assertStringNotContainsString('centralUp', $code);
     }
 
-    public function test_build_code_with_admin_ops_wraps_in_central(): void
+    public function test_build_code_with_admin_ops_in_central_up(): void
     {
         $ops = [
             'tenant' => [],
-            'admin'  => [
+            'admin' => [
                 ['type' => 'create', 'code' => "Schema::create('settings', function (Blueprint \$table) {\n    \$table->id();\n})", 'table' => 'settings'],
             ],
         ];
 
         $code = $this->invoke('buildUpgradeCode', 'Version103', '1.0.3', $ops);
 
-        $this->assertStringContainsString('Tenancy::central(function ()', $code);
-        $this->assertStringContainsString('Admin 迁移（中央数据库）', $code);
+        // admin 操作应在 centralUp 方法内，不再用 Tenancy::central 包裹
+        $this->assertStringContainsString('public function centralUp()', $code);
+        $this->assertStringNotContainsString('Tenancy::central', $code);
         $this->assertStringContainsString("Schema::create('settings'", $code);
     }
 
@@ -639,9 +651,13 @@ class GenerateUpgradeCommandTest extends TestCase
 
         $code = $this->invoke('buildUpgradeCode', 'Version110', '1.1.0', $ops);
 
+        // tenant 操作在 tenantUp 中
+        $this->assertStringContainsString('public function tenantUp()', $code);
         $this->assertStringContainsString('创建表 orders', $code);
+        // admin 操作在 centralUp 中，不需要 Tenancy::central 包裹
+        $this->assertStringContainsString('public function centralUp()', $code);
         $this->assertStringContainsString('修改表 config', $code);
-        $this->assertStringContainsString('Tenancy::central(function ()', $code);
+        $this->assertStringNotContainsString('Tenancy::central', $code);
     }
 
     public function test_build_code_generates_valid_php_syntax(): void
@@ -659,10 +675,10 @@ class GenerateUpgradeCommandTest extends TestCase
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'upgrade_test_');
         file_put_contents($tmpFile, $code);
-        exec("php -l " . escapeshellarg($tmpFile) . " 2>&1", $output, $exitCode);
+        exec('php -l '.escapeshellarg($tmpFile).' 2>&1', $output, $exitCode);
         unlink($tmpFile);
 
-        $this->assertEquals(0, $exitCode, "Generated PHP has syntax errors:\n" . implode("\n", $output));
+        $this->assertEquals(0, $exitCode, "Generated PHP has syntax errors:\n".implode("\n", $output));
     }
 
     public function test_build_code_uses_are_sorted(): void
@@ -673,14 +689,16 @@ class GenerateUpgradeCommandTest extends TestCase
 
         $code = $this->invoke('buildUpgradeCode', 'Version100', '1.0.0', $ops);
 
-        $adminParamPos = strpos($code, 'use App\Models\Admin\AdminParameter');
         $blueprintPos = strpos($code, 'use Illuminate\Database\Schema\Blueprint');
         $schemaPos = strpos($code, 'use Illuminate\Support\Facades\Schema');
-        $tenancyPos = strpos($code, 'use Stancl\Tenancy\Facades\Tenancy');
 
-        $this->assertLessThan($blueprintPos, $adminParamPos);
+        $this->assertNotFalse($blueprintPos);
+        $this->assertNotFalse($schemaPos);
         $this->assertLessThan($schemaPos, $blueprintPos);
-        $this->assertLessThan($tenancyPos, $schemaPos);
+
+        // 不应包含旧的 use 语句
+        $this->assertStringNotContainsString('use App\Models\Admin\AdminParameter', $code);
+        $this->assertStringNotContainsString('use Stancl\Tenancy\Facades\Tenancy', $code);
     }
 
     // ========== extractTableNamesFromContent ==========
@@ -764,8 +782,8 @@ class GenerateUpgradeCommandTest extends TestCase
         $ops = [
             'tenant' => [
                 [
-                    'type'  => 'drop',
-                    'code'  => "// TODO: Review - 确认是否需要删除表 old_table\n        Schema::dropIfExists('old_table')",
+                    'type' => 'drop',
+                    'code' => "// TODO: Review - 确认是否需要删除表 old_table\n        Schema::dropIfExists('old_table')",
                     'table' => 'old_table',
                 ],
             ],
@@ -779,14 +797,14 @@ class GenerateUpgradeCommandTest extends TestCase
         $this->assertStringContainsString('TODO: Review', $code);
     }
 
-    public function test_build_code_with_admin_drop_wraps_in_central(): void
+    public function test_build_code_with_admin_drop_in_central_up(): void
     {
         $ops = [
             'tenant' => [],
-            'admin'  => [
+            'admin' => [
                 [
-                    'type'  => 'drop',
-                    'code'  => "// TODO: Review - 确认是否需要删除表 admin_old\n        Schema::dropIfExists('admin_old')",
+                    'type' => 'drop',
+                    'code' => "// TODO: Review - 确认是否需要删除表 admin_old\n        Schema::dropIfExists('admin_old')",
                     'table' => 'admin_old',
                 ],
             ],
@@ -794,7 +812,9 @@ class GenerateUpgradeCommandTest extends TestCase
 
         $code = $this->invoke('buildUpgradeCode', 'Version200', '2.0.0', $ops);
 
-        $this->assertStringContainsString('Tenancy::central(function ()', $code);
+        // admin 操作在 centralUp 中，不再用 Tenancy::central 包裹
+        $this->assertStringContainsString('public function centralUp()', $code);
+        $this->assertStringNotContainsString('Tenancy::central', $code);
         $this->assertStringContainsString('删除表 admin_old', $code);
         $this->assertStringContainsString("Schema::dropIfExists('admin_old')", $code);
     }
@@ -815,10 +835,10 @@ class GenerateUpgradeCommandTest extends TestCase
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'upgrade_test_');
         file_put_contents($tmpFile, $code);
-        exec("php -l " . escapeshellarg($tmpFile) . " 2>&1", $output, $exitCode);
+        exec('php -l '.escapeshellarg($tmpFile).' 2>&1', $output, $exitCode);
         unlink($tmpFile);
 
-        $this->assertEquals(0, $exitCode, "Generated PHP has syntax errors:\n" . implode("\n", $output));
+        $this->assertEquals(0, $exitCode, "Generated PHP has syntax errors:\n".implode("\n", $output));
     }
 
     // ========== handle 集成测试 ==========

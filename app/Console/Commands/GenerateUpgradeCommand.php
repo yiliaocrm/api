@@ -18,6 +18,7 @@ class GenerateUpgradeCommand extends Command
         $baseTag = $this->getBaseTag();
         if (! $baseTag) {
             $this->error('未找到 git tag，请先创建一个版本 tag（如 git tag v1.0.0）');
+
             return self::FAILURE;
         }
 
@@ -26,11 +27,12 @@ class GenerateUpgradeCommand extends Command
         $nextVersion = $this->option('ver')
             ? ltrim($this->option('ver'), 'v')
             : $this->calculateNextVersion($baseTag);
-        $className = 'Version' . str_replace('.', '', $nextVersion);
+        $className = 'Version'.str_replace('.', '', $nextVersion);
         $filePath = app_path("Upgrades/Versions/{$className}.php");
 
         if (file_exists($filePath)) {
             $this->error("版本类 {$className} 已存在: {$filePath}");
+
             return self::FAILURE;
         }
 
@@ -53,6 +55,7 @@ class GenerateUpgradeCommand extends Command
             $this->line($code);
             $this->newLine();
             $this->info('（dry-run 模式，未写入文件）');
+
             return self::SUCCESS;
         }
 
@@ -107,9 +110,9 @@ class GenerateUpgradeCommand extends Command
         $deleted = $this->gitDiffFiles($tag, 'D', $basePath);
 
         return [
-            'added'    => $added,
+            'added' => $added,
             'modified' => $modified,
-            'deleted'  => $deleted,
+            'deleted' => $deleted,
         ];
     }
 
@@ -148,7 +151,8 @@ class GenerateUpgradeCommand extends Command
     private function displayChangeSummary(array $changes): void
     {
         if (empty($changes['added']) && empty($changes['modified']) && empty($changes['deleted'])) {
-            $this->info('未检测到 migration 变动，将生成仅含 updateHisVersion() 的最小版本类');
+            $this->info('未检测到 migration 变动，将生成最小版本类');
+
             return;
         }
 
@@ -192,7 +196,7 @@ class GenerateUpgradeCommand extends Command
     {
         $operations = [
             'tenant' => [],
-            'admin'  => [],
+            'admin' => [],
         ];
 
         // 解析新增 migration
@@ -247,8 +251,8 @@ class GenerateUpgradeCommand extends Command
             $block = $this->extractBalancedBlock($content, $pos);
             if ($block) {
                 $schemas[] = [
-                    'type'  => 'create',
-                    'code'  => $block,
+                    'type' => 'create',
+                    'code' => $block,
                     'table' => $this->extractTableNameFromCode($block),
                 ];
             }
@@ -275,8 +279,8 @@ class GenerateUpgradeCommand extends Command
 
         foreach ($tableNames as $tableName) {
             $schemas[] = [
-                'type'  => 'drop',
-                'code'  => "// TODO: Review - 确认是否需要删除表 {$tableName}（来自已删除的 migration: " . basename($file) . "）\n        Schema::dropIfExists('{$tableName}')",
+                'type' => 'drop',
+                'code' => "// TODO: Review - 确认是否需要删除表 {$tableName}（来自已删除的 migration: ".basename($file)."）\n        Schema::dropIfExists('{$tableName}')",
                 'table' => $tableName,
             ];
         }
@@ -390,8 +394,8 @@ class GenerateUpgradeCommand extends Command
             $code = $this->buildTableModification($tableName, $columnChanges);
             if ($code) {
                 $results[] = [
-                    'type'  => 'modify',
-                    'code'  => $code,
+                    'type' => 'modify',
+                    'code' => $code,
                     'table' => $tableName,
                 ];
             }
@@ -407,7 +411,7 @@ class GenerateUpgradeCommand extends Command
     protected function extractColumnOrder(string $fileContent, string $tableName): array
     {
         // 找到 Schema::create('tableName', ...) 块
-        $pattern = "/Schema::create\s*\(\s*['\"]" . preg_quote($tableName, '/') . "['\"]/";
+        $pattern = "/Schema::create\s*\(\s*['\"]".preg_quote($tableName, '/')."['\"]/";
         if (! preg_match($pattern, $fileContent, $m, PREG_OFFSET_CAPTURE)) {
             return [];
         }
@@ -434,18 +438,21 @@ class GenerateUpgradeCommand extends Command
                 }
 
                 $columns[] = $colName;
+
                 continue;
             }
 
             // 处理 $table->id() -> 'id' (或自定义名称)
             if (preg_match('/\$table->id\s*\(\s*(?:[\'"](\w+)[\'"])?\s*\)/', $trimmed, $idMatch)) {
                 $columns[] = $idMatch[1] ?? 'id';
+
                 continue;
             }
 
             // 处理 $table->uuid() -> 'uuid' (或自定义名称)
             if (preg_match('/\$table->uuid\s*\(\s*(?:[\'"](\w+)[\'"])?\s*\)/', $trimmed, $uuidMatch)) {
                 $columns[] = $uuidMatch[1] ?? 'uuid';
+
                 continue;
             }
 
@@ -453,6 +460,7 @@ class GenerateUpgradeCommand extends Command
             if (preg_match('/\$table->timestamps\s*\(/', $trimmed)) {
                 $columns[] = 'created_at';
                 $columns[] = 'updated_at';
+
                 continue;
             }
 
@@ -460,18 +468,21 @@ class GenerateUpgradeCommand extends Command
             if (preg_match('/\$table->nullableTimestamps\s*\(/', $trimmed)) {
                 $columns[] = 'created_at';
                 $columns[] = 'updated_at';
+
                 continue;
             }
 
             // 处理 softDeletes() -> deleted_at
             if (preg_match('/\$table->softDeletes\s*\(/', $trimmed)) {
                 $columns[] = 'deleted_at';
+
                 continue;
             }
 
             // 处理 rememberToken() -> remember_token
             if (preg_match('/\$table->rememberToken\s*\(/', $trimmed)) {
                 $columns[] = 'remember_token';
+
                 continue;
             }
         }
@@ -527,13 +538,14 @@ class GenerateUpgradeCommand extends Command
                     $hunks[] = $currentHunk;
                 }
                 $currentHunk = [
-                    'old_start'     => (int) $m[1],
-                    'old_count'     => ! empty($m[2]) ? (int) $m[2] : 1,
-                    'new_start'     => (int) $m[3],
-                    'new_count'     => ! empty($m[4]) ? (int) $m[4] : 1,
-                    'added_lines'   => [],
+                    'old_start' => (int) $m[1],
+                    'old_count' => ! empty($m[2]) ? (int) $m[2] : 1,
+                    'new_start' => (int) $m[3],
+                    'new_count' => ! empty($m[4]) ? (int) $m[4] : 1,
+                    'added_lines' => [],
                     'removed_lines' => [],
                 ];
+
                 continue;
             }
 
@@ -595,8 +607,8 @@ class GenerateUpgradeCommand extends Command
         foreach ($added as $colName => $definition) {
             if (! isset($removed[$colName])) {
                 $changes[] = [
-                    'action'     => 'add',
-                    'column'     => $colName,
+                    'action' => 'add',
+                    'column' => $colName,
                     'definition' => $definition,
                 ];
             }
@@ -606,8 +618,8 @@ class GenerateUpgradeCommand extends Command
         foreach ($removed as $colName => $definition) {
             if (! isset($added[$colName])) {
                 $changes[] = [
-                    'action'     => 'drop',
-                    'column'     => $colName,
+                    'action' => 'drop',
+                    'column' => $colName,
                     'definition' => $definition,
                 ];
             }
@@ -622,18 +634,19 @@ class GenerateUpgradeCommand extends Command
                 // comment 变更也需要生成升级代码
                 if ($this->isOnlyCommentChange($addedDef, $removedDef)) {
                     $changes[] = [
-                        'action'         => 'comment',
-                        'column'         => $colName,
-                        'definition'     => $definition,
+                        'action' => 'comment',
+                        'column' => $colName,
+                        'definition' => $definition,
                         'old_definition' => $removed[$colName],
                     ];
+
                     continue;
                 }
 
                 $changes[] = [
-                    'action'         => 'replace',
-                    'column'         => $colName,
-                    'definition'     => $definition,
+                    'action' => 'replace',
+                    'column' => $colName,
+                    'definition' => $definition,
                     'old_definition' => $removed[$colName],
                 ];
             }
@@ -698,7 +711,7 @@ class GenerateUpgradeCommand extends Command
         foreach ($columnChanges as $change) {
             switch ($change['action']) {
                 case 'add':
-                    $lines[] = '            ' . $this->appendAfter($change) . ';';
+                    $lines[] = '            '.$this->appendAfter($change).';';
                     break;
 
                 case 'drop':
@@ -706,7 +719,7 @@ class GenerateUpgradeCommand extends Command
                     break;
 
                 case 'comment':
-                    $lines[] = '            ' . $this->appendAfter($change) . '->change();';
+                    $lines[] = '            '.$this->appendAfter($change).'->change();';
                     break;
 
                 case 'replace':
@@ -720,19 +733,19 @@ class GenerateUpgradeCommand extends Command
         $replaceLines = [];
         foreach ($columnChanges as $change) {
             if ($change['action'] === 'replace') {
-                $replaceLines[] = '            ' . $this->appendAfter($change) . ';';
+                $replaceLines[] = '            '.$this->appendAfter($change).';';
             }
         }
 
         $code = "Schema::table('{$tableName}', function (Blueprint \$table) {\n";
-        $code .= implode("\n", $lines) . "\n";
+        $code .= implode("\n", $lines)."\n";
         $code .= '        })';
 
         if (! empty($replaceLines)) {
             $code .= ";\n\n";
             $code .= "        // TODO: Review - 重新添加变更后的列\n";
             $code .= "        Schema::table('{$tableName}', function (Blueprint \$table) {\n";
-            $code .= implode("\n", $replaceLines) . "\n";
+            $code .= implode("\n", $replaceLines)."\n";
             $code .= '        })';
         }
 
@@ -769,7 +782,7 @@ class GenerateUpgradeCommand extends Command
             $key = $op['table'];
             if (isset($seen[$key])) {
                 // 合并代码
-                $merged[$seen[$key]]['code'] .= ";\n\n        " . $op['code'];
+                $merged[$seen[$key]]['code'] .= ";\n\n        ".$op['code'];
             } else {
                 $seen[$key] = count($merged);
                 $merged[] = $op;
@@ -780,9 +793,9 @@ class GenerateUpgradeCommand extends Command
     }
 
     /**
-     * 渲染 Schema 操作代码，处理缩进
+     * 渲染 Schema 操作代码（租户阶段使用幂等方法和 tenantInfo）
      */
-    private function renderSchemaOperations(array $operations, int $baseIndent = 2): string
+    private function renderTenantSchemaOperations(array $operations, int $baseIndent = 2): string
     {
         $indent = str_repeat('    ', $baseIndent);
         $lines = [];
@@ -791,12 +804,43 @@ class GenerateUpgradeCommand extends Command
             $table = $op['table'] ?? 'unknown';
             $type = match ($op['type']) {
                 'create' => '创建表',
-                'drop'   => '删除表',
-                default  => '修改表',
+                'drop' => '删除表',
+                default => '修改表',
             };
 
-            $lines[] = "{$indent}info(\"\$tenantTag {$type} {$table}\");";
-            $lines[] = "{$indent}" . $op['code'] . ';';
+            $lines[] = "{$indent}\$this->tenantInfo('{$type} {$table}');";
+
+            // 将 Schema::create 替换为 $this->createTableIfNotExists
+            $code = $op['code'];
+            if ($op['type'] === 'create') {
+                $code = preg_replace('/Schema::create\s*\(/', '$this->createTableIfNotExists(', $code);
+            }
+
+            $lines[] = "{$indent}".$code.';';
+            $lines[] = '';
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * 渲染 Schema 操作代码（中央阶段直接执行）
+     */
+    private function renderCentralSchemaOperations(array $operations, int $baseIndent = 2): string
+    {
+        $indent = str_repeat('    ', $baseIndent);
+        $lines = [];
+
+        foreach ($operations as $op) {
+            $table = $op['table'] ?? 'unknown';
+            $type = match ($op['type']) {
+                'create' => '创建表',
+                'drop' => '删除表',
+                default => '修改表',
+            };
+
+            $lines[] = "{$indent}\$this->info('{$type} {$table}');";
+            $lines[] = "{$indent}".$op['code'].';';
             $lines[] = '';
         }
 
@@ -814,60 +858,89 @@ class GenerateUpgradeCommand extends Command
 
         // 构建 use 语句
         $uses = [];
-        $uses[] = 'use App\Models\Admin\AdminParameter;';
         if ($hasSchemaOps) {
             $uses[] = 'use Illuminate\Database\Schema\Blueprint;';
             $uses[] = 'use Illuminate\Support\Facades\Schema;';
         }
-        $uses[] = 'use Stancl\Tenancy\Facades\Tenancy;';
         sort($uses);
 
-        // 构建 upgrade 方法体
-        $upgradeBody = '';
-
-        // 租户迁移操作
-        if ($hasTenantOps) {
-            $upgradeBody .= $this->renderSchemaOperations($schemaOperations['tenant']);
-        }
-
-        // Admin 迁移操作（包裹在 Tenancy::central 中）
+        // 构建 centralUp 方法体
+        $centralBody = '';
         if ($hasAdminOps) {
-            if ($hasTenantOps) {
-                $upgradeBody .= "\n";
-            }
-            $upgradeBody .= "        // Admin 迁移（中央数据库）\n";
-            $upgradeBody .= "        Tenancy::central(function () {\n";
-
-            foreach ($schemaOperations['admin'] as $op) {
-                $table = $op['table'] ?? 'unknown';
-                $type = match ($op['type']) {
-                    'create' => '创建表',
-                    'drop'   => '删除表',
-                    default  => '修改表',
-                };
-                $upgradeBody .= "            info(\"\$tenantTag {$type} {$table}\");\n";
-                // 给 admin 操作增加额外缩进
-                $code = $op['code'];
-                $code = str_replace("\n", "\n    ", $code);
-                $upgradeBody .= "            {$code};\n\n";
-            }
-
-            $upgradeBody = rtrim($upgradeBody) . "\n";
-            $upgradeBody .= "        });\n\n";
+            $centralBody = $this->renderCentralSchemaOperations($schemaOperations['admin']);
+            $centralBody = rtrim($centralBody);
         }
 
-        // updateHisVersion 调用
-        $upgradeBody .= "        // 更新系统版本号\n";
-        $upgradeBody .= "        \$this->updateHisVersion();\n\n";
-        $upgradeBody .= "        info(\"\$tenantTag {$version} 版本升级完成\");";
+        // 构建 tenantUp 方法体
+        $tenantBody = '';
+        if ($hasTenantOps) {
+            $tenantBody = $this->renderTenantSchemaOperations($schemaOperations['tenant']);
+            $tenantBody = rtrim($tenantBody);
+        }
+
+        // 生成方法块
+        $methods = '';
+
+        // centralUp（仅在有 admin 操作时生成非空方法）
+        if ($hasAdminOps) {
+            $methods .= <<<PHP
+
+    /**
+     * 中央数据库变更
+     */
+    public function centralUp(): void
+    {
+        \$this->info('开始执行 {$version} centralUp');
+
+{$centralBody}
+
+        \$this->info('{$version} centralUp 完成');
+    }
+
+PHP;
+        }
+
+        // tenantUp（仅在有 tenant 操作时生成非空方法）
+        if ($hasTenantOps) {
+            if ($hasAdminOps) {
+                $methods .= "\n";
+            }
+            $methods .= <<<PHP
+
+    /**
+     * 租户数据库变更
+     */
+    public function tenantUp(): void
+    {
+        \$this->tenantInfo('开始执行 {$version} 版本升级');
+
+{$tenantBody}
+
+        \$this->tenantInfo('{$version} 版本升级完成');
+    }
+
+PHP;
+        }
+
+        // globalUp 总是生成 TODO 占位
+        $methods .= <<<'PHP'
+
+    /**
+     * 全局操作
+     */
+    public function globalUp(): void
+    {
+        // TODO: 如需执行全局操作（如菜单同步），请在此方法中实现
+    }
+PHP;
+
+        $usesBlock = ! empty($uses) ? "\n".$this->formatUses($uses)."\n" : '';
 
         $code = <<<PHP
 <?php
 
 namespace App\Upgrades\Versions;
-
-{$this->formatUses($uses)}
-
+{$usesBlock}
 class {$className} extends BaseVersion
 {
     /**
@@ -877,32 +950,7 @@ class {$className} extends BaseVersion
     {
         return '{$version}';
     }
-
-    /**
-     * 升级方法
-     */
-    public function upgrade(): void
-    {
-        \$tenantTag = '[租户:' . tenant()->id . ' ' . tenant()->name . ']';
-        info("\$tenantTag 开始执行 {$version} 版本升级");
-
-{$upgradeBody}
-    }
-
-    /**
-     * 更新系统版本号
-     */
-    private function updateHisVersion(): void
-    {
-        \$tenantTag = '[租户:' . tenant()->id . ' ' . tenant()->name . ']';
-        Tenancy::central(function () {
-            AdminParameter::query()
-                ->where('name', 'his_version')
-                ->update(['value' => '{$version}']);
-        });
-
-        info("\$tenantTag 系统版本号已更新到 {$version}");
-    }
+{$methods}
 }
 
 PHP;
