@@ -2272,6 +2272,70 @@ class WebMenuTableSeeder extends Seeder
         //     'remark'     => '小程序门店设置',
         //     'permission' => 'mini.program.setting'
         // ]);
+
+        $menu = WebMenu::query()->create([
+            'parentid' => $root->id,
+            'name'     => '自动化任务',
+            'icon'     => 'iconfont if-quotation',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '工作流',
+            'icon'       => 'iconfont if-quotation',
+            'path'       => '/market/workflow/index',
+            'url'        => '/new#/market/workflow/index',
+            'meta'       => [
+                'title' => '工作流'
+            ],
+            'route'      => 'WorkflowIndex',
+            'component'  => 'workflow/index',
+            'permission' => 'workflow.index',
+        ]);
+
+        $workflowExecution = WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '运行日志',
+            'icon'       => 'iconfont if-quotation',
+            'path'       => '/market/workflow/execution',
+            'url'        => '/new#/market/workflow/execution',
+            'meta'       => [
+                'title' => '运行日志'
+            ],
+            'route'      => 'WorkflowExecutionIndex',
+            'component'  => 'workflow-execution/index',
+            'permission' => 'workflow.execution',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '任务批次',
+            'icon'       => 'iconfont if-quotation',
+            'path'       => '/market/workflow/run',
+            'url'        => '/new#/market/workflow/run',
+            'meta'       => [
+                'title' => '任务批次'
+            ],
+            'route'      => 'WorkflowRunIndex',
+            'component'  => 'workflow-run/index',
+            'permission' => 'workflow.run',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $workflowExecution->id,
+            'name'       => '日志详情',
+            'icon'       => 'iconfont if-quotation',
+            'path'       => '/market/workflow-execution/detail',
+            'url'        => '/new#/market/workflow-execution/detail',
+            'meta'       => [
+                'title'    => '日志详情',
+                'hidden'   => true,
+                'fullpage' => true,
+            ],
+            'route'      => 'WorkflowExecutionDetail',
+            'component'  => 'workflow-execution/detail',
+            'display'    => false,
+        ]);
     }
 
     public function createTreatmentMenu()
