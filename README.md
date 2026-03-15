@@ -141,6 +141,14 @@
       <img src="readme/erp.png" alt="ERP 管理" />
     </td>
   </tr>
+  <tr>
+    <td width="50%">
+      <h3>工作流管理</h3>
+      <img src="readme/workflow_followup.png" alt="工作流管理" />
+    </td>
+    <td width="50%">
+    </td>
+  </tr>
 </table>
 
 ---

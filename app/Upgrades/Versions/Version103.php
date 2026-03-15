@@ -337,14 +337,17 @@ class Version103 extends BaseVersion
      */
     public function globalUp(): void
     {
-        $this->info('同步菜单数据');
+        $this->info('更新管理平台租户菜单');
         Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\Admin\\MenusTableSeeder', '--force' => true]);
 
-        $this->info('同步系统参数');
+        $this->info('更新管理平台配置参数');
         Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\Admin\\AdminParameterSeeder', '--force' => true]);
 
-        $this->info('更新菜单权限');
+        $this->info('更新所有租户新版菜单');
         Artisan::call('app:update-menu-command');
+
+        $this->info('更新所有租户旧版菜单');
+        Artisan::call('app:update-web-menu-command');
     }
 
     /**
