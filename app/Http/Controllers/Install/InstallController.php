@@ -3,28 +3,27 @@
 namespace App\Http\Controllers\Install;
 
 use App\Exceptions\HisException;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Install\InstallRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Response;
-use App\Http\Requests\Install\InstallRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InstallController extends Controller
 {
     /**
      * 安装首页
-     * @return SymfonyResponse
      */
     public function index(): SymfonyResponse
     {
         $file = public_path('dist/install/index.html');
         if (file_exists($file)) {
             return Response::make(file_get_contents($file), 200, [
-                'Content-Type'  => 'text/html',
+                'Content-Type' => 'text/html',
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma'        => 'no-cache',
-                'Expires'       => '0'
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
             ]);
         }
         abort(404);
@@ -32,8 +31,6 @@ class InstallController extends Controller
 
     /**
      * 检查系统环境要求
-     * @param InstallRequest $request
-     * @return JsonResponse
      */
     public function environment(InstallRequest $request): JsonResponse
     {
@@ -44,13 +41,13 @@ class InstallController extends Controller
 
     /**
      * 开始安装
-     * @param InstallRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException
      */
     public function start(InstallRequest $request): JsonResponse
     {
         $request->validateDatabaseConnection();
+        $request->validateRedisConnection();
         $request->saveInstallConfig();
 
         return response_success([
@@ -60,8 +57,7 @@ class InstallController extends Controller
 
     /**
      * 统一安装处理
-     * @param InstallRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException
      */
     public function install(InstallRequest $request): JsonResponse
@@ -69,12 +65,20 @@ class InstallController extends Controller
         $request->executeInstallStep(
             $request->input('action')
         );
+
         return response_success();
     }
 
     /**
+     * 获取安装默认配置
+     */
+    public function getConfig(InstallRequest $request): JsonResponse
+    {
+        return response_success($request->getConfigData());
+    }
+
+    /**
      * 重定向到安装首页
-     * @return RedirectResponse
      */
     public function redirect(): RedirectResponse
     {
