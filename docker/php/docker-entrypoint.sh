@@ -61,7 +61,10 @@ fi
 init_frontend() {
     local dist_dir="/var/www/html/public/dist"
     local required_dirs=("admin" "his" "install" "web")
-    local frontend_repo="https://github.com/yiliaocrm/frontend-dist"
+    local frontend_repos=(
+        "https://gitcode.com/yiliaocrm/frontend-dist"
+        "https://github.com/yiliaocrm/frontend-dist"
+    )
     local tmp_dir="/tmp/frontend-dist"
 
     # 检测四个目录是否都存在
@@ -83,10 +86,23 @@ init_frontend() {
     # 清理可能存在的残留目录（防止上次失败后残留）
     rm -rf "$tmp_dir"
 
-    # 克隆前端资源仓库
-    echo "Cloning frontend-dist from GitHub..."
-    git clone --depth 1 "$frontend_repo" "$tmp_dir" \
-        || { echo "ERROR: Failed to clone frontend-dist. Check network and GitHub availability." >&2; return 1; }
+    # 依次尝试各仓库地址克隆前端资源
+    local clone_ok=false
+    for repo in "${frontend_repos[@]}"; do
+        echo "Cloning frontend-dist from: $repo ..."
+        if git clone --depth 1 "$repo" "$tmp_dir"; then
+            clone_ok=true
+            break
+        else
+            echo "WARN: Failed to clone from $repo, trying next..." >&2
+            rm -rf "$tmp_dir"
+        fi
+    done
+
+    if [ "$clone_ok" = "false" ]; then
+        echo "ERROR: Failed to clone frontend-dist from all sources. Check network availability." >&2
+        return 1
+    fi
 
     # 确保目标目录存在
     mkdir -p "$dist_dir" || { echo "ERROR: Cannot create dist dir $dist_dir." >&2; rm -rf "$tmp_dir"; return 1; }
