@@ -1,0 +1,112 @@
+# ==============================================================
+# HIS Laravel - 预装依赖的 PHP-FPM 镜像
+# 用途：解决中国大陆用户网络问题，在构建阶段预装 Composer 依赖
+# ==============================================================
+
+# ============== 阶段 1: 依赖构建 ==============
+FROM php:8.4-fpm AS builder
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    libmagickwand-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 PHP 扩展
+RUN docker-php-ext-install \
+    pdo_mysql \
+    bcmath \
+    gd \
+    zip \
+    exif \
+    pcntl
+
+# 安装 PECL 扩展
+RUN pecl install redis xlswriter imagick \
+    && docker-php-ext-enable redis xlswriter imagick
+
+# 安装 Composer（使用官方源，构建机网络通畅）
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# 设置工作目录
+WORKDIR /var/www/build
+
+# 复制 composer 配置文件
+COPY composer.json composer.lock ./
+
+# 预安装 Composer 依赖（使用官方源直连）
+# --no-dev: 不安装开发依赖，减小镜像体积
+# --no-scripts: 跳过脚本执行，避免需要完整项目文件
+# --no-autoloader: 跳过自动加载生成，后续容器启动时再生成
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-interaction
+
+# ============== 阶段 2: 运行时镜像 ==============
+FROM php:8.4-fpm
+
+# 安装运行时系统依赖
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    supervisor \
+    default-mysql-client \
+    netcat-openbsd \
+    libmagickwand-dev \
+    imagemagick \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 PHP 扩展
+RUN docker-php-ext-install \
+    pdo_mysql \
+    bcmath \
+    gd \
+    zip \
+    exif \
+    pcntl
+
+# 安装 PECL 扩展
+RUN pecl install redis xlswriter imagick \
+    && docker-php-ext-enable redis xlswriter imagick
+
+# 安装 Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# 复制 PHP 配置
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# 复制 Supervisor 配置
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# 设置工作目录
+WORKDIR /var/www/html
+
+# 从构建阶段复制预装的依赖
+COPY --from=builder /var/www/build/vendor ./vendor
+
+# 复制启动脚本
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# 暴露 PHP-FPM 端口
+EXPOSE 9000
+
+ENTRYPOINT ["docker-entrypoint.sh"]

@@ -25,3 +25,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 composer.lock
+
+# Docker data directories
+/docker/data/mysql/*
+/docker/data/redis/*
+!/docker/data/mysql/.gitkeep
+!/docker/data/redis/.gitkeep
