@@ -817,6 +817,7 @@ class WebMenuTableSeeder extends Seeder
             'meta'       => [
                 'title' => '咨询成功率分析表'
             ],
+            'url'        => '/new#/report/operation/reception-product-analysis',
             'route'      => 'ReportReceptionProductAnalysis',
             'component'  => 'report/reception-product-analysis',
             'permission' => 'report.reception.product.analysis',

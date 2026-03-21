@@ -834,9 +834,9 @@ Route::prefix('report')->group(function () {
     Route::post('erkai/detail', [Web\ReportErkaiController::class, 'detail']);
     Route::post('consumable/detail', [Web\ReportConsumableController::class, 'detail']);
     Route::post('product/ranking', [Web\ReportCustomerProductController::class, 'ranking']);
-    Route::get('reception/product-analysis', [Web\ReportController::class, 'receptionProductAnalysis']);
+    Route::get('reception/product-analysis', [Web\ReportConsultantController::class, 'receptionProductAnalysis']);
     Route::post('department-picking/detail', [Web\ReportDepartmentPickingController::class, 'detail']);
-    Route::get('reception/product-analysis-detail', [Web\ReportController::class, 'receptionProductAnalysisDetail']);
+    Route::get('reception/product-analysis-detail', [Web\ReportConsultantController::class, 'receptionProductAnalysisDetail']);
 });
 
 Route::controller(Web\ExportController::class)->prefix('export')->group(function () {

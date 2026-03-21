@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\ReportRequest;
 use App\Repositorys\CustomerReportRepository;
-use App\Repositorys\ReceptionRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -38,26 +37,6 @@ class ReportController extends Controller
     {
         return response_success(
             $repository->refund($request)
-        );
-    }
-
-    /**
-     * 咨询成功率分析表
-     */
-    public function receptionProductAnalysis(ReceptionRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->product($request)
-        );
-    }
-
-    /**
-     * 现场咨询成功率分析表之上门明细
-     */
-    public function receptionProductAnalysisDetail(ReceptionRepository $report, Request $request): JsonResponse
-    {
-        return response_success(
-            $report->receptionProductAnalysisDetail($request)
         );
     }
 }
