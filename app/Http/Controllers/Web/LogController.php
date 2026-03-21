@@ -2,41 +2,39 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\ExportTask;
-use App\Models\UsersLogin;
-use App\Models\CustomerLog;
-use App\Models\OperationLog;
-use App\Models\CustomerPhoneView;
-use Illuminate\Support\Carbon;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Web\LogRequest;
+use App\Models\CustomerLog;
+use App\Models\CustomerPhoneView;
+use App\Models\ExportTask;
+use App\Models\OperationLog;
+use App\Models\UsersLogin;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 
 class LogController extends Controller
 {
     /**
      * 登录日志
-     * @param LogRequest $request
-     * @return JsonResponse
      */
     public function login(LogRequest $request): JsonResponse
     {
-        $rows    = $request->input('rows', 10);
-        $sort    = $request->input('sort', 'id');
-        $order   = $request->input('order', 'desc');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'desc');
         $keyword = $request->input('keyword');
         $user_id = $request->input('user_id');
 
         $query = UsersLogin::query()
             ->with([
-                'user:id,name'
+                'user:id,name',
             ])
-            ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
-            ->when($keyword, fn(Builder $query) => $query->whereAny(['ip', 'country', 'province', 'city', 'browser', 'platform', 'remark', 'fingerprint'], 'like', "%{$keyword}%"))
+            ->when($user_id, fn (Builder $query) => $query->where('user_id', $user_id))
+            ->when($keyword, fn (Builder $query) => $query->whereAny(['ip', 'country', 'province', 'city', 'browser', 'platform', 'remark', 'fingerprint'], 'like', "%{$keyword}%"))
             ->whereBetween('created_at', [
                 Carbon::parse($request->input('created_at.0'))->startOfDay(),
-                Carbon::parse($request->input('created_at.1'))->endOfDay()
+                Carbon::parse($request->input('created_at.1'))->endOfDay(),
             ])
             ->orderBy($sort, $order)
             ->paginate($rows);
@@ -44,23 +42,22 @@ class LogController extends Controller
         $query->append(['type_text']);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 顾客修改日志
-     * @param LogRequest $request
-     * @return JsonResponse
      */
     public function customer(LogRequest $request): JsonResponse
     {
-        $rows        = $request->input('rows', 10);
-        $sort        = $request->input('sort', 'created_at');
-        $order       = $request->input('order', 'desc');
-        $action      = $request->input('action');
-        $user_id     = $request->input('user_id');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'created_at');
+        $order = $request->input('order', 'desc');
+        $remark = $request->input('remark');
+        $action = $request->input('action');
+        $user_id = $request->input('user_id');
         $customer_id = $request->input('customer_id');
 
         $query = CustomerLog::query()
@@ -70,31 +67,30 @@ class LogController extends Controller
             ])
             ->whereBetween('created_at', [
                 Carbon::parse($request->input('created_at.0'))->startOfDay(),
-                Carbon::parse($request->input('created_at.1'))->endOfDay()
+                Carbon::parse($request->input('created_at.1'))->endOfDay(),
             ])
-            ->when($action, fn(Builder $query) => $query->where('action', $action))
-            ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
-            ->when($customer_id, fn(Builder $query) => $query->where('customer_id', $customer_id))
+            ->when($remark, fn (Builder $query) => $query->whereLike('remark', '%'.$remark.'%'))
+            ->when($action, fn (Builder $query) => $query->where('action', $action))
+            ->when($user_id, fn (Builder $query) => $query->where('user_id', $user_id))
+            ->when($customer_id, fn (Builder $query) => $query->where('customer_id', $customer_id))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 导出数据记录
-     * @param LogRequest $request
-     * @return JsonResponse
      */
     public function export(LogRequest $request): JsonResponse
     {
-        $rows    = $request->input('rows', 10);
-        $sort    = $request->input('sort', 'created_at');
-        $order   = $request->input('order', 'desc');
-        $status  = $request->input('status');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'created_at');
+        $order = $request->input('order', 'desc');
+        $status = $request->input('status');
         $user_id = $request->input('user_id');
 
         $query = ExportTask::query()
@@ -103,33 +99,31 @@ class LogController extends Controller
             ])
             ->whereBetween('created_at', [
                 Carbon::parse($request->input('created_at.0'))->startOfDay(),
-                Carbon::parse($request->input('created_at.1'))->endOfDay()
+                Carbon::parse($request->input('created_at.1'))->endOfDay(),
             ])
-            ->when($status, fn(Builder $query) => $query->where('status', $status))
-            ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
+            ->when($status, fn (Builder $query) => $query->where('status', $status))
+            ->when($user_id, fn (Builder $query) => $query->where('user_id', $user_id))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         $query->append(['status_text']);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 号码查看记录
-     * @param LogRequest $request
-     * @return JsonResponse
      */
     public function phone(LogRequest $request): JsonResponse
     {
-        $rows        = $request->input('rows', 10);
-        $sort        = $request->input('sort', 'id');
-        $order       = $request->input('order', 'desc');
-        $phone       = $request->input('phone');
-        $user_id     = $request->input('user_id');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'desc');
+        $phone = $request->input('phone');
+        $user_id = $request->input('user_id');
         $customer_id = $request->input('customer_id');
 
         $query = CustomerPhoneView::query()
@@ -139,55 +133,53 @@ class LogController extends Controller
             ])
             ->whereBetween('created_at', [
                 Carbon::parse($request->input('created_at.0'))->startOfDay(),
-                Carbon::parse($request->input('created_at.1'))->endOfDay()
+                Carbon::parse($request->input('created_at.1'))->endOfDay(),
             ])
-            ->when($phone, fn(Builder $query) => $query->where('phone', 'like', "%{$phone}%"))
-            ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
-            ->when($customer_id, fn(Builder $query) => $query->where('customer_id', $customer_id))
+            ->when($phone, fn (Builder $query) => $query->where('phone', 'like', "%{$phone}%"))
+            ->when($user_id, fn (Builder $query) => $query->where('user_id', $user_id))
+            ->when($customer_id, fn (Builder $query) => $query->where('customer_id', $customer_id))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 操作日志
-     * @param LogRequest $request
-     * @return JsonResponse
      */
     public function operation(LogRequest $request): JsonResponse
     {
-        $rows       = $request->input('rows', 10);
-        $sort       = $request->input('sort', 'id');
-        $order      = $request->input('order', 'desc');
-        $keyword    = $request->input('keyword');
-        $user_id    = $request->input('user_id');
-        $method     = $request->input('method');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'desc');
+        $keyword = $request->input('keyword');
+        $user_id = $request->input('user_id');
+        $method = $request->input('method');
         $controller = $request->input('controller');
-        $action     = $request->input('action');
+        $action = $request->input('action');
 
         $query = OperationLog::query()
             ->with([
-                'user:id,name'
+                'user:id,name',
             ])
-            ->when($user_id, fn(Builder $query) => $query->where('user_id', $user_id))
-            ->when($method, fn(Builder $query) => $query->where('method', $method))
-            ->when($controller, fn(Builder $query) => $query->where('controller', 'like', "%{$controller}%"))
-            ->when($action, fn(Builder $query) => $query->where('action', 'like', "%{$action}%"))
-            ->when($keyword, fn(Builder $query) => $query->whereAny(['ip', 'url', 'controller', 'action', 'user_agent'], 'like', "%{$keyword}%"))
+            ->when($user_id, fn (Builder $query) => $query->where('user_id', $user_id))
+            ->when($method, fn (Builder $query) => $query->where('method', $method))
+            ->when($controller, fn (Builder $query) => $query->where('controller', 'like', "%{$controller}%"))
+            ->when($action, fn (Builder $query) => $query->where('action', 'like', "%{$action}%"))
+            ->when($keyword, fn (Builder $query) => $query->whereAny(['ip', 'url', 'controller', 'action', 'user_agent'], 'like', "%{$keyword}%"))
             ->whereBetween('created_at', [
                 Carbon::parse($request->input('created_at.0'))->startOfDay(),
-                Carbon::parse($request->input('created_at.1'))->endOfDay()
+                Carbon::parse($request->input('created_at.1'))->endOfDay(),
             ])
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 }
