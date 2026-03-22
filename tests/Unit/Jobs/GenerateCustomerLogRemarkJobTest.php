@@ -112,27 +112,27 @@ class GenerateCustomerLogRemarkJobTest extends TestCase
         $job = new GenerateCustomerLogRemarkJob([4, 5], false);
         $job->handle($renderer);
 
-        $this->assertNull(CustomerLog::query()->find(4)->remark);
+        $this->assertSame(GenerateCustomerLogRemarkJob::FAILED_REMARK, CustomerLog::query()->find(4)->remark);
         $this->assertSame('顾客姓名 由王五变更为赵六', CustomerLog::query()->find(5)->remark);
     }
 
-    public function test_it_does_not_update_remark_when_original_and_dirty_are_both_empty(): void
+    public function test_it_marks_log_as_skipped_when_renderer_returns_empty_string(): void
     {
         CustomerLog::query()->create([
             'id' => 6,
             'remark' => null,
             'logable_type' => Customer::class,
-            'original' => [],
-            'dirty' => [],
+            'original' => ['updated_at' => '2026-03-23 00:00:00'],
+            'dirty' => ['updated_at' => '2026-03-23 00:01:00'],
         ]);
 
         $job = new GenerateCustomerLogRemarkJob([6], false);
         $job->handle(app(CustomerLogRemarkRenderer::class));
 
-        $this->assertNull(CustomerLog::query()->find(6)->remark);
+        $this->assertSame(GenerateCustomerLogRemarkJob::SKIPPED_REMARK, CustomerLog::query()->find(6)->remark);
     }
 
-    public function test_it_does_not_update_remark_when_original_and_dirty_are_both_null(): void
+    public function test_it_marks_log_as_skipped_when_original_and_dirty_are_both_null(): void
     {
         CustomerLog::query()->create([
             'id' => 7,
@@ -145,6 +145,6 @@ class GenerateCustomerLogRemarkJobTest extends TestCase
         $job = new GenerateCustomerLogRemarkJob([7], false);
         $job->handle(app(CustomerLogRemarkRenderer::class));
 
-        $this->assertNull(CustomerLog::query()->find(7)->remark);
+        $this->assertSame(GenerateCustomerLogRemarkJob::SKIPPED_REMARK, CustomerLog::query()->find(7)->remark);
     }
 }
