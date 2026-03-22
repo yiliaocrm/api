@@ -14,6 +14,9 @@ class GenerateCustomerLogRemarkJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public const SKIPPED_REMARK = '系统未生成备注';
+    public const FAILED_REMARK = '系统生成备注失败';
+
     public function __construct(
         public array $logIds,
         public bool $force = false,
@@ -33,24 +36,32 @@ class GenerateCustomerLogRemarkJob implements ShouldQueue
 
                     $remark = $renderer->render($log);
                     if ($remark === '') {
+                        $this->updateRemark($log->id, self::SKIPPED_REMARK);
                         return;
                     }
 
-                    $query = CustomerLog::query()->whereKey($log->id);
-
-                    if (! $this->force) {
-                        $query->where(function ($builder) {
-                            $builder->whereNull('remark')->orWhere('remark', '');
-                        });
-                    }
-
-                    $query->update(['remark' => $remark]);
+                    $this->updateRemark($log->id, $remark);
                 } catch (\Throwable $exception) {
+                    $this->updateRemark($log->id, self::FAILED_REMARK);
+
                     logger()->warning('customer_log_remark_job_failed', [
                         'log_id' => $log->id,
                         'error' => $exception->getMessage(),
                     ]);
                 }
             });
+    }
+
+    private function updateRemark(int|string $logId, string $remark): void
+    {
+        $query = CustomerLog::query()->whereKey($logId);
+
+        if (! $this->force) {
+            $query->where(function ($builder) {
+                $builder->whereNull('remark')->orWhere('remark', '');
+            });
+        }
+
+        $query->update(['remark' => $remark]);
     }
 }

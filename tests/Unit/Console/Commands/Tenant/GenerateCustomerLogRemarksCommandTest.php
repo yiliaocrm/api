@@ -44,9 +44,17 @@ class GenerateCustomerLogRemarksCommandTest extends TestCase
     {
         Queue::fake();
 
-        CustomerLog::query()->create(['id' => 1, 'remark' => null]);
+        CustomerLog::query()->create([
+            'id' => 1,
+            'remark' => null,
+            'dirty' => ['name' => '张三'],
+        ]);
         CustomerLog::query()->create(['id' => 2, 'remark' => '已有']);
-        CustomerLog::query()->create(['id' => 3, 'remark' => '']);
+        CustomerLog::query()->create([
+            'id' => 3,
+            'remark' => '',
+            'dirty' => ['name' => '李四'],
+        ]);
 
         $this->invokeDispatch(limit: 10, chunk: 2, force: false);
 
@@ -74,7 +82,11 @@ class GenerateCustomerLogRemarksCommandTest extends TestCase
         Queue::fake();
 
         foreach (range(1, 5) as $id) {
-            CustomerLog::query()->create(['id' => $id, 'remark' => null]);
+            CustomerLog::query()->create([
+                'id' => $id,
+                'remark' => null,
+                'dirty' => ['name' => "顾客{$id}"],
+            ]);
         }
 
         $this->invokeDispatch(limit: 2, chunk: 1, force: false);
@@ -88,6 +100,58 @@ class GenerateCustomerLogRemarksCommandTest extends TestCase
             ->all();
 
         $this->assertSame([1, 2, 3, 4, 5], $dispatchedIds);
+    }
+
+    public function test_it_skips_logs_without_any_renderable_payload(): void
+    {
+        Queue::fake();
+
+        CustomerLog::query()->create([
+            'id' => 10,
+            'remark' => null,
+            'original' => null,
+            'dirty' => null,
+        ]);
+
+        CustomerLog::query()->create([
+            'id' => 11,
+            'remark' => null,
+            'original' => [],
+            'dirty' => [],
+        ]);
+
+        CustomerLog::query()->create([
+            'id' => 12,
+            'remark' => null,
+            'original' => null,
+            'dirty' => ['name' => '张三'],
+        ]);
+
+        $this->invokeDispatch(limit: 10, chunk: 10, force: false);
+
+        Queue::assertPushed(GenerateCustomerLogRemarkJob::class, 1);
+        Queue::assertPushed(GenerateCustomerLogRemarkJob::class, function (GenerateCustomerLogRemarkJob $job) {
+            return $job->logIds === [12] && $job->force === false;
+        });
+    }
+
+    public function test_it_still_dispatches_logs_that_only_have_original_payload(): void
+    {
+        Queue::fake();
+
+        CustomerLog::query()->create([
+            'id' => 20,
+            'remark' => null,
+            'original' => ['consultant' => 1],
+            'dirty' => null,
+        ]);
+
+        $this->invokeDispatch(limit: 10, chunk: 10, force: false);
+
+        Queue::assertPushed(GenerateCustomerLogRemarkJob::class, 1);
+        Queue::assertPushed(GenerateCustomerLogRemarkJob::class, function (GenerateCustomerLogRemarkJob $job) {
+            return $job->logIds === [20] && $job->force === false;
+        });
     }
 
     private function invokeDispatch(int $limit, int $chunk, bool $force): void
