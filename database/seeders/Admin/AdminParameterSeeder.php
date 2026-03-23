@@ -190,7 +190,7 @@ class AdminParameterSeeder extends Seeder
             ],
             [
                 'name' => 'his_version',
-                'value' => '1.0.4',
+                'value' => '1.0.5',
                 'type' => 'string',
                 'remark' => '系统版本号',
             ],
