@@ -698,6 +698,10 @@ Route::controller(Web\InventoryTransferController::class)->prefix('inventory-tra
 
 Route::controller(Web\InventoryCheckController::class)->prefix('inventory-check')->group(function () {
     Route::post('manage', 'manage');
+    Route::post('create', 'create');
+    Route::post('update', 'update');
+    Route::get('check', 'check');
+    Route::get('remove', 'remove');
 });
 
 Route::controller(Web\InventoryLossController::class)->prefix('inventory-loss')->group(function () {

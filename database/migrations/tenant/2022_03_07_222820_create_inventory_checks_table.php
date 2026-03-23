@@ -4,11 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
@@ -17,12 +16,14 @@ return new class extends Migration {
             $table->string('key')->comment('单据号');
             $table->date('date')->comment('单据日期');
             $table->integer('warehouse_id')->comment('盘点仓库');
+            $table->integer('department_id')->comment('盘点科室');
+            $table->integer('user_id')->comment('经办人员');
             $table->text('remark')->nullable()->comment('备注');
-            $table->tinyInteger('status')->default(1)->comment('状态 1：草稿、2：审核通过');
+            $table->tinyInteger('status')->default(1)->comment('状态 1：草稿、2：正常');
             $table->integer('check_user')->nullable()->comment('审核人员');
             $table->dateTime('check_time')->nullable()->comment('审核时间');
-            $table->decimal('amount', 14, 4)->comment('总额');
-            $table->integer('user_id')->comment('经办人');
+            $table->integer('inventory_loss_id')->nullable()->comment('报损单ID');
+            $table->integer('inventory_overflow_id')->nullable()->comment('报溢单ID');
             $table->integer('create_user_id')->comment('录单人员');
             $table->timestamps();
             $table->comment('库存盘点表');
@@ -31,8 +32,6 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

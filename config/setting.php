@@ -309,6 +309,12 @@ return [
             2 => '正常',
         ],
     ],
+    'inventory_checks' => [
+        'status' => [
+            1 => '草稿',
+            2 => '正常',
+        ],
+    ],
     'appointment' => [
         'status' => [
             0 => '待确认',

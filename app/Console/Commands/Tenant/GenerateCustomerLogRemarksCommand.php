@@ -41,6 +41,13 @@ class GenerateCustomerLogRemarksCommand extends Command
             $query->where(function ($builder) {
                 $builder->whereNull('remark')->orWhere('remark', '');
             });
+
+            $query->where(function ($builder) {
+                $this->whereHasRenderablePayload($builder, 'original');
+                $builder->orWhere(function ($innerBuilder) {
+                    $this->whereHasRenderablePayload($innerBuilder, 'dirty');
+                });
+            });
         }
 
         $dispatched = 0;
@@ -60,5 +67,13 @@ class GenerateCustomerLogRemarksCommand extends Command
             $dispatched,
             $force ? 'true' : 'false'
         ));
+    }
+
+    private function whereHasRenderablePayload(mixed $builder, string $column): void
+    {
+        $builder->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->where($column, '!=', '[]')
+            ->where($column, '!=', '{}');
     }
 }

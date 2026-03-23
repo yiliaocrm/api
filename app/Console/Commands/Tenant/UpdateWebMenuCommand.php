@@ -10,7 +10,7 @@ use Stancl\Tenancy\Concerns\TenantAwareCommand;
 
 class UpdateWebMenuCommand extends Command
 {
-    use TenantAwareCommand, HasATenantsOption;
+    use HasATenantsOption, TenantAwareCommand;
 
     /**
      * The name and signature of the console command.
@@ -44,12 +44,12 @@ class UpdateWebMenuCommand extends Command
     {
         $tenantName = tenant('name');
 
-        $this->info("开始更新[{$tenantName}]的Web菜单配置...");
+        $this->info("[{$tenantName}]开始更新Web菜单配置...");
 
         try {
             $exitCode = Artisan::call('db:seed', [
                 '--class' => 'Database\\Seeders\\Tenant\\WebMenuTableSeeder',
-                '--force' => true
+                '--force' => true,
             ]);
 
             if ($exitCode === 0) {
@@ -58,7 +58,9 @@ class UpdateWebMenuCommand extends Command
                 $this->error("[{$tenantName}]Web菜单配置更新失败");
             }
         } catch (Exception $e) {
-            $this->error("[{$tenantName}]Web菜单配置更新失败: " . $e->getMessage());
+            $this->error("[{$tenantName}]Web菜单配置更新失败: ".$e->getMessage());
+        } finally {
+            $this->info("[{$tenantName}]Web菜单配置更新结束");
         }
     }
 }
