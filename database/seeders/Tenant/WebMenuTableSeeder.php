@@ -1710,6 +1710,7 @@ class WebMenuTableSeeder extends Seeder
         WebMenu::query()->create([
             'parentid'   => $menu->id,
             'name'       => '库存盘点',
+            'url'        => '/new#/erp/order/inventory-check',
             'icon'       => 'icon-adjust-inventory',
             'path'       => '/inventory-check/index',
             'meta'       => [
