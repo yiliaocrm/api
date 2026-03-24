@@ -603,6 +603,7 @@ Route::controller(Web\AppointmentController::class)->prefix('appointment')->grou
     Route::get('remove', 'remove');
     Route::get('export', 'export');
     Route::get('history', 'history');
+    Route::get('confirm', 'confirm');
     Route::get('arrival', 'arrival');
     Route::get('schedule', 'getSchedule');
 });

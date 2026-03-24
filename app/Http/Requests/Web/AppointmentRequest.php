@@ -2,20 +2,18 @@
 
 namespace App\Http\Requests\Web;
 
-use Carbon\Carbon;
-use App\Models\Appointment;
 use App\Enums\AppointmentStatus;
+use App\Models\Appointment;
 use App\Models\AppointmentConfig;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -31,7 +29,7 @@ class AppointmentRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             default => [],
-            'info', 'arrival' => $this->getInfoRule(),
+            'info', 'arrival', 'confirm' => $this->getInfoRule(),
             'create' => $this->getCreateRule(),
             'update' => $this->getUpdateRule(),
             'events' => $this->getEventsRule(),
@@ -47,7 +45,7 @@ class AppointmentRequest extends FormRequest
     {
         return match (request()->route()->getActionMethod()) {
             default => [],
-            'info', 'arrival' => $this->getInfoMessage(),
+            'info', 'arrival', 'confirm' => $this->getInfoMessage(),
             'create' => $this->getCreateMessage(),
             'update' => $this->getUpdateMessage(),
             'events' => $this->getEventsMessage(),
@@ -69,29 +67,30 @@ class AppointmentRequest extends FormRequest
     {
         return [
             'id.required' => '[预约记录]参数不能为空!',
-            'id.exists'   => '[预约记录]不存在!'
+            'id.exists' => '[预约记录]不存在!',
         ];
     }
 
     /**
      * 创建预约验证规则
+     *
      * @return string[]
      */
     protected function getCreateRule(): array
     {
         $rules = [
-            'customer_id'   => 'required|exists:customer,id',
-            'type'          => 'required|in:coming,treatment,operation',
-            'date'          => 'required|date_format:Y-m-d',
-            'start'         => 'required|date_format:Y-m-d H:i:s',
-            'end'           => 'required|date_format:Y-m-d H:i:s',
+            'customer_id' => 'required|exists:customer,id',
+            'type' => 'required|in:coming,treatment,operation',
+            'date' => 'required|date_format:Y-m-d',
+            'start' => 'required|date_format:Y-m-d H:i:s',
+            'end' => 'required|date_format:Y-m-d H:i:s',
             'department_id' => 'required|exists:department,id',
-            'doctor_id'     => 'required|numeric',
+            'doctor_id' => 'required|numeric',
             'consultant_id' => 'required|numeric',
             'technician_id' => 'required|numeric',
-            'items'         => 'required|array|exists:item,id',
-            'room_id'       => 'required|numeric',
-            'duration'      => 'required|numeric'
+            'items' => 'required|array|exists:item,id',
+            'room_id' => 'required|numeric',
+            'duration' => 'required|numeric',
         ];
 
         // 手术预约
@@ -104,51 +103,52 @@ class AppointmentRequest extends FormRequest
 
     /**
      * 创建预约验证消息
+     *
      * @return string[]
      */
     protected function getCreateMessage(): array
     {
         return [
-            'customer_id.exists'     => '没有找到顾客信息',
-            'type.required'          => '[预约类型]不能为空!',
-            'type.in'                => '[预约类型]错误!',
-            'date.required'          => '[预约日期]不能为空!',
-            'anaesthesia.required'   => '[麻醉类型]不能为空!',
-            'anaesthesia.in'         => '[麻醉类型]错误!',
-            'room_id.required'       => '[预约诊室]不能为空!',
-            'duration.required'      => '[预约时长]不能为空!',
-            'items.required'         => '[预约项目]不能为空!',
-            'items.array'            => '[预约项目]错误!',
-            'items.exists'           => '[预约项目]不存在!',
-            'start.required'         => '[开始时间]不能为空!',
-            'start.date_format'      => '[开始时间]错误!',
-            'end.required'           => '[结束时间]不能为空!',
-            'end.date_format'        => '[结束时间]错误!',
+            'customer_id.exists' => '没有找到顾客信息',
+            'type.required' => '[预约类型]不能为空!',
+            'type.in' => '[预约类型]错误!',
+            'date.required' => '[预约日期]不能为空!',
+            'anaesthesia.required' => '[麻醉类型]不能为空!',
+            'anaesthesia.in' => '[麻醉类型]错误!',
+            'room_id.required' => '[预约诊室]不能为空!',
+            'duration.required' => '[预约时长]不能为空!',
+            'items.required' => '[预约项目]不能为空!',
+            'items.array' => '[预约项目]错误!',
+            'items.exists' => '[预约项目]不存在!',
+            'start.required' => '[开始时间]不能为空!',
+            'start.date_format' => '[开始时间]错误!',
+            'end.required' => '[结束时间]不能为空!',
+            'end.date_format' => '[结束时间]错误!',
             'department_id.required' => '[科室信息]不能为空!',
-            'department_id.exists'   => '[科室信息]不存在!',
-            'doctor_id.required'     => '[医生信息]不能为空!',
-            'doctor_id.numeric'      => '[医生信息]参数错误!',
+            'department_id.exists' => '[科室信息]不存在!',
+            'doctor_id.required' => '[医生信息]不能为空!',
+            'doctor_id.numeric' => '[医生信息]参数错误!',
             'consultant_id.required' => '[咨询师信息]不能为空!',
-            'consultant_id.numeric'  => '[咨询师信息]参数错误!',
+            'consultant_id.numeric' => '[咨询师信息]参数错误!',
             'technician_id.required' => '[技师信息]不能为空!',
-            'technician_id.numeric'  => '[技师信息]参数错误!'
+            'technician_id.numeric' => '[技师信息]参数错误!',
         ];
     }
 
     protected function getUpdateRule(): array
     {
         $rules = [
-            'id'            => 'required|exists:appointments',
-            'type'          => 'required|in:coming,treatment,operation',
-            'date'          => 'required|date_format:Y-m-d',
-            'start'         => 'required|date_format:Y-m-d H:i:s',
-            'end'           => 'required|date_format:Y-m-d H:i:s',
+            'id' => 'required|exists:appointments',
+            'type' => 'required|in:coming,treatment,operation',
+            'date' => 'required|date_format:Y-m-d',
+            'start' => 'required|date_format:Y-m-d H:i:s',
+            'end' => 'required|date_format:Y-m-d H:i:s',
             'department_id' => 'required|exists:department,id',
             'consultant_id' => 'required|numeric',
             'technician_id' => 'required|numeric',
-            'doctor_id'     => 'required|numeric',
-            'items'         => 'required|array|exists:item,id',
-            'room_id'       => 'required|numeric'
+            'doctor_id' => 'required|numeric',
+            'items' => 'required|array|exists:item,id',
+            'room_id' => 'required|numeric',
         ];
 
         // 手术预约
@@ -162,71 +162,71 @@ class AppointmentRequest extends FormRequest
     protected function getUpdateMessage(): array
     {
         return [
-            'id.exists'            => '[预约记录]没有找到!',
-            'type.required'        => '[预约类型]不能为空!',
-            'type.in'              => '[预约类型]错误!',
-            'date.required'        => '[预约日期]不能为空!',
+            'id.exists' => '[预约记录]没有找到!',
+            'type.required' => '[预约类型]不能为空!',
+            'type.in' => '[预约类型]错误!',
+            'date.required' => '[预约日期]不能为空!',
             'anaesthesia.required' => '[麻醉类型]不能为空!',
-            'anaesthesia.in'       => '[麻醉类型]错误!',
-            'room_id.exists'       => '[预约诊室]不存在!'
+            'anaesthesia.in' => '[麻醉类型]错误!',
+            'room_id.exists' => '[预约诊室]不存在!',
         ];
     }
 
     /**
      * 保存门店配置验证规则
-     * @return array
      */
     protected function getSaveConfigRule(): array
     {
         return [
-            'room'                     => 'nullable|array',
-            'doctor'                   => 'nullable|array',
-            'consultant'               => 'nullable|array',
-            'technician'               => 'nullable|array',
-            'departments'              => 'nullable|array',
-            'slot_duration'            => 'required|numeric',
-            'business_start'           => 'required',
-            'business_end'             => 'required',
+            'room' => 'nullable|array',
+            'doctor' => 'nullable|array',
+            'consultant' => 'nullable|array',
+            'technician' => 'nullable|array',
+            'departments' => 'nullable|array',
+            'slot_duration' => 'required|numeric',
+            'business_start' => 'required',
+            'business_end' => 'required',
             'appointment_color_scheme' => 'required|in:default,classic,custom',
-            'appointment_color_config' => 'required|array'
+            'appointment_color_config' => 'required|array',
         ];
     }
 
     /**
      * 保存门店配置验证消息
+     *
      * @return string[]
      */
     protected function getSaveConfigMessage(): array
     {
         return [
-            'slot_duration.required'            => '[预约间隔]不能为空!',
-            'business_start.required'           => '[营业开始时间]不能为空!',
-            'business_end.required'             => '[营业结束时间]不能为空!',
+            'slot_duration.required' => '[预约间隔]不能为空!',
+            'business_start.required' => '[营业开始时间]不能为空!',
+            'business_end.required' => '[营业结束时间]不能为空!',
             'appointment_color_scheme.required' => '[预约配色方案]不能为空!',
-            'appointment_color_scheme.in'       => '[预约配色方案]类型错误!',
+            'appointment_color_scheme.in' => '[预约配色方案]类型错误!',
             'appointment_color_config.required' => '[预约颜色配置]不能为空!',
-            'appointment_color_config.array'    => '[预约颜色配置]类型错误!'
+            'appointment_color_config.array' => '[预约颜色配置]类型错误!',
         ];
     }
 
     protected function getEventsRule(): array
     {
         return [
-            'resource_id'   => 'required|in:consultant,doctor,department,room,technician',
-            'start'         => 'required|date_format:Y-m-d',
-            'end'           => 'required|date_format:Y-m-d',
-            'status'        => 'required|array|in:' . implode(',', array_keys(AppointmentStatus::options())),
-            'department_id' => 'required|numeric'
+            'resource_id' => 'required|in:consultant,doctor,department,room,technician',
+            'start' => 'required|date_format:Y-m-d',
+            'end' => 'required|date_format:Y-m-d',
+            'status' => 'required|array|in:'.implode(',', array_keys(AppointmentStatus::options())),
+            'department_id' => 'required|numeric',
         ];
     }
 
     protected function getScheduleRule(): array
     {
         return [
-            'view'        => 'required|in:consultant,doctor,technician,room,department',
-            'date'        => 'required|date_format:Y-m-d',
+            'view' => 'required|in:consultant,doctor,technician,room,department',
+            'date' => 'required|date_format:Y-m-d',
             'resource_id' => 'required',
-            'id'          => 'nullable|exists:appointments'
+            'id' => 'nullable|exists:appointments',
         ];
     }
 
@@ -237,7 +237,7 @@ class AppointmentRequest extends FormRequest
                 'required',
                 'exists:appointments,id',
                 // 后续需要加入更多删除判断规则
-            ]
+            ],
         ];
     }
 
@@ -252,56 +252,59 @@ class AppointmentRequest extends FormRequest
     {
         return [
             'customer_id.required' => '[顾客信息]不能为空!',
-            'customer_id.exists'   => '[顾客信息]不存在!'
+            'customer_id.exists' => '[顾客信息]不存在!',
         ];
     }
 
     /**
      * 预约看板验证消息
+     *
      * @return string[]
      */
     protected function getEventsMessage(): array
     {
         return [
-            'resource_id.required'   => '[预约看板]参数不能为空!',
-            'resource_id.in'         => '[预约看板]参数错误!',
-            'start.required'         => '[开始时间]不能为空!',
-            'start.date_format'      => '[开始时间]错误!',
-            'end.required'           => '[结束时间]不能为空!',
-            'end.date_format'        => '[结束时间]错误!',
-            'status.required'        => '[状态]不能为空!',
-            'status.array'           => '[状态]错误!',
-            'status.in'              => '[状态]错误!',
+            'resource_id.required' => '[预约看板]参数不能为空!',
+            'resource_id.in' => '[预约看板]参数错误!',
+            'start.required' => '[开始时间]不能为空!',
+            'start.date_format' => '[开始时间]错误!',
+            'end.required' => '[结束时间]不能为空!',
+            'end.date_format' => '[结束时间]错误!',
+            'status.required' => '[状态]不能为空!',
+            'status.array' => '[状态]错误!',
+            'status.in' => '[状态]错误!',
             'department_id.required' => '[科室信息]不能为空!',
-            'department_id.numeric'  => '[科室信息]参数错误!'
+            'department_id.numeric' => '[科室信息]参数错误!',
         ];
     }
 
     /**
      * 删除预约验证消息
+     *
      * @return string[]
      */
     protected function getRemoveMessage(): array
     {
         return [
             'id.required' => '[预约记录]参数不能为空!',
-            'id.exists'   => '[预约记录]不存在!'
+            'id.exists' => '[预约记录]不存在!',
         ];
     }
 
     public function structResources(): array
     {
-        $prefix      = DB::getTablePrefix();
+        $prefix = DB::getTablePrefix();
         $resource_id = $this->input('resource_id');
 
         // 科室视图
         if ($resource_id === 'department') {
             $default = ['id' => 0, 'title' => '未指定科室', 'order' => 99999];
+
             return DB::table('appointment_configs')
                 ->select([
                     'department.id',
                     'department.name as title',
-                    DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}department.id) as `order`")
+                    DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}department.id) as `order`"),
                 ])
                 ->leftJoin('department', 'department.id', '=', 'appointment_configs.target_id')
                 ->where('appointment_configs.config_type', 'department')
@@ -317,11 +320,12 @@ class AppointmentRequest extends FormRequest
         // 诊间
         if ($resource_id === 'room') {
             $default = ['id' => 0, 'title' => '未指定诊间', 'order' => 99999];
+
             return DB::table('appointment_configs')
                 ->select([
                     'room.id',
                     'room.name as title',
-                    DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}room.id) as `order`")
+                    DB::raw("COALESCE({$prefix}appointment_configs.order, {$prefix}room.id) as `order`"),
                 ])
                 ->leftJoin('room', 'room.id', '=', 'appointment_configs.target_id')
                 ->where('appointment_configs.config_type', 'room')
@@ -336,6 +340,7 @@ class AppointmentRequest extends FormRequest
         // 医生、咨询师、技师
         if (in_array($resource_id, ['doctor', 'consultant', 'technician'])) {
             $default = ['id' => 0, 'title' => '未指定人员', 'order' => 99999];
+
             return AppointmentConfig::query()
                 ->with([
                     'schedules' => function ($query) {
@@ -344,7 +349,7 @@ class AppointmentRequest extends FormRequest
                             Carbon::parse($this->input('end'))->endOfDay(),
                         ])
                             ->where('store_id', store()->id);
-                    }
+                    },
                 ])
                 ->select([
                     'users.id',
@@ -368,13 +373,13 @@ class AppointmentRequest extends FormRequest
 
     /**
      * 预约事件数据
-     * @return array
      */
     public function structEvents(): array
     {
-        $keyword       = $this->input('keyword');
-        $resource_id   = $this->input('resource_id');
+        $keyword = $this->input('keyword');
+        $resource_id = $this->input('resource_id');
         $department_id = $this->input('department_id', 0);
+
         return Appointment::query()
             ->select('appointments.*')
             ->with([
@@ -394,8 +399,8 @@ class AppointmentRequest extends FormRequest
                 Carbon::parse($this->input('end'))->endOfDay(),
             ])
             ->whereIn('appointments.status', $this->input('status'))
-            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
-            ->when($department_id, fn(Builder $query) => $query->where('appointments.department_id', $department_id))
+            ->when($keyword, fn (Builder $query) => $query->where('customer.keyword', 'like', '%'.$keyword.'%'))
+            ->when($department_id, fn (Builder $query) => $query->where('appointments.department_id', $department_id))
             ->orderBy('appointments.created_at', 'desc')
             ->get()
             ->toArray();
@@ -403,13 +408,12 @@ class AppointmentRequest extends FormRequest
 
     /**
      * 构建状态统计数据
-     * @return array
      */
     public function structStatus(): array
     {
-        $keyword       = $this->input('keyword');
+        $keyword = $this->input('keyword');
         $department_id = $this->input('department_id', 0);
-        $status        = $this->input('status');
+        $status = $this->input('status');
 
         // 获取所有可用状态选项
         $statusOptions = AppointmentStatus::options([AppointmentStatus::CANCELLED]);
@@ -422,8 +426,8 @@ class AppointmentRequest extends FormRequest
                 $this->input('start'),
                 $this->input('end'),
             ])
-            ->when($keyword, fn(Builder $query) => $query->where('customer.keyword', 'like', '%' . $keyword . '%'))
-            ->when($department_id, fn(Builder $query) => $query->where('appointments.department_id', $department_id))
+            ->when($keyword, fn (Builder $query) => $query->where('customer.keyword', 'like', '%'.$keyword.'%'))
+            ->when($department_id, fn (Builder $query) => $query->where('appointments.department_id', $department_id))
             ->groupBy('appointments.status');
 
         // 获取状态统计数据
@@ -444,7 +448,7 @@ class AppointmentRequest extends FormRequest
 
     public function formData(): array
     {
-        $items      = $this->input('items');
+        $items = $this->input('items');
         $items_name = [];
 
         foreach ($items as $item) {
@@ -452,26 +456,26 @@ class AppointmentRequest extends FormRequest
         }
 
         $data = [
-            'type'          => $this->input('type'),
-            'date'          => $this->input('date'),
-            'start'         => $this->input('start'),
-            'end'           => $this->input('end'),
-            'duration'      => $this->input('duration'),
-            'status'        => 1,
-            'items'         => $items,
-            'items_name'    => implode('、', $items_name),
+            'type' => $this->input('type'),
+            'date' => $this->input('date'),
+            'start' => $this->input('start'),
+            'end' => $this->input('end'),
+            'duration' => $this->input('duration'),
+            'items' => $items,
+            'items_name' => implode('、', $items_name),
             'department_id' => $this->input('department_id'),
-            'doctor_id'     => $this->input('doctor_id'),
+            'doctor_id' => $this->input('doctor_id'),
             'consultant_id' => $this->input('consultant_id'),
             'technician_id' => $this->input('technician_id'),
-            'room_id'       => $this->input('room_id'),
-            'remark'        => $this->input('remark')
+            'room_id' => $this->input('room_id'),
+            'remark' => $this->input('remark'),
         ];
 
         // 创建预约
         if (request()->route()->getActionMethod() === 'create') {
-            $data['customer_id']    = $this->input('customer_id');
+            $data['customer_id'] = $this->input('customer_id');
             $data['create_user_id'] = user()->id;
+            $data['status'] = AppointmentStatus::PENDING_CONFIRM;
         }
 
         // 手术预约
@@ -484,17 +488,16 @@ class AppointmentRequest extends FormRequest
 
     /**
      * 拖拽更新预约验证规则
-     * @return array
      */
     protected function getDragRule(): array
     {
         $rules = [
-            'id'          => 'required|exists:appointments,id',
-            'start'       => 'required|date_format:H:i',
-            'end'         => 'required|date_format:H:i',
-            'date'        => 'nullable|date_format:Y-m-d',
+            'id' => 'required|exists:appointments,id',
+            'start' => 'required|date_format:H:i',
+            'end' => 'required|date_format:H:i',
+            'date' => 'nullable|date_format:Y-m-d',
             'resource_id' => 'required|string|in:consultant_id,doctor_id,technician_id,department_id,room_id',
-            'target_id'   => 'required|numeric',
+            'target_id' => 'required|numeric',
         ];
 
         // 根据 resource_id 的值，对 target_id 进行对应的存在性验证
@@ -512,30 +515,28 @@ class AppointmentRequest extends FormRequest
 
     /**
      * 拖拽更新预约验证消息
-     * @return array
      */
     protected function getDragMessage(): array
     {
         return [
-            'id.required'          => '[预约记录]参数不能为空!',
-            'id.exists'            => '[预约记录]不存在!',
-            'start.required'       => '[开始时间]不能为空!',
-            'start.date_format'    => '[开始时间]格式错误,应为HH:MM格式!',
-            'end.required'         => '[结束时间]不能为空!',
-            'end.date_format'      => '[结束时间]格式错误,应为HH:MM格式!',
-            'date.date_format'     => '[预约日期]格式错误!',
+            'id.required' => '[预约记录]参数不能为空!',
+            'id.exists' => '[预约记录]不存在!',
+            'start.required' => '[开始时间]不能为空!',
+            'start.date_format' => '[开始时间]格式错误,应为HH:MM格式!',
+            'end.required' => '[结束时间]不能为空!',
+            'end.date_format' => '[结束时间]格式错误,应为HH:MM格式!',
+            'date.date_format' => '[预约日期]格式错误!',
             'resource_id.required' => '[资源类型]参数不能为空!',
-            'resource_id.string'   => '[资源类型]参数错误!',
-            'resource_id.in'       => '[资源类型]参数必须是consultant_id、doctor_id、technician_id、department_id或room_id!',
-            'target_id.required'   => '[目标ID]参数不能为空!',
-            'target_id.numeric'    => '[目标ID]参数错误!',
-            'target_id.exists'     => '[目标资源]不存在!',
+            'resource_id.string' => '[资源类型]参数错误!',
+            'resource_id.in' => '[资源类型]参数必须是consultant_id、doctor_id、technician_id、department_id或room_id!',
+            'target_id.required' => '[目标ID]参数不能为空!',
+            'target_id.numeric' => '[目标ID]参数错误!',
+            'target_id.exists' => '[目标资源]不存在!',
         ];
     }
 
     /**
      * 组装拖拽更新数据
-     * @return array
      */
     public function dragData(): array
     {
@@ -547,25 +548,25 @@ class AppointmentRequest extends FormRequest
 
         // 组装完整的开始和结束时间
         $startTime = $this->input('start');
-        $endTime   = $this->input('end');
+        $endTime = $this->input('end');
 
-        $start = Carbon::parse($date . ' ' . $startTime);
-        $end   = Carbon::parse($date . ' ' . $endTime);
+        $start = Carbon::parse($date.' '.$startTime);
+        $end = Carbon::parse($date.' '.$endTime);
 
         // 计算预约时长（分钟）
         $duration = $start->diffInMinutes($end);
 
         // 更新数据
         $updateData = [
-            'date'     => $start->format('Y-m-d'),
-            'start'    => $start->format('Y-m-d H:i:s'),
-            'end'      => $end->format('Y-m-d H:i:s'),
+            'date' => $start->format('Y-m-d'),
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
             'duration' => $duration,
         ];
 
         // 根据 resource_id 更新对应的资源字段
         $resourceId = $this->input('resource_id');
-        $targetId   = $this->input('target_id');
+        $targetId = $this->input('target_id');
 
         $updateData[$resourceId] = $targetId;
 
