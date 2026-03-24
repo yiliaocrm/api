@@ -310,7 +310,6 @@
   - `last_login`
   - `created_at`
   - `banned`
-  - `secret`
 - 部门信息
 - 角色信息
 - 动态口令状态布尔值
