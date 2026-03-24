@@ -14,8 +14,9 @@ class GenerateCustomerLogRemarkJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public const SKIPPED_REMARK = '系统未生成备注';
-    public const FAILED_REMARK = '系统生成备注失败';
+    public const string SKIPPED_REMARK = '系统未生成备注';
+
+    public const string FAILED_REMARK = '系统生成备注失败';
 
     public function __construct(
         public array $logIds,
@@ -37,6 +38,7 @@ class GenerateCustomerLogRemarkJob implements ShouldQueue
                     $remark = $renderer->render($log);
                     if ($remark === '') {
                         $this->updateRemark($log->id, self::SKIPPED_REMARK);
+
                         return;
                     }
 
