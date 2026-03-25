@@ -2,25 +2,22 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Models\Appointment;
 use App\Enums\AppointmentStatus;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Web\AppointmentRequest;
+use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Requests\Web\AppointmentRequest;
+use Illuminate\Http\JsonResponse;
 
 class AppointmentController extends Controller
 {
     public function __construct(
         protected AppointmentService $appointmentService
-    )
-    {
-    }
+    ) {}
 
     /**
      * 预约设置
-     * @return JsonResponse
      */
     public function getConfig(): JsonResponse
     {
@@ -31,21 +28,18 @@ class AppointmentController extends Controller
 
     /**
      * 更新预约设置
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function saveConfig(AppointmentRequest $request): JsonResponse
     {
         $this->appointmentService->saveConfig(
             $request->all()
         );
+
         return response_success();
     }
 
     /**
      * 创建预约
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function create(AppointmentRequest $request): JsonResponse
     {
@@ -57,26 +51,24 @@ class AppointmentController extends Controller
             'customer:id,name,idcard',
             'consultant:id,name',
             'technician:id,name',
-            'department:id,name'
+            'department:id,name',
         ]);
+
         return response_success($appointment);
     }
 
     /**
      * 删除预约
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function remove(AppointmentRequest $request): JsonResponse
     {
         Appointment::query()->find($request->input('id'))->delete();
+
         return response_success();
     }
 
     /**
      * 拖拽更新预约时间或人员
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function drag(AppointmentRequest $request): JsonResponse
     {
@@ -95,7 +87,7 @@ class AppointmentController extends Controller
             'consultant:id,name',
             'technician:id,name',
             'department:id,name',
-            'room:id,name'
+            'room:id,name',
         ]);
 
         return response_success($appointment);
@@ -103,8 +95,6 @@ class AppointmentController extends Controller
 
     /**
      * 查看预约记录
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function info(AppointmentRequest $request): JsonResponse
     {
@@ -117,15 +107,14 @@ class AppointmentController extends Controller
             'customer:id,idcard,sex,name,file_number',
             'consultant:id,name',
             'technician:id,name',
-            'department:id,name'
+            'department:id,name',
         ]);
+
         return response_success($appointment);
     }
 
     /**
      * 更新预约
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function update(AppointmentRequest $request): JsonResponse
     {
@@ -141,29 +130,26 @@ class AppointmentController extends Controller
             'customer:id,idcard,sex,name',
             'consultant:id,name',
             'technician:id,name',
-            'department:id,name'
+            'department:id,name',
         ]);
+
         return response_success($appointment);
     }
 
     /**
      * 加载指定日期内的fullcalendar事件
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function events(AppointmentRequest $request): JsonResponse
     {
         return response_success([
             'resources' => $request->structResources(),
-            'events'    => $request->structEvents(),
-            'status'    => $request->structStatus()
+            'events' => $request->structEvents(),
+            'status' => $request->structStatus(),
         ]);
     }
 
     /**
      * 预约排期(新增、编辑预约右侧显示)
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function getSchedule(AppointmentRequest $request): JsonResponse
     {
@@ -174,47 +160,71 @@ class AppointmentController extends Controller
                 'technician:id,name',
                 'customer:id,idcard,sex,name,file_number,birthday,ascription,consultant,remark',
                 'department:id,name',
-                'createUser:id,name'
+                'createUser:id,name',
             ])
             ->where('date', $request->input('date'))
-            ->where($request->input('view') . '_id', $request->input('resource_id'))
+            ->where($request->input('view').'_id', $request->input('resource_id'))
             // 编辑不包含当前预约
-            ->when($request->input('id'), fn(Builder $query) => $query->where('id', '!=', $request->input('id')))
+            ->when($request->input('id'), fn (Builder $query) => $query->where('id', '!=', $request->input('id')))
             ->get();
+
         return response_success($appointment);
     }
 
     /**
+     * 确认预约
+     */
+    public function confirm(AppointmentRequest $request): JsonResponse
+    {
+        $appointment = Appointment::query()->find(
+            $request->input('id')
+        );
+
+        if ($appointment->status !== AppointmentStatus::PENDING_CONFIRM) {
+            return response_error(msg: '当前预约状态不允许确认');
+        }
+
+        $appointment->update([
+            'status' => AppointmentStatus::PENDING_ARRIVAL,
+        ]);
+
+        return response_success($appointment->fresh());
+    }
+
+    /**
      * 到店操作
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function arrival(AppointmentRequest $request): JsonResponse
     {
         $appointment = Appointment::query()->find(
             $request->input('id')
         );
+
+        if ($appointment->status !== AppointmentStatus::PENDING_ARRIVAL) {
+            return response_error(msg: '当前预约状态不允许确认到店');
+        }
+
         $appointment->update([
-            'status'       => AppointmentStatus::ARRIVED,
+            'status' => AppointmentStatus::ARRIVED,
             'arrival_time' => now(),
         ]);
+
         return response_success($appointment);
     }
 
     /**
      * 预约记录
-     * @param AppointmentRequest $request
-     * @return JsonResponse
      */
     public function history(AppointmentRequest $request): JsonResponse
     {
         $data = Appointment::query()
             ->with([
-                'doctor:id,name'
+                'doctor:id,name',
             ])
             ->where('customer_id', $request->input('customer_id'))
             ->orderBy('created_at', 'desc')
             ->get();
+
         return response_success($data);
     }
 }

@@ -10,9 +10,12 @@ class CustomerRemarkProfile extends DefaultRemarkProfile
     public function labelFor(string $field): string
     {
         return match ($field) {
+            'idcard' => '卡号',
             'name' => '顾客姓名',
             'consultant' => '销售顾问',
             'sex' => '性别',
+            'total_payment' => '累计付款(交钱就算)',
+            'amount' => '累计消费(预收款不算)',
             default => parent::labelFor($field),
         };
     }

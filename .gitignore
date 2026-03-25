@@ -31,3 +31,8 @@ composer.lock
 /docker/data/redis/*
 !/docker/data/mysql/.gitkeep
 !/docker/data/redis/.gitkeep
+
+/AGENTS.md
+/CLAUDE.md
+
+/docs/superpowers
