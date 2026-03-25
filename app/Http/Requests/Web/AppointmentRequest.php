@@ -502,6 +502,12 @@ class AppointmentRequest extends FormRequest
 
         // 根据 resource_id 的值，对 target_id 进行对应的存在性验证
         $resourceId = $this->input('resource_id');
+        $targetId = (int) $this->input('target_id');
+
+        if ($targetId <= 0) {
+            return $rules;
+        }
+
         if ($resourceId === 'department_id') {
             $rules['target_id'] = 'required|numeric|exists:department,id';
         } elseif ($resourceId === 'room_id') {

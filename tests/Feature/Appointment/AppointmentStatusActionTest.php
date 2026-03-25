@@ -26,6 +26,7 @@ class AppointmentStatusActionTest extends TestCase
         $this->withoutMiddleware();
         $this->assertApplicationRouteExists('appointment/create', 'POST', 'App\Http\Controllers\Web\AppointmentController@create');
         $this->assertApplicationRouteExists('appointment/update', 'POST', 'App\Http\Controllers\Web\AppointmentController@update');
+        $this->assertApplicationRouteExists('appointment/drag', 'GET', 'App\Http\Controllers\Web\AppointmentController@drag');
         $this->assertApplicationRouteExists('api/appointment/create', 'POST', 'App\Http\Controllers\Api\AppointmentController@create');
         $this->assertApplicationRouteExists('appointment/arrival', 'GET', 'App\Http\Controllers\Web\AppointmentController@arrival');
         $this->createTables();
@@ -192,6 +193,29 @@ class AppointmentStatusActionTest extends TestCase
 
         $arrivalTime = DB::table('appointments')->where('id', $appointmentId)->value('arrival_time');
         $this->assertNotNull($arrivalTime);
+    }
+
+    public function test_it_allows_dragging_appointment_to_unassigned_resource(): void
+    {
+        $appointmentId = $this->seedAppointment(AppointmentStatus::PENDING_CONFIRM);
+
+        [$response, $data] = $this->dispatchJsonRequest('GET', '/appointment/drag', [
+            'id' => $appointmentId,
+            'start' => '13:30',
+            'end' => '14:30',
+            'resource_id' => 'consultant_id',
+            'target_id' => 0,
+        ]);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(200, $data['code']);
+        $this->assertDatabaseHas('appointments', [
+            'id' => $appointmentId,
+            'consultant_id' => 0,
+            'start' => '2026-03-25 13:30:00',
+            'end' => '2026-03-25 14:30:00',
+            'duration' => 60,
+        ]);
     }
 
     public function test_it_rejects_arrival_for_non_pending_arrival_appointments(): void
