@@ -22,6 +22,12 @@ Route::controller(Web\AuthController::class)->prefix('auth')->group(function () 
     Route::get('qrcode', 'qrcode')->withoutMiddleware('auth:sanctum');
     Route::post('login', 'login')->withoutMiddleware('auth:sanctum');
     Route::get('profile', 'profile');
+    Route::get('user-center', 'userCenter');
+    Route::post('update-profile', 'updateProfile');
+    Route::get('secret', 'getSecret');
+    Route::post('secret', 'postSecret');
+    Route::get('clear-secret', 'clearSecret');
+    Route::post('login-logs', 'loginLogs');
     Route::post('logout', 'logout');
     Route::post('reset-password', 'resetPassword');
 });
