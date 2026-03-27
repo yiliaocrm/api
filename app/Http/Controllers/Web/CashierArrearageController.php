@@ -6,61 +6,51 @@ use App\Exceptions\HisException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CashierArrearage\FreeRequest;
 use App\Http\Requests\CashierArrearage\RepaymentRequest;
+use App\Http\Requests\Web\CashierArrearageRequest;
 use App\Models\CashierArrearage;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class CashierArrearageController extends Controller
 {
-    public function manage(Request $request): JsonResponse
+    public function manage(CashierArrearageRequest $request): JsonResponse
     {
-        $rows  = $request->input('rows', 10);
-        $sort  = $request->input('sort', 'cashier_arrearage.created_at');
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'cashier_arrearage.created_at');
         $order = $request->input('order', 'desc');
-        $data  = [];
+        $keyword = $request->input('keyword');
+
         $query = CashierArrearage::query()
             ->with([
                 'customer:id,name,idcard,balance',
                 'details' => function ($query) {
                     $query->orderBy('created_at', 'desc');
-                }
+                },
             ])
             ->select('cashier_arrearage.*')
             ->leftJoin('customer', 'customer.id', '=', 'cashier_arrearage.customer_id')
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('cashier_arrearage.created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
-                ]);
-            })
-            ->when($request->input('status'), function (Builder $query) use ($request) {
-                $query->where('cashier_arrearage.status', $request->input('status'));
-            })
-            ->when($request->input('keyword'), function (Builder $query) use ($request) {
-                $query->where('customer.keyword', 'like', '%' . $request->input('keyword') . '%');
-            })
+            ->whereBetween('cashier_arrearage.created_at', [
+                Carbon::parse($request->input('date.0'))->startOfDay(),
+                Carbon::parse($request->input('date.1'))->endOfDay(),
+            ])
+            ->when($keyword, fn (Builder $query) => $query->whereLike('customer.keyword', '%'.$keyword.'%'))
+            ->queryConditions('CashierArrearageIndex')
             ->orderBy($sort, $order)
             ->paginate($rows);
 
-        if ($query) {
-            $data['rows']  = $query->items();
-            $data['total'] = $query->total();
-        } else {
-            $data['rows']  = [];
-            $data['total'] = 0;
-        }
-        return response_success($data);
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
     }
 
     /**
      * 还款操作
-     * @param RepaymentRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
     public function repayment(RepaymentRequest $request): JsonResponse
@@ -106,7 +96,7 @@ class CashierArrearageController extends Controller
             $cashier->update([
                 'status' => 2, // 已收费
                 'income' => $cashier->pay->sum('income'),
-                'detail' => $detail
+                'detail' => $detail,
             ]);
 
             // 更新[顾客信息]
@@ -115,6 +105,7 @@ class CashierArrearageController extends Controller
             );
 
             DB::commit();
+
             return response_success($arrearage);
 
         } catch (Exception $e) {
@@ -125,8 +116,7 @@ class CashierArrearageController extends Controller
 
     /**
      * 免单处理
-     * @param FreeRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
     public function free(FreeRequest $request): JsonResponse
@@ -159,6 +149,7 @@ class CashierArrearageController extends Controller
             // 免单状态
             $arrearage->update(['status' => 3]);
             DB::commit();
+
             return response_success();
 
         } catch (Exception $e) {

@@ -2,35 +2,37 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CashierArrearage extends BaseModel
 {
-    use HasUuids;
+    use HasUuids, QueryConditionsTrait;
 
     protected $table = 'cashier_arrearage';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected function casts(): array
     {
         return [
-            'salesman'  => 'array',
-            'payable'   => 'float',
-            'income'    => 'float',
+            'salesman' => 'array',
+            'payable' => 'float',
+            'income' => 'float',
             'arrearage' => 'float',
-            'amount'    => 'float',
-            'leftover'  => 'float'
+            'amount' => 'float',
+            'leftover' => 'float',
         ];
     }
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -39,7 +41,6 @@ class CashierArrearage extends BaseModel
 
     /**
      * 结算科室
-     * @return BelongsTo
      */
     public function department(): BelongsTo
     {
@@ -48,7 +49,6 @@ class CashierArrearage extends BaseModel
 
     /**
      * 结单人员
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -57,7 +57,6 @@ class CashierArrearage extends BaseModel
 
     /**
      * 还款记录
-     * @return HasMany
      */
     public function details(): HasMany
     {
@@ -66,7 +65,6 @@ class CashierArrearage extends BaseModel
 
     /**
      * 收费通知
-     * @return MorphMany
      */
     public function cashierable(): MorphMany
     {
@@ -75,7 +73,6 @@ class CashierArrearage extends BaseModel
 
     /**
      * 顾客项目明细表
-     * @return HasOne
      */
     public function customerProduct(): HasOne
     {
@@ -84,7 +81,6 @@ class CashierArrearage extends BaseModel
 
     /**
      * 顾客物品明细表
-     * @return HasOne
      */
     public function customerGoods(): HasOne
     {
