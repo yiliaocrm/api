@@ -4,59 +4,59 @@ namespace App\Http\Controllers\Web;
 
 use App\Exceptions\HisException;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CashierRefund\CreateRequest;
-use App\Http\Requests\CashierRefund\RemoveRequest;
+use App\Http\Requests\Web\CashierRefundRequest;
 use App\Models\CashierRefund;
+use App\Models\CustomerGoods;
+use App\Models\CustomerProduct;
 use Carbon\Carbon;
 use Exception;
-use Throwable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class CashierRefundController extends Controller
 {
-    public function manage(Request $request)
+    public function manage(CashierRefundRequest $request): JsonResponse
     {
-        $sort  = request('sort', 'created_at');
-        $order = request('order', 'desc');
-        $rows  = request('rows', 10);
-        $data  = [];
+        $sort = $request->input('sort', 'cashier_refund.created_at');
+        $order = $request->input('order', 'desc');
+        $rows = $request->input('rows', 10);
+        $keyword = $request->input('keyword');
 
         $query = CashierRefund::query()
-            ->with(['customer:id,idcard,name'])
+            ->with([
+                'customer:id,idcard,name',
+                'user:id,name',
+                'details' => fn ($builder) => $builder
+                    ->with(['department:id,name'])
+                    ->orderBy('created_at', 'asc'),
+            ])
             ->select('cashier_refund.*')
             ->leftJoin('customer', 'customer.id', '=', 'cashier_refund.customer_id')
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function ($query) use ($request) {
-                $query->whereBetween('cashier_refund.created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
-                ]);
-            })
-            ->when($request->input('keyword'), function ($query) use ($request) {
-                $query->where('customer.keyword', 'like', '%' . $request->input('keyword') . '%');
-            })
+            ->whereBetween('cashier_refund.created_at', [
+                Carbon::parse($request->input('date.0'))->startOfDay(),
+                Carbon::parse($request->input('date.1'))->endOfDay(),
+            ])
+            ->when($keyword, fn (Builder $query) => $query->whereLike('customer.keyword', '%'.$keyword.'%'))
+            ->queryConditions('CashierRefundIndex')
             ->orderBy($sort, $order)
             ->paginate($rows);
 
-        if ($query) {
-            $data['rows']  = $query->items();
-            $data['total'] = $query->total();
-        } else {
-            $data['rows']  = [];
-            $data['total'] = 0;
-        }
+        $query->append(['status_text']);
 
-        return response_success($data);
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
     }
 
     /**
      * 退款申请单(目前没有审核之前到收费)
-     * @param CreateRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
-    public function create(CreateRequest $request): JsonResponse
+    public function create(CashierRefundRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -74,13 +74,13 @@ class CashierRefundController extends Controller
             // 创建收费通知
             $refund->cashierable()->create([
                 'customer_id' => $refund->customer_id,
-                'status'      => 1,
-                'payable'     => -1 * abs($refund->amount),     // 应付金额
-                'income'      => 0,                             // 实收金额(不包含余额支付)
-                'deposit'     => 0,                             // 余额支付
-                'arrearage'   => 0,                             // 本单欠款金额
-                'user_id'     => user()->id,
-                'detail'      => $refund->details
+                'status' => 1,
+                'payable' => -1 * abs($refund->amount),     // 应付金额
+                'income' => 0,                             // 实收金额(不包含余额支付)
+                'deposit' => 0,                             // 余额支付
+                'arrearage' => 0,                             // 本单欠款金额
+                'user_id' => user()->id,
+                'detail' => $refund->details,
             ]);
 
             DB::commit();
@@ -95,11 +95,11 @@ class CashierRefundController extends Controller
 
     /**
      * 删除退款申请单
-     * @param RemoveRequest $request
-     * @return JsonResponse
+     *
+     *
      * @throws HisException|Throwable
      */
-    public function remove(RemoveRequest $request)
+    public function remove(CashierRefundRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -119,5 +119,64 @@ class CashierRefundController extends Controller
             DB::rollBack();
             throw new HisException($e->getMessage());
         }
+    }
+
+    /**
+     * 获取顾客已购项目列表（用于退款候选）
+     */
+    public function products(CashierRefundRequest $request): JsonResponse
+    {
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'customer_product.created_at');
+        $order = $request->input('order', 'desc');
+
+        $query = CustomerProduct::query()
+            ->with([
+                'product:id,name',
+                'department:id,name',
+                'user:id,name',
+                'consultantUser:id,name',
+                'doctorUser:id,name',
+                'ekUserRelation:id,name',
+            ])
+            ->where('customer_id', $request->input('customer_id'))
+            ->where('cashier_id', '!=', 0)
+            ->whereNotNull('cashier_id')
+            ->orderBy($sort, $order)
+            ->paginate($rows);
+
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
+    }
+
+    /**
+     * 获取顾客已购物品列表（用于退款候选）
+     */
+    public function goods(CashierRefundRequest $request): JsonResponse
+    {
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'customer_goods.created_at');
+        $order = $request->input('order', 'desc');
+
+        $query = CustomerGoods::query()
+            ->with([
+                'department:id,name',
+                'user:id,name',
+                'consultantUser:id,name',
+                'doctorUser:id,name',
+                'ekUserRelation:id,name',
+            ])
+            ->where('customer_id', $request->input('customer_id'))
+            ->where('cashier_id', '!=', 0)
+            ->whereNotNull('cashier_id')
+            ->orderBy($sort, $order)
+            ->paginate($rows);
+
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
     }
 }

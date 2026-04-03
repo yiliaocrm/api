@@ -516,6 +516,8 @@ Route::controller(Web\CashierRefundController::class)->prefix('cashier-refund')-
     Route::post('manage', 'manage');
     Route::post('create', 'create');
     Route::get('remove', 'remove');
+    Route::post('products', 'products');
+    Route::post('goods', 'goods');
 });
 
 Route::controller(Web\CashierArrearageController::class)->prefix('cashier-arrearage')->group(function () {
