@@ -2,22 +2,35 @@
 
 namespace App\Models;
 
-
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\CashierInvoiceType;
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CashierInvoice extends BaseModel
 {
+    use QueryConditionsTrait;
+
+    protected $appends = ['type_text'];
+
     protected function casts(): array
     {
         return [
             'amount' => 'float',
+            'type' => CashierInvoiceType::class,
         ];
     }
 
     /**
-     * 开票哦明细表
-     * @return HasMany
+     * 开票类型文本
+     */
+    public function getTypeTextAttribute(): string
+    {
+        return $this->type?->getLabel() ?? '';
+    }
+
+    /**
+     * 开票明细表
      */
     public function details(): HasMany
     {
@@ -26,7 +39,6 @@ class CashierInvoice extends BaseModel
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -35,7 +47,6 @@ class CashierInvoice extends BaseModel
 
     /**
      * 创建人信息
-     * @return BelongsTo
      */
     public function createUser(): BelongsTo
     {

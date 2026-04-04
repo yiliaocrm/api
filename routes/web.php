@@ -541,11 +541,11 @@ Route::controller(Web\CashierCouponController::class)->prefix('cashier-coupon')-
 
 Route::controller(Web\CashierInvoiceController::class)->prefix('cashier-invoice')->group(function () {
     Route::get('info', 'info');
-    Route::get('index', 'index');
+    Route::post('index', 'index');
     Route::post('create', 'create');
     Route::post('update', 'update');
-    Route::get('customer-goods', 'customerGoods');
-    Route::get('customer-product', 'customerProduct');
+    Route::post('customer-goods', 'customerGoods');
+    Route::post('customer-product', 'customerProduct');
 });
 
 Route::controller(Web\FollowupController::class)->prefix('followup')->group(function () {

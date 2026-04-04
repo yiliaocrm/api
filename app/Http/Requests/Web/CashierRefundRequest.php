@@ -8,13 +8,9 @@ use App\Models\Customer;
 use App\Models\CustomerProduct;
 use App\Rules\Web\SceneRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class CashierRefundRequest extends FormRequest
 {
-    protected ?Collection $manageSceneFields = null;
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -108,13 +104,7 @@ class CashierRefundRequest extends FormRequest
                 'array',
                 new SceneRule('CashierRefundIndex'),
             ],
-            'filters.*' => [
-                'required',
-                'array',
-                function (string $attribute, mixed $filter, \Closure $fail): void {
-                    $this->validateManageFilter($filter, $fail);
-                },
-            ],
+            'filters.*' => ['required', 'array'],
             'filters.*.field' => 'required|string',
             'filters.*.operator' => 'required|string',
             'keyword' => 'nullable|string',
@@ -240,60 +230,5 @@ class CashierRefundRequest extends FormRequest
                 'remark' => $detail['remark'] ?? null,
             ];
         })->all();
-    }
-
-    protected function validateManageFilter(mixed $filter, \Closure $fail): void
-    {
-        if (! is_array($filter)) {
-            return;
-        }
-
-        $field = $filter['field'] ?? null;
-        $operator = $filter['operator'] ?? null;
-
-        if (! is_string($field) || ! is_string($operator)) {
-            return;
-        }
-
-        $fieldConfig = $this->getManageSceneFields()->first(function ($item) use ($field) {
-            return $item->field_alias === $field || $item->field === $field;
-        });
-
-        if (! $fieldConfig) {
-            return;
-        }
-
-        $operators = collect(json_decode($fieldConfig->operators, true))->pluck('value')->filter();
-        if (! $operators->contains($operator)) {
-            $fail("[{$fieldConfig->name}]操作符不在配置中");
-
-            return;
-        }
-
-        $value = $filter['value'] ?? null;
-        if (in_array($operator, ['between', 'not between'], true)) {
-            if (! is_array($value) || count($value) !== 2) {
-                $fail("[{$fieldConfig->name}]区间操作值格式不正确");
-            }
-
-            return;
-        }
-
-        if (in_array($operator, ['in', 'not in'], true) && ! is_array($value)) {
-            $fail("[{$fieldConfig->name}]多选操作值格式不正确");
-        }
-    }
-
-    protected function getManageSceneFields(): Collection
-    {
-        if ($this->manageSceneFields !== null) {
-            return $this->manageSceneFields;
-        }
-
-        $this->manageSceneFields = DB::table('scene_fields')
-            ->where('page', 'CashierRefundIndex')
-            ->get();
-
-        return $this->manageSceneFields;
     }
 }
