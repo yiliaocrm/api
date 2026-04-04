@@ -2027,6 +2027,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '退款申请',
             'icon'       => 'icon-money-delete',
             'path'       => '/cashier-refund/index',
+            'url'        => '/new#/cashier/refund/index',
             'meta'       => [
                 'title' => '退款申请'
             ],
@@ -2078,6 +2079,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '欠款管理',
             'icon'       => 'iconfont if-arrearage',
             'path'       => '/cashier-arrearage/index',
+            'url'        => '/new#/cashier/arrearage/index',
             'meta'       => [
                 'title' => '欠款管理'
             ],
