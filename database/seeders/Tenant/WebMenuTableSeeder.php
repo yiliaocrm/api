@@ -2013,6 +2013,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '开票管理',
             'icon'       => 'iconfont if-money-collect',
             'path'       => '/cashier-invoice/index',
+            'url'        => '/new#/cashier/invoice/index',
             'meta'       => [
                 'title' => '开票管理'
             ],
