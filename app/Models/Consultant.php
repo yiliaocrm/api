@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Traits\QueryConditionsTrait;
 use App\Observers\ConsultantObserver;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 #[ObservedBy([ConsultantObserver::class])]
 class Consultant extends BaseModel
@@ -28,7 +28,6 @@ class Consultant extends BaseModel
 
     /**
      * 咨询项目
-     * @return BelongsToMany
      */
     public function receptionItems(): BelongsToMany
     {
@@ -37,7 +36,6 @@ class Consultant extends BaseModel
 
     /**
      * 顾客咨询项目
-     * @return MorphMany
      */
     public function customerItems(): MorphMany
     {
@@ -46,7 +44,6 @@ class Consultant extends BaseModel
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -55,7 +52,6 @@ class Consultant extends BaseModel
 
     /**
      * 顾客操作日志
-     * @return MorphMany
      */
     public function customerLog(): MorphMany
     {
@@ -64,7 +60,6 @@ class Consultant extends BaseModel
 
     /**
      * 生命周期
-     * @return MorphMany
      */
     public function customerLifeCycle(): MorphMany
     {
@@ -73,8 +68,8 @@ class Consultant extends BaseModel
 
     /**
      * 网电咨询(已废弃)
+     *
      * @deprecated
-     * @return HasMany
      */
     public function reservation(): HasMany
     {
@@ -83,16 +78,14 @@ class Consultant extends BaseModel
 
     /**
      * 网电咨询记录
-     * @return HasMany
      */
     public function reservations(): HasMany
     {
-        return $this->hasMany(Reservation::class);
+        return $this->hasMany(Reservation::class, 'customer_id', 'customer_id');
     }
 
     /**
      * 沟通记录
-     * @return MorphMany
      */
     public function customerTalk(): MorphMany
     {
@@ -101,7 +94,6 @@ class Consultant extends BaseModel
 
     /**
      * 现场成交单
-     * @return HasMany
      */
     public function orders(): HasMany
     {
@@ -110,7 +102,6 @@ class Consultant extends BaseModel
 
     /**
      * 收费通知
-     * @return MorphMany
      */
     public function cashierable(): MorphMany
     {
@@ -119,7 +110,6 @@ class Consultant extends BaseModel
 
     /**
      * 未成交原因
-     * @return BelongsTo
      */
     public function failure(): BelongsTo
     {
@@ -128,7 +118,6 @@ class Consultant extends BaseModel
 
     /**
      * 接诊类型
-     * @return BelongsTo
      */
     public function receptionType(): BelongsTo
     {
@@ -137,7 +126,6 @@ class Consultant extends BaseModel
 
     /**
      * 咨询科室
-     * @return BelongsTo
      */
     public function department(): BelongsTo
     {
@@ -146,7 +134,6 @@ class Consultant extends BaseModel
 
     /**
      * 媒介来源
-     * @return BelongsTo
      */
     public function medium(): BelongsTo
     {
@@ -155,7 +142,6 @@ class Consultant extends BaseModel
 
     /**
      * 现场咨询
-     * @return BelongsTo
      */
     public function consultantUser(): BelongsTo
     {
@@ -164,7 +150,6 @@ class Consultant extends BaseModel
 
     /**
      * 助诊医生
-     * @return BelongsTo
      */
     public function doctorInfo(): BelongsTo
     {
@@ -173,7 +158,6 @@ class Consultant extends BaseModel
 
     /**
      * 接待人员
-     * @return BelongsTo
      */
     public function receptionInfo(): BelongsTo
     {
@@ -182,7 +166,6 @@ class Consultant extends BaseModel
 
     /**
      * 录单人员
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
