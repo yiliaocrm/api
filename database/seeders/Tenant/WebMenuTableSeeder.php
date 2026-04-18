@@ -1999,6 +1999,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '零售收费',
             'icon'       => 'iconfont if-cashier',
             'path'       => '/cashier-retail/index',
+            'url'        => '/new#/cashier/retail/index',
             'meta'       => [
                 'title' => '零售收费'
             ],

@@ -2,9 +2,9 @@
 
 namespace App\Rules\Web;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class SceneRule implements Rule
 {
@@ -26,9 +26,8 @@ class SceneRule implements Rule
     /**
      * Determine if the validation rule passes.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @return bool
+     * @param  string  $attribute
+     * @param  mixed  $value
      */
     public function passes($attribute, $value): bool
     {
@@ -38,17 +37,25 @@ class SceneRule implements Rule
 
         if ($this->fields->isEmpty()) {
             $this->message = '没有配置场景化搜索条件';
+
             return false;
         }
 
         foreach ($value as $filter) {
+            if (! is_array($filter) || ! array_key_exists('field', $filter) || ! is_string($filter['field'])) {
+                $this->message = '场景化搜索条件格式不正确';
+
+                return false;
+            }
+
             // 优先通过 field_alias 匹配，其次使用 field 匹配（与 ParseFilter::applyFilters 保持一致）
             $exists = $this->fields->contains(function ($item) use ($filter) {
                 return $item->field_alias === $filter['field'] || $item->field === $filter['field'];
             });
 
-            if (!$exists) {
-                $this->message = $filter['field'] . '字段不在配置中';
+            if (! $exists) {
+                $this->message = $filter['field'].'字段不在配置中';
+
                 return false;
             }
         }
@@ -58,8 +65,6 @@ class SceneRule implements Rule
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
     public function message(): string
     {

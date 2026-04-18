@@ -125,16 +125,18 @@ class ProductController extends Controller
      */
     public function combogrid(Request $request): JsonResponse
     {
-        $rows = request('rows', 10);
+        $q = $request->input('q');
+        $id = $request->input('id');
+        $rows = $request->input('rows', 10);
         $query = Product::query()
-            ->when($request->input('id'), function ($query) use ($request) {
-                return $query->where('id', $request->input('id'));
-            })
-            ->when(! $request->input('id'), function ($query) use ($request) {
-                return $query->where('keyword', 'like', '%'.$request->input('q').'%')
+            ->with(['type:id,name'])
+            ->when(
+                $id,
+                fn (Builder $query) => $query->where('id', $id),
+                fn (Builder $query) => $query->where('keyword', 'like', '%'.$q.'%')
                     ->where('disabled', 0)
-                    ->orderBy('id', 'desc');
-            })
+                    ->orderBy('id', 'desc')
+            )
             ->paginate($rows);
 
         return response_success([

@@ -10,7 +10,9 @@ class CashierRetailDetail extends BaseModel
     use HasUuids;
 
     protected $table = 'cashier_retail_detail';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected function casts(): array
@@ -22,7 +24,6 @@ class CashierRetailDetail extends BaseModel
 
     /**
      * 主单
-     * @return BelongsTo
      */
     public function retail(): BelongsTo
     {
@@ -31,10 +32,33 @@ class CashierRetailDetail extends BaseModel
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
         return $this->belongsTo('App\Models\Customer');
+    }
+
+    /**
+     * 项目信息
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * 商品信息
+     */
+    public function goods(): BelongsTo
+    {
+        return $this->belongsTo(Goods::class);
+    }
+
+    /**
+     * 单位信息
+     */
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class);
     }
 }

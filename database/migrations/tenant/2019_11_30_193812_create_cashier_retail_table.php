@@ -1,14 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
@@ -25,7 +24,6 @@ return new class extends Migration {
             $table->decimal('coupon', 14, 4)->default(0)->comment('券支付');
             $table->decimal('arrearage', 14, 4)->default(0)->comment('本单欠款金额');
             $table->text('remark')->nullable()->comment('备注');
-            $table->text('detail')->nullable()->comment('明细');
             $table->integer('user_id')->comment('录单人员');
             $table->timestamps();
             $table->comment('零售收费表');
@@ -34,8 +32,6 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {
