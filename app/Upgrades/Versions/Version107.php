@@ -38,6 +38,11 @@ class Version107 extends BaseVersion
     {
         $this->info('更新所有租户旧版菜单');
         Artisan::call('app:update-web-menu-command', [], $this->command->getOutput());
+        $this->info('执行菜单初始化数据填充');
+        Artisan::call('db:seed', [
+            '--class' => 'Database\\Seeders\\Admin\\MenusTableSeeder',
+            '--force' => true,
+        ], $this->command->getOutput());
         $this->info('更新所有租户新版菜单');
         Artisan::call('app:update-menu-command', [], $this->command->getOutput());
         $this->info('更新所有租户场景化搜索字段配置');
