@@ -2435,6 +2435,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '二开零购',
             'icon'       => 'iconfont if-shopping-cart',
             'path'       => '/treatment/erkai',
+            'url'        => '/new#/treatment/erkai',
             'meta'       => [
                 'title' => '二开零购'
             ],

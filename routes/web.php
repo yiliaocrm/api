@@ -486,6 +486,7 @@ Route::controller(Web\QuotationController::class)->prefix('quotation')->group(fu
 
 Route::controller(Web\ErkaiController::class)->prefix('erkai')->group(function () {
     Route::post('manage', 'manage');
+    Route::get('fill', 'fill');
     Route::post('create', 'create');
     Route::get('info', 'info');
     Route::post('update', 'update');

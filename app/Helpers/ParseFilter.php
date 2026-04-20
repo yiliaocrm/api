@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * 解析筛选条件
@@ -12,11 +12,6 @@ class ParseFilter
 {
     /**
      * 应用筛选条件到查询构造器
-     *
-     * @param Builder $query
-     * @param array $filters
-     * @param string $page
-     * @return Builder
      */
     public static function applyFilters(Builder $query, array $filters, string $page): Builder
     {
@@ -28,8 +23,8 @@ class ParseFilter
         }
 
         foreach ($filters as $filter) {
-            $field    = $filter['field'];
-            $value    = $filter['value'] ?? null;
+            $field = $filter['field'];
+            $value = $filter['value'] ?? null;
             $operator = $filter['operator'];
 
             // 优先通过 field_alias 匹配，其次使用 field 匹配
@@ -38,7 +33,7 @@ class ParseFilter
             });
 
             // 字段不在配置中，直接跳过
-            if (!$fieldConfig) {
+            if (! $fieldConfig) {
                 continue;
             }
 
@@ -53,12 +48,14 @@ class ParseFilter
                     $operator,
                     $value
                 );
+
                 continue;
             }
 
             // 处理日期字段查询
             if (self::isDateField($fieldConfig->field_type)) {
                 self::handleDateQuery($query, $column, $operator, $value, $fieldConfig->field_type);
+
                 continue;
             }
 
@@ -71,8 +68,6 @@ class ParseFilter
 
     /**
      * 判断是否为日期字段
-     * @param string $field_type
-     * @return bool
      */
     protected static function isDateField(string $field_type): bool
     {
@@ -81,14 +76,21 @@ class ParseFilter
 
     /**
      * 处理标准查询
-     * @param Builder $query
-     * @param string $column
-     * @param string $operator
-     * @param mixed $value
-     * @return void
      */
     protected static function handleStandardQuery(Builder $query, string $column, string $operator, mixed $value): void
     {
+        if (is_array($value) && $operator === '=') {
+            $query->whereIn($column, $value);
+
+            return;
+        }
+
+        if (is_array($value) && $operator === '<>') {
+            $query->whereNotIn($column, $value);
+
+            return;
+        }
+
         switch ($operator) {
             case 'in':
                 $query->whereIn($column, $value);
@@ -103,10 +105,10 @@ class ParseFilter
                 $query->whereNotBetween($column, $value);
                 break;
             case 'like':
-                $query->where($column, 'like', '%' . $value . '%');
+                $query->where($column, 'like', '%'.$value.'%');
                 break;
             case 'not like':
-                $query->where($column, 'not like', '%' . $value . '%');
+                $query->where($column, 'not like', '%'.$value.'%');
                 break;
             case 'is null':
                 $query->whereNull($column);
@@ -122,18 +124,13 @@ class ParseFilter
 
     /**
      * 处理日期查询
-     * @param Builder $query
-     * @param string $column
-     * @param mixed $operator
-     * @param mixed $value
-     * @param string $field_type
-     * @return void
      */
     protected static function handleDateQuery(Builder $query, string $column, mixed $operator, mixed $value, string $field_type): void
     {
         // date类型直接比较
         if ($field_type === 'date') {
             self::handleStandardQuery($query, $column, $operator, $value);
+
             return;
         }
 
@@ -152,12 +149,12 @@ class ParseFilter
                 break;
             case 'between':
                 if (is_array($value) && count($value) === 2) {
-                    $query->whereBetween(DB::raw('DATE(' . $prefix . $column . ')'), $value);
+                    $query->whereBetween(DB::raw('DATE('.$prefix.$column.')'), $value);
                 }
                 break;
             case 'not between':
                 if (is_array($value) && count($value) === 2) {
-                    $query->whereNotBetween(DB::raw('DATE(' . $prefix . $column . ')'), $value);
+                    $query->whereNotBetween(DB::raw('DATE('.$prefix.$column.')'), $value);
                 }
                 break;
             case 'is null':
@@ -175,16 +172,11 @@ class ParseFilter
 
     /**
      * 处理自定义查询配置
-     * @param array $configs
-     * @param Builder $query
-     * @param string $operator
-     * @param mixed $value
-     * @return void
      */
     protected static function handleQueryConfig(array $configs, Builder $query, string $operator, mixed $value): void
     {
         $config = collect($configs)->firstWhere('operator', $operator);
-        if (!$config) {
+        if (! $config) {
             return;
         }
 
@@ -204,10 +196,6 @@ class ParseFilter
 
     /**
      * 处理自定义查询配置中where条件
-     * @param array $clause
-     * @param Builder $query
-     * @param mixed $value
-     * @return void
      */
     protected static function handleQueryConfigWhereClause(array $clause, Builder $query, mixed $value): void
     {
@@ -230,9 +218,6 @@ class ParseFilter
 
     /**
      * 处理bindings
-     * @param array $bindings
-     * @param mixed $value
-     * @return array
      */
     protected static function handleBindings(array $bindings, mixed $value): array
     {
@@ -243,11 +228,12 @@ class ParseFilter
 
                 // 处理数组索引访问
                 if (preg_match('/\$value\[(-?\d+)]/', $placeholder, $indexMatches)) {
-                    $index = (int)$indexMatches[1];
+                    $index = (int) $indexMatches[1];
                     if ($index < 0) {
                         // 处理负数索引
                         return is_array($value) ? array_values($value)[count($value) + $index] : $value;
                     }
+
                     return is_array($value) && isset($value[$index]) ? $value[$index] : $value;
                 }
 
