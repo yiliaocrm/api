@@ -1,0 +1,7 @@
+html[data-vxe-ui-theme='light'] {
+    --vxe-ui-table-border-color: #d9d9d9;
+    --vxe-ui-table-cell-padding-mini: 0 10px;
+  }
+  
+  @import 'vxe-pc-ui/lib/style.css';
+  @import 'vxe-table/lib/style.css';
