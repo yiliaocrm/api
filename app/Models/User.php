@@ -232,16 +232,27 @@ class User extends EloquentUser
      */
     public function getConsultantViewUsersPermission(): array
     {
-        return collect($this->getMergedPermissions())->filter()->filter(function ($value, $key) {
-            return (str_contains($key, 'consultant.view.user'));
-        })
-            ->keys()
-            ->map(function ($key) {
-                return str_replace('consultant.view.user', '', $key);
+        return collect($this->getMergedPermissions())
+            ->filter()
+            ->flatMap(function ($value, $key) {
+                if (Str::startsWith($key, 'consultant.view.user.id.')) {
+                    return [(int) Str::after($key, 'consultant.view.user.id.')];
+                }
+
+                if (Str::startsWith($key, 'consultant.view.self.department')) {
+                    return User::query()->where('department_id', $this->department_id)->pluck('id')->toArray();
+                }
+
+                if (Str::startsWith($key, 'consultant.view.department.id.')) {
+                    return User::query()->where('department_id', (int) Str::after($key, 'consultant.view.department.id.'))->pluck('id')->toArray();
+                }
+
+                return [];
             })
             ->push($this->id)
             ->unique()
-            ->toArray();
+            ->values()
+            ->all();
     }
 
     /**

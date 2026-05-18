@@ -2,20 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\User;
+use App\Events\Web\ScanQRCodeLoginEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\AuthRequest;
-use App\Events\Web\ScanQRCodeLoginEvent;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
-
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     /**
      * 返回系统版本号
-     * @return JsonResponse
      */
     public function version(): JsonResponse
     {
@@ -26,13 +24,11 @@ class AuthController extends Controller
 
     /**
      * 用户登陆
-     * @param AuthRequest $request
-     * @return JsonResponse
      */
     public function login(AuthRequest $request): JsonResponse
     {
         $user = User::query()->where('email', $request->input('email'))->first();
-        if (!$user || !Hash::check($request->input('password'), $user->password)) {
+        if (! $user || ! Hash::check($request->input('password'), $user->password)) {
             return response_error(msg: '账号或密码错误');
         }
 
@@ -43,12 +39,12 @@ class AuthController extends Controller
 
         // 登录成功，写日志
         $user->loginLog()->create([
-            'type'        => 2, // app
-            'fingerprint' => $request->input("fingerprint")
+            'type' => 2, // app
+            'fingerprint' => $request->input('fingerprint'),
         ]);
 
         $user->update([
-            'last_login' => now()
+            'last_login' => now(),
         ]);
 
         return response_success([
@@ -58,21 +54,20 @@ class AuthController extends Controller
 
     /**
      * 返回登录用户信息
-     * @return JsonResponse
      */
     public function profile(): JsonResponse
     {
         // 用户信息
-        $user              = user();
+        $user = user();
         $user->permissions = $user->getMergedPermissions();
 
         // 系统配置
         $config = [
-            'cywebos_hospital_name' => parameter('cywebos_hospital_name')
+            'cywebos_hospital_name' => parameter('cywebos_hospital_name'),
         ];
 
         $data = [
-            'config'  => $config,
+            'config' => $config,
             'profile' => $user,
         ];
 
@@ -81,47 +76,44 @@ class AuthController extends Controller
 
     /**
      * 退出登录
-     * @return JsonResponse
      */
     public function logout(): JsonResponse
     {
         if (user()) {
             user()->currentAccessToken()->delete();
         }
+
         return response_success();
     }
 
     /**
      * 返回系统配置参数给前端
-     * @return JsonResponse
      */
     public function config(): JsonResponse
     {
         $data = [
-            'cywebos_hospital_name'                     => parameter('cywebos_hospital_name'),
-            'consultant_allow_reception'                => parameter('consultant_allow_reception'),
-            'cywebos_apps_autoload'                     => parameter('cywebos_apps_autoload'),
-            'cashier_allow_modify'                      => parameter('cashier_allow_modify'),
+            'cywebos_hospital_name' => parameter('cywebos_hospital_name'),
+            'cywebos_apps_autoload' => parameter('cywebos_apps_autoload'),
+            'cashier_allow_modify' => parameter('cashier_allow_modify'),
             'cywebos_force_enable_google_authenticator' => parameter('cywebos_force_enable_google_authenticator'),
         ];
+
         return response_success($data);
     }
 
     /**
      * APP扫码登陆
-     * @param AuthRequest $request
-     * @return JsonResponse
      */
     public function qrcode(AuthRequest $request): JsonResponse
     {
-        $uuid  = $request->input('uuid');
-        $key   = "qrcode.login.{$uuid}";
+        $uuid = $request->input('uuid');
+        $key = "qrcode.login.{$uuid}";
         $token = auth('api')->user()->createToken('app')->plainTextToken;
 
         // 登录成功，写日志
         user()->loginLog()->create([
-            'type'        => 3, // 扫码登陆
-            'fingerprint' => $request->input("fingerprint")
+            'type' => 3, // 扫码登陆
+            'fingerprint' => $request->input('fingerprint'),
         ]);
 
         // 用户登陆后,广播事件

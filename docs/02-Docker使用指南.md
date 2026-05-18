@@ -100,6 +100,29 @@ docker-compose up -d
 - PHP 扩展有变更（修改了 `docker/php/Dockerfile.prebuilt` 或 `docker/php/docker-entrypoint.sh`）
 - 需要发布新版本
 
+### 同步基础镜像到阿里云 ACR
+
+项目默认使用阿里云 ACR 中的 `nginx`、`mysql`、`redis` 镜像，避免普通开发者启动项目时访问 Docker Hub。维护方首次部署或基础镜像版本升级时，需要先同步这些镜像：
+
+```bash
+# macOS / Linux
+chmod +x ./sync-base-images.sh
+./sync-base-images.sh
+
+# 如需覆盖默认 registry 或命名空间
+./sync-base-images.sh registry.cn-hangzhou.aliyuncs.com yiliaocrm
+```
+
+Windows 用户请在 Git Bash 或 WSL 中执行同一脚本。
+
+当前固定同步的基础镜像：
+
+| 服务 | 官方镜像 | 阿里云 ACR 镜像 |
+|------|----------|-----------------|
+| Nginx | nginx:1.28.3-alpine | registry.cn-hangzhou.aliyuncs.com/yiliaocrm/nginx:1.28.3-alpine |
+| MySQL | mysql:8.0.45-debian | registry.cn-hangzhou.aliyuncs.com/yiliaocrm/mysql:8.0.45-debian |
+| Redis | redis:7.4.9-alpine3.21 | registry.cn-hangzhou.aliyuncs.com/yiliaocrm/redis:7.4.9-alpine3.21 |
+
 ### 本地构建调试
 
 如需在本机构建并测试（不推送），使用维护方专用 compose 文件：

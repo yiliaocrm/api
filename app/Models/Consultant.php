@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\ReceptionStatus;
 use App\Observers\ConsultantObserver;
 use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,6 +25,8 @@ class Consultant extends BaseModel
     {
         return [
             'items' => 'array',
+            'status' => ReceptionStatus::class,
+            'receptioned' => 'boolean',
         ];
     }
 
@@ -149,11 +153,35 @@ class Consultant extends BaseModel
     }
 
     /**
+     * 二开人员
+     */
+    public function ekUserRelation(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ek_user', 'id');
+    }
+
+    /**
+     * 助诊医生
+     */
+    public function doctorUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'doctor', 'id');
+    }
+
+    /**
      * 助诊医生
      */
     public function doctorInfo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'doctor');
+    }
+
+    /**
+     * 接待人员
+     */
+    public function receptionUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reception', 'id');
     }
 
     /**
@@ -170,5 +198,15 @@ class Consultant extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 成交状态
+     */
+    protected function statusText(): Attribute
+    {
+        return new Attribute(
+            get: fn() => $this->status->getLabel(),
+        );
     }
 }

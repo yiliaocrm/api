@@ -2,28 +2,27 @@
 
 namespace App\Http\Requests\Web;
 
-use App\Models\Goods;
+use App\Enums\AppointmentStatus;
+use App\Models\Appointment;
+use App\Models\Consultant;
 use App\Models\Customer;
 use App\Models\Followup;
-use App\Models\Reception;
-use App\Models\Appointment;
 use App\Models\FollowupType;
+use App\Models\Goods;
 use App\Models\InventoryBatchs;
-use App\Enums\AppointmentStatus;
-use App\Rules\Web\SceneRule;
+use App\Models\Reception;
 use App\Models\ReceptionType;
+use App\Rules\Web\SceneRule;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Query\JoinClause;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
 
 class WorkbenchRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -41,6 +40,7 @@ class WorkbenchRequest extends FormRequest
             'followup' => $this->getFollowupRules(),
             'birthday' => $this->getBirthdayRules(),
             'reception' => $this->getReceptionRules(),
+            'consultant' => $this->getConsultantRules(),
             'appointment' => $this->getAppointmentRules(),
             default => [],
         };
@@ -52,6 +52,7 @@ class WorkbenchRequest extends FormRequest
             'followup' => $this->getFollowupMessages(),
             'birthday' => $this->getBirthdayMessages(),
             'reception' => $this->getReceptionMessages(),
+            'consultant' => $this->getConsultantMessages(),
             'appointment' => $this->getAppointmentMessages(),
             default => []
         };
@@ -63,10 +64,10 @@ class WorkbenchRequest extends FormRequest
             'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('WorkbenchFollowup')
+                new SceneRule('WorkbenchFollowup'),
             ],
-            'date'    => 'required|array|size:2',
-            'date.*'  => 'required|date|date_format:Y-m-d',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date|date_format:Y-m-d',
             'type_id' => 'nullable|integer|exists:followup_type,id',
             'keyword' => 'nullable|string|max:255',
         ];
@@ -75,29 +76,29 @@ class WorkbenchRequest extends FormRequest
     private function getFollowupMessages(): array
     {
         return [
-            'filters.array'      => '[场景化筛选条件]格式不正确',
-            'date.required'      => '[回访日期]不能为空',
-            'date.array'         => '[回访日期]格式不正确',
-            'date.size'          => '[回访日期]必须包含开始和结束日期',
-            'date.*.required'    => '[回访日期]格式不正确',
-            'date.*.date'        => '[回访日期]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'date.required' => '[回访日期]不能为空',
+            'date.array' => '[回访日期]格式不正确',
+            'date.size' => '[回访日期]必须包含开始和结束日期',
+            'date.*.required' => '[回访日期]格式不正确',
+            'date.*.date' => '[回访日期]格式不正确',
             'date.*.date_format' => '[回访日期]格式必须为Y-m-d',
-            'type_id.integer'    => '[回访类型]格式不正确',
-            'type_id.exists'     => '[回访类型]不存在',
-            'keyword.string'     => '[搜索关键词]格式不正确',
-            'keyword.max'        => '[搜索关键词]不能超过255个字符',
+            'type_id.integer' => '[回访类型]格式不正确',
+            'type_id.exists' => '[回访类型]不存在',
+            'keyword.string' => '[搜索关键词]格式不正确',
+            'keyword.max' => '[搜索关键词]不能超过255个字符',
         ];
     }
 
     private function getReceptionRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('WorkbenchReception')
+                new SceneRule('WorkbenchReception'),
             ],
-            'created_at'   => 'required|array|size:2',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date|date_format:Y-m-d',
         ];
     }
@@ -105,8 +106,8 @@ class WorkbenchRequest extends FormRequest
     private function getBirthdayRules(): array
     {
         return [
-            'keyword'    => 'nullable|string|max:255',
-            'birthday'   => 'required|array|size:2',
+            'keyword' => 'nullable|string|max:255',
+            'birthday' => 'required|array|size:2',
             'birthday.*' => 'required|date|date_format:Y-m-d',
         ];
     }
@@ -114,13 +115,13 @@ class WorkbenchRequest extends FormRequest
     private function getBirthdayMessages(): array
     {
         return [
-            'keyword.string'         => '[顾客信息]格式不正确',
-            'keyword.max'            => '[顾客信息]不能超过255个字符',
-            'birthday.required'      => '[生日范围]不能为空',
-            'birthday.array'         => '[生日范围]格式不正确',
-            'birthday.size'          => '[生日范围]必须包含开始和结束日期',
-            'birthday.*.required'    => '[生日范围]格式不正确',
-            'birthday.*.date'        => '[生日范围]格式不正确',
+            'keyword.string' => '[顾客信息]格式不正确',
+            'keyword.max' => '[顾客信息]不能超过255个字符',
+            'birthday.required' => '[生日范围]不能为空',
+            'birthday.array' => '[生日范围]格式不正确',
+            'birthday.size' => '[生日范围]必须包含开始和结束日期',
+            'birthday.*.required' => '[生日范围]格式不正确',
+            'birthday.*.date' => '[生日范围]格式不正确',
             'birthday.*.date_format' => '[生日范围]格式必须为Y-m-d',
         ];
     }
@@ -128,25 +129,54 @@ class WorkbenchRequest extends FormRequest
     private function getReceptionMessages(): array
     {
         return [
-            'filters.array'            => '[场景化筛选条件]格式不正确',
-            'created_at.required'      => '[查询时间]不能为空',
-            'created_at.array'         => '[查询时间]格式不正确',
-            'created_at.size'          => '[查询时间]格式不正确',
-            'created_at.*.required'    => '[查询时间]格式不正确',
-            'created_at.*.date'        => '[查询时间]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'created_at.required' => '[查询时间]不能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date' => '[查询时间]格式不正确',
             'created_at.*.date_format' => '[查询时间]格式不正确',
+        ];
+    }
+
+    private function getConsultantRules(): array
+    {
+        return [
+            'filters' => [
+                'nullable',
+                'array',
+                new SceneRule('WorkbenchConsultant'),
+            ],
+            'created_at' => 'required|array|size:2',
+            'created_at.*' => 'required|date|date_format:Y-m-d',
+            'keyword' => 'nullable|string|max:255',
+        ];
+    }
+
+    private function getConsultantMessages(): array
+    {
+        return [
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'created_at.required' => '[查询时间]不能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date' => '[查询时间]格式不正确',
+            'created_at.*.date_format' => '[查询时间]格式不正确',
+            'keyword.string' => '[顾客信息]格式不正确',
+            'keyword.max' => '[顾客信息]不能超过255个字符',
         ];
     }
 
     private function getAppointmentRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('WorkbenchAppointment')
+                new SceneRule('WorkbenchAppointment'),
             ],
-            'created_at'   => 'required|array|size:2',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date|date_format:Y-m-d',
         ];
     }
@@ -154,20 +184,18 @@ class WorkbenchRequest extends FormRequest
     private function getAppointmentMessages(): array
     {
         return [
-            'filters.array'            => '[场景化筛选条件]格式不正确',
-            'created_at.required'      => '[查询时间]不能为空',
-            'created_at.array'         => '[查询时间]格式不正确',
-            'created_at.size'          => '[查询时间]格式不正确',
-            'created_at.*.required'    => '[查询时间]格式不正确',
-            'created_at.*.date'        => '[查询时间]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'created_at.required' => '[查询时间]不能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date' => '[查询时间]格式不正确',
             'created_at.*.date_format' => '[查询时间]格式不正确',
         ];
     }
 
     /**
      * 获取流水牌数据统计
-     * @param string $permission
-     * @return int
      */
     public function getMenuCount(string $permission): int
     {
@@ -178,6 +206,7 @@ class WorkbenchRequest extends FormRequest
             'workbench.birthday' => $this->getTodayBirthdayCount(),
             'workbench.followup' => $this->getTodayFollowupCount(),
             'workbench.reception' => $this->getTodayReceptionCount(),
+            'workbench.consultant' => $this->getTodayConsultantCount(),
             'workbench.appointment' => $this->getTodayAppointmentCount(),
             default => 0,
         };
@@ -185,7 +214,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取库存预警数量（库存不足 + 库存过剩）
-     * @return int
      */
     private function getInventoryAlarmCount(): int
     {
@@ -207,7 +235,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取今日生日顾客数量
-     * @return int
      */
     private function getTodayBirthdayCount(): int
     {
@@ -217,7 +244,7 @@ class WorkbenchRequest extends FormRequest
             ->whereNotNull('birthday')
             ->where(DB::raw("DATE_FORMAT(birthday, '%m-%d')"), $today)
             // 权限限制
-            ->when(!user()->hasAnyAccess(['superuser', 'customer.view.all']), function (Builder $query) {
+            ->when(! user()->hasAnyAccess(['superuser', 'customer.view.all']), function (Builder $query) {
                 $ids = user()->getCustomerViewUsersPermission();
                 $query->where(function ($query) use ($ids) {
                     $query->whereIn('ascription', $ids)->orWhereIn('consultant', $ids);
@@ -228,7 +255,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取今日预约数量
-     * @return int
      */
     private function getTodayAppointmentCount(): int
     {
@@ -239,7 +265,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取今日工作台数量（今日就诊）
-     * @return int
      */
     private function getTodayWorkbenchCount(): int
     {
@@ -250,14 +275,13 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取今日回访数量
-     * @return int
      */
     private function getTodayFollowupCount(): int
     {
         return Followup::query()
             ->whereDate('date', today())
             // 权限限制
-            ->when(!user()->hasAnyAccess(['superuser', 'followup.view.all']), function (Builder $query) {
+            ->when(! user()->hasAnyAccess(['superuser', 'followup.view.all']), function (Builder $query) {
                 $query->where('followup.followup_user', user()->id);
             })
             ->count();
@@ -265,7 +289,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取今日分诊接待数量
-     * @return int
      */
     private function getTodayReceptionCount(): int
     {
@@ -275,8 +298,24 @@ class WorkbenchRequest extends FormRequest
     }
 
     /**
+     * 获取今日咨询数量
+     */
+    private function getTodayConsultantCount(): int
+    {
+        return Consultant::query()
+            ->whereDate('created_at', today())
+            // 权限限制
+            ->when(! user()->hasAnyAccess(['superuser', 'consultant.view.all']), function (Builder $query) {
+                $users = user()->getConsultantViewUsersPermission();
+                $query->where(function (Builder $query) use ($users) {
+                    $query->whereIn('consultant', $users)->orWhereIn('ek_user', $users);
+                });
+            })
+            ->count();
+    }
+
+    /**
      * 获取过期预警数量（预警期内 + 已经过期）
-     * @return int
      */
     private function getInventoryExpiryCount(): int
     {
@@ -290,7 +329,7 @@ class WorkbenchRequest extends FormRequest
                     $subQuery->where('goods.warn_days', '<>', 0)
                         ->whereBetween(DB::raw('curdate()'), [
                             DB::raw('DATE_SUB(cy_inventory_batchs.expiry_date, INTERVAL cy_goods.warn_days DAY)'),
-                            DB::raw('cy_inventory_batchs.expiry_date')
+                            DB::raw('cy_inventory_batchs.expiry_date'),
                         ]);
                 })
                     // 或者已经过期
@@ -303,13 +342,11 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 获取分诊接待类型统计
-     * @param Builder $builder
-     * @return Collection
      */
     public function getReceptionDashboard(Builder $builder): Collection
     {
         // 获取分诊类型统计
-        $types  = ReceptionType::query()->orderBy('id')->get();
+        $types = ReceptionType::query()->orderBy('id')->get();
         $counts = $builder->clone()
             ->select('reception.type')
             ->selectRaw('COUNT(*) as count')
@@ -319,22 +356,20 @@ class WorkbenchRequest extends FormRequest
 
         return $types->map(function ($type) use ($counts) {
             return [
-                'id'    => $type->id,
-                'name'  => $type->name,
-                'count' => $counts->get($type->id, 0)
+                'id' => $type->id,
+                'name' => $type->name,
+                'count' => $counts->get($type->id, 0),
             ];
         });
     }
 
     /**
      * 获取回访类型统计
-     * @param Builder $builder
-     * @return Collection
      */
     public function getFollowupDashboard(Builder $builder): Collection
     {
         // 获取回访类型统计
-        $types  = FollowupType::query()->orderBy('id')->get();
+        $types = FollowupType::query()->orderBy('id')->get();
         $counts = $builder->clone()
             ->select('followup.type')
             ->selectRaw('COUNT(*) as count')
@@ -344,18 +379,16 @@ class WorkbenchRequest extends FormRequest
 
         return $types->map(function ($type) use ($counts) {
             return [
-                'id'    => $type->id,
-                'name'  => $type->name,
-                'icon'  => $type->icon,
-                'count' => $counts->get($type->id, 0)
+                'id' => $type->id,
+                'name' => $type->name,
+                'icon' => $type->icon,
+                'count' => $counts->get($type->id, 0),
             ];
         });
     }
 
     /**
      * 获取预约统计数据
-     * @param Builder $builder
-     * @return array
      */
     public function getAppointmentDashboard(Builder $builder): array
     {
@@ -392,19 +425,16 @@ class WorkbenchRequest extends FormRequest
             ->count();
 
         return [
-            'morning_count'         => $morningCount,
-            'arrived_count'         => $arrivedCount,
-            'afternoon_count'       => $afternoonCount,
-            'cancelled_count'       => $cancelledCount,
+            'morning_count' => $morningCount,
+            'arrived_count' => $arrivedCount,
+            'afternoon_count' => $afternoonCount,
+            'cancelled_count' => $cancelledCount,
             'pending_arrival_count' => $pendingArrivalCount,
         ];
     }
 
     /**
      * 分仓预警
-     * @param Builder $query
-     * @param int $warehouse_id
-     * @return Builder
      */
     public function applyWarehouseSpecificQuery(Builder $query, int $warehouse_id): Builder
     {
@@ -422,9 +452,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 应用库存预警状态筛选 - 库存正常
-     * @param Builder $query
-     * @param int|null $warehouse_id
-     * @return Builder
      */
     public function applyInventoryNormalStatus(Builder $query, ?int $warehouse_id): Builder
     {
@@ -453,9 +480,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 应用库存预警状态筛选 - 库存过剩
-     * @param Builder $query
-     * @param int|null $warehouse_id
-     * @return Builder
      */
     public function applyInventoryHighStatus(Builder $query, ?int $warehouse_id): Builder
     {
@@ -470,9 +494,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 应用库存预警状态筛选 - 库存不足
-     * @param Builder $query
-     * @param int|null $warehouse_id
-     * @return Builder
      */
     public function applyInventoryLowStatus(Builder $query, ?int $warehouse_id): Builder
     {
@@ -487,9 +508,6 @@ class WorkbenchRequest extends FormRequest
 
     /**
      * 过滤库存为空的商品
-     * @param Builder $query
-     * @param int|null $warehouse_id
-     * @return Builder
      */
     public function applyInventoryFilterEmpty(Builder $query, ?int $warehouse_id): Builder
     {

@@ -100,7 +100,12 @@ class ConsultantController extends Controller
      */
     public function fill(Request $request): JsonResponse
     {
-        $customer    = Customer::query()->find($request->input('customer_id'));
+        $customer    = Customer::query()
+            ->with([
+                'consultantUser:id,name',
+                'ascriptionUser:id,name',
+            ])
+            ->find($request->input('customer_id'));
         $reception   = $customer->receptions()->orderBy('created_at', 'desc')->first();
         $reservation = $customer->reservations()->whereNull('cometime')->orderBy('created_at', 'desc')->first();
         $data        = [
@@ -127,6 +132,8 @@ class ConsultantController extends Controller
             }
         }
 
+        $data['customer'] = $customer;
+
         return response_success($data);
     }
 
@@ -141,6 +148,8 @@ class ConsultantController extends Controller
             $request->input('id')
         );
         $consultant->load([
+            'customer.consultantUser:id,name',
+            'customer.ascriptionUser:id,name',
             'orders' => function ($query) {
                 $query->with('units')->orderBy('created_at', 'desc');
             },

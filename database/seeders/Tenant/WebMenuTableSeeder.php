@@ -77,6 +77,22 @@ class WebMenuTableSeeder extends Seeder
             'permission' => 'workbench.today.reception',
         ]);
 
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '咨询',
+            'remark'     => '今日工作现场咨询操作',
+            'display'    => false,
+            'permission' => 'workbench.today.consultant',
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '收费',
+            'remark'     => '今日工作收费记录入口',
+            'display'    => false,
+            'permission' => 'workbench.today.cashier',
+        ]);
+
         $menu = WebMenu::query()->create([
             'parentid'   => $root->id,
             'name'       => '预约管理',
@@ -379,16 +395,25 @@ class WebMenuTableSeeder extends Seeder
 
         $menu = WebMenu::query()->create([
             'parentid'   => $root->id,
-            'name'       => '现场设计',
+            'name'       => '咨询管理',
             'path'       => '/workbench/consultant',
             'component'  => 'consultant/index',
+            'url'        => '/new#/workbench/consultant',
             'meta'       => [
-                'title' => '现场设计'
+                'title' => '咨询管理'
             ],
             'icon'       => 'iconfont if-consultant',
             'route'      => 'ConsultantIndex',
-            'remark'     => '现场咨询记录',
-            'permission' => 'consultant.manage'
+            'remark'     => '咨询管理',
+            'permission' => 'workbench.consultant'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '查看记录',
+            'remark'     => '查看咨询记录',
+            'display'    => false,
+            'permission' => 'workbench.consultant.index'
         ]);
 
         WebMenu::query()->create([
@@ -397,15 +422,24 @@ class WebMenuTableSeeder extends Seeder
             'icon'       => 'icon-history',
             'remark'     => '查看历史咨询记录(默认只能看当天)',
             'display'    => false,
-            'permission' => 'consultant.history'
+            'permission' => 'workbench.consultant.history'
         ]);
 
         WebMenu::query()->create([
             'parentid'   => $menu->id,
-            'name'       => '取消接待',
-            'icon'       => 'icon-cancel',
+            'name'       => '咨询登记',
+            'remark'     => '允许咨询师自己新增咨询记录',
             'display'    => false,
-            'permission' => 'consultant.cancel.reception',
+            'permission' => 'workbench.consultant.create'
+        ]);
+
+        WebMenu::query()->create([
+            'parentid'   => $menu->id,
+            'name'       => '取消咨询',
+            'icon'       => 'icon-cancel',
+            'remark'     => '取消咨询记录',
+            'display'    => false,
+            'permission' => 'workbench.consultant.cancel',
         ]);
 
         WebMenu::query()->create([

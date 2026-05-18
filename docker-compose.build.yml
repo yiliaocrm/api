@@ -7,6 +7,7 @@
 services:
   # Nginx Web 服务器（本地构建）
   nginx:
+    image: registry.cn-hangzhou.aliyuncs.com/yiliaocrm/nginx:1.28.3-alpine
     build:
       context: ./docker/nginx
       dockerfile: Dockerfile
@@ -56,7 +57,7 @@ services:
 
   # MySQL 数据库
   mysql:
-    image: mysql:8.0
+    image: registry.cn-hangzhou.aliyuncs.com/yiliaocrm/mysql:8.0.45-debian
     container_name: his-mysql
     ports:
       - "${DOCKER_MYSQL_PORT:-3306}:3306"
@@ -80,7 +81,7 @@ services:
 
   # Redis 缓存与队列
   redis:
-    image: redis:alpine
+    image: registry.cn-hangzhou.aliyuncs.com/yiliaocrm/redis:7.4.9-alpine3.21
     container_name: his-redis
     ports:
       - "${DOCKER_REDIS_PORT:-6379}:6379"

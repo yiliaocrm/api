@@ -111,7 +111,6 @@ class AuthController extends Controller
             'stores' => $stores,
             'banners' => $banners,
             'cywebos_hospital_name' => parameter('cywebos_hospital_name'),
-            'consultant_allow_reception' => parameter('consultant_allow_reception'),
             'cashier_allow_modify' => parameter('cashier_allow_modify'),
             'cywebos_force_enable_google_authenticator' => parameter('cywebos_force_enable_google_authenticator'),
             'cywebos_enable_item_product_type_sync' => parameter('cywebos_enable_item_product_type_sync'),
