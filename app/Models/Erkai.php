@@ -2,33 +2,45 @@
 
 namespace App\Models;
 
+use App\Enums\ErkaiStatus;
+use App\Traits\QueryConditionsTrait;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Erkai extends BaseModel
 {
-    use HasUuids;
+    use HasUuids, QueryConditionsTrait;
 
     protected $table = 'erkai';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected function casts(): array
     {
         return [
-            'payable'   => 'float',
-            'income'    => 'float',
-            'deposit'   => 'float',
-            'coupon'    => 'float',
-            'arrearage' => 'float'
+            'status' => ErkaiStatus::class,
+            'payable' => 'float',
+            'income' => 'float',
+            'deposit' => 'float',
+            'coupon' => 'float',
+            'arrearage' => 'float',
         ];
+    }
+
+    protected function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->status?->getLabel(),
+        );
     }
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -37,7 +49,6 @@ class Erkai extends BaseModel
 
     /**
      * 明细
-     * @return HasMany
      */
     public function details(): HasMany
     {
@@ -46,7 +57,6 @@ class Erkai extends BaseModel
 
     /**
      * 收费通知
-     * @return MorphMany
      */
     public function cashierable(): MorphMany
     {
@@ -55,7 +65,6 @@ class Erkai extends BaseModel
 
     /**
      * 二开科室
-     * @return BelongsTo
      */
     public function department(): BelongsTo
     {
@@ -64,7 +73,6 @@ class Erkai extends BaseModel
 
     /**
      * 录单人员
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -73,7 +81,6 @@ class Erkai extends BaseModel
 
     /**
      * 媒介来源
-     * @return BelongsTo
      */
     public function medium(): BelongsTo
     {

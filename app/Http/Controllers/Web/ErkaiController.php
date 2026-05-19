@@ -2,82 +2,107 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Erkai\CreateRequest;
-use App\Http\Requests\Erkai\InfoRequest;
-use App\Http\Requests\Erkai\UpdateRequest;
-use App\Models\Erkai;
-use Exception;
-use Throwable;
-use Carbon\Carbon;
 use App\Exceptions\HisException;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Erkai\ErkaiRequest;
+use App\Models\Customer;
+use App\Models\Erkai;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class ErkaiController extends Controller
 {
-    public function manage(Request $request): JsonResponse
+    public function fill(Request $request): JsonResponse
     {
-        $data  = [];
-        $rows  = $request->input('rows', 10);
-        $query = Erkai::query()
-            ->with(['customer:id,idcard,name', 'details.units'])
-            ->select('erkai.*')
-            ->leftJoin('customer', 'customer.id', '=', 'erkai.customer_id')
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('erkai.created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
-                ]);
-            })
-            // 顾客信息
-            ->when($request->input('keyword'), function (Builder $query) use ($request) {
-                $query->where('customer.keyword', 'like', '%' . $request->input('keyword') . '%');
-            })
-            // 录单人员
-            ->when($request->input('user_id'), function (Builder $query) use ($request) {
-                $query->where('erkai.user_id', $request->input('user_id'));
-            })
-            // 开单科室
-            ->when($request->input('department_id'), function (Builder $query) use ($request) {
-                $query->where('erkai.department_id', $request->input('department_id'));
-            })
-            // 成交状态
-            ->when($request->input('status'), function (Builder $query) use ($request) {
-                $query->where('erkai.status', $request->input('status'));
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate($rows);
+        $customer = Customer::query()->find(
+            $request->input('customer_id')
+        );
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'type' => $customer->receptions->count() > 1 ? 2 : 1,
+            'medium_id' => $customer->medium_id,
+        ]);
+    }
+
+    public function manage(ErkaiRequest $request): JsonResponse
+    {
+        $rows = $request->input('rows', 10);
+        $sort = $request->input('sort', 'created_at');
+        $order = $request->input('order', 'desc');
+        $keyword = $request->input('keyword');
+        $date = $request->input('date');
+        $filters = $request->input('filters', []);
+
+        $builder = Erkai::query()
+            ->with(['customer:id,idcard,name,keyword', 'department:id,name', 'user:id,name'])
+            ->select('erkai.*')
+            ->leftJoin('customer', 'customer.id', '=', 'erkai.customer_id')
+            ->whereBetween('erkai.created_at', [
+                Carbon::parse($date[0])->startOfDay(),
+                Carbon::parse($date[1])->endOfDay(),
+            ])
+            ->when($keyword, fn (Builder $builder) => $builder->whereLike('customer.keyword', '%'.$keyword.'%'))
+            ->queryConditions('ErkaiIndex', $filters)
+            ->orderBy("erkai.{$sort}", $order);
+
+        $query = $builder->clone()->paginate($rows);
+
+        $query->append(['status_text']);
+
+        $footer = [
+            [
+                'customer.name' => '页小计:',
+                'payable' => collect($query->items())->sum('payable'),
+                'income' => collect($query->items())->sum('income'),
+                'deposit' => collect($query->items())->sum('deposit'),
+                'coupon' => collect($query->items())->sum('coupon'),
+                'arrearage' => collect($query->items())->sum('arrearage'),
+            ],
+            [
+                'customer.name' => '总合计:',
+                'payable' => floatval($builder->clone()->sum('erkai.payable')),
+                'income' => floatval($builder->clone()->sum('erkai.income')),
+                'deposit' => floatval($builder->clone()->sum('erkai.deposit')),
+                'coupon' => floatval($builder->clone()->sum('erkai.coupon')),
+                'arrearage' => floatval($builder->clone()->sum('erkai.arrearage')),
+            ],
+        ];
+
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+            'footer' => $footer,
         ]);
     }
 
     /**
      * 二开信息
-     * @param InfoRequest $request
-     * @return JsonResponse
      */
-    public function info(InfoRequest $request): JsonResponse
+    public function info(ErkaiRequest $request): JsonResponse
     {
-        $data = Erkai::query()->find(
-            $request->input('id')
-        );
-        $data->load(['details']);
+        $data = Erkai::query()
+            ->with([
+                'customer:id,idcard,name,keyword',
+                'details.units',
+            ])
+            ->find($request->input('id'));
+
+        $data?->append('status_text');
+
         return response_success($data);
     }
 
     /**
      * 创建二开记录
-     * @param CreateRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
-    public function create(CreateRequest $request): JsonResponse
+    public function create(ErkaiRequest $request): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -98,9 +123,11 @@ class ErkaiController extends Controller
             );
 
             // 加载关系
-            $erkai->load(['customer:id,idcard,name', 'details']);
+            $erkai->load(['customer:id,idcard,name,keyword', 'details.units']);
+            $erkai->append('status_text');
 
             DB::commit();
+
             return response_success($erkai);
         } catch (Exception $e) {
             DB::rollBack();
@@ -110,11 +137,10 @@ class ErkaiController extends Controller
 
     /**
      * 更新二开记录
-     * @param UpdateRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
-    public function update(UpdateRequest $request): JsonResponse
+    public function update(ErkaiRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -143,9 +169,11 @@ class ErkaiController extends Controller
             );
 
             // 加载关系
-            $erkai->load(['customer:id,idcard,name', 'details']);
+            $erkai->load(['customer:id,idcard,name,keyword', 'details.units']);
+            $erkai->append('status_text');
 
             DB::commit();
+
             return response_success($erkai);
 
         } catch (Exception $e) {

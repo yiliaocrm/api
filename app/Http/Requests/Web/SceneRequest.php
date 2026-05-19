@@ -4,15 +4,13 @@ namespace App\Http\Requests\Web;
 
 use App\Models\Scene;
 use App\Models\SceneField;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 
 class SceneRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -54,19 +52,19 @@ class SceneRequest extends FormRequest
 
         if ($method === 'create') {
             return [
-                'page'           => $this->input('page'),
-                'name'           => $this->input('name'),
-                'public'         => 0,
-                'config'         => $this->input('config'),
-                'type'           => 'user',
-                'create_user_id' => user()->id
+                'page' => $this->input('page'),
+                'name' => $this->input('name'),
+                'public' => 0,
+                'config' => $this->input('config'),
+                'type' => 'user',
+                'create_user_id' => user()->id,
             ];
         }
 
         if ($method === 'update') {
             return [
-                'name'   => $this->input('name'),
-                'config' => $this->input('config')
+                'name' => $this->input('name'),
+                'config' => $this->input('config'),
             ];
         }
 
@@ -76,47 +74,48 @@ class SceneRequest extends FormRequest
     private function getListRules(): array
     {
         return [
-            'page' => 'required'
+            'page' => 'required',
         ];
     }
 
     private function getListMessages(): array
     {
         return [
-            'page.required' => 'page参数不能为空!'
+            'page.required' => 'page参数不能为空!',
         ];
     }
 
     private function getCreateRules(): array
     {
         return [
-            'page'   => 'required|string',
-            'name'   => 'required|string',
-            'config' => 'required|array'
+            'page' => 'required|string',
+            'name' => 'required|string',
+            'config' => 'required|array',
         ];
     }
 
     private function getCreateMessages(): array
     {
         return [
-            'page.required'   => 'page参数不能为空!',
-            'name.required'   => 'name参数不能为空!',
+            'page.required' => 'page参数不能为空!',
+            'name.required' => 'name参数不能为空!',
             'config.required' => 'config参数不能为空!',
-            'config.array'    => 'config参数必须是数组!'
+            'config.array' => 'config参数必须是数组!',
         ];
     }
 
     private function getUpdateRules(): array
     {
         return [
-            'id'     => [
+            'id' => [
                 'required',
                 'integer',
                 'exists:scenes,id',
                 function ($attribute, $value, $fail) {
                     $scene = Scene::query()->find($value);
-                    if (!$scene) {
+                    if (! $scene) {
                         $fail('搜索场景不存在!');
+
                         return;
                     }
 
@@ -124,22 +123,22 @@ class SceneRequest extends FormRequest
                     if ($scene->create_user_id !== user()->id) {
                         $fail('无权限更新此搜索场景!');
                     }
-                }
+                },
             ],
-            'name'   => 'required|string',
-            'config' => 'required|array'
+            'name' => 'required|string',
+            'config' => 'required|array',
         ];
     }
 
     private function getUpdateMessages(): array
     {
         return [
-            'id.required'     => 'id参数不能为空!',
-            'id.integer'      => 'id参数必须是整数!',
-            'id.exists'       => '搜索场景不存在!',
-            'name.required'   => 'name参数不能为空!',
+            'id.required' => 'id参数不能为空!',
+            'id.integer' => 'id参数必须是整数!',
+            'id.exists' => '搜索场景不存在!',
+            'name.required' => 'name参数不能为空!',
             'config.required' => 'config参数不能为空!',
-            'config.array'    => 'config参数必须是数组!'
+            'config.array' => 'config参数必须是数组!',
         ];
     }
 
@@ -151,17 +150,18 @@ class SceneRequest extends FormRequest
                 'integer',
                 function ($attribute, $value, $fail) {
                     $scene = Scene::query()->find($value);
-                    if (!$scene) {
+                    if (! $scene) {
                         $fail('搜索场景不存在!');
+
                         return;
                     }
 
                     // 检查权限：只有创建者或公共场景的管理员可以删除
-                    if ($scene->create_user_id !== user()->id && !$scene->public) {
+                    if ($scene->create_user_id !== user()->id && ! $scene->public) {
                         $fail('无权限删除此搜索场景!');
                     }
-                }
-            ]
+                },
+            ],
         ];
     }
 
@@ -169,16 +169,16 @@ class SceneRequest extends FormRequest
     {
         return [
             'id.required' => 'id参数不能为空!',
-            'id.integer'  => 'id参数必须是整数!',
-            'id.exists'   => '搜索场景不存在!'
+            'id.integer' => 'id参数必须是整数!',
+            'id.exists' => '搜索场景不存在!',
         ];
     }
 
     private function getFormatRules(): array
     {
         return [
-            'page'            => 'required',
-            'filters'         => 'nullable|array',
+            'page' => 'required',
+            'filters' => 'nullable|array',
             'filters.*.field' => [
                 'required',
                 function ($attribute, $value, $fail) {
@@ -189,7 +189,7 @@ class SceneRequest extends FormRequest
                                 ->orWhere('field_alias', $value);
                         })
                         ->exists();
-                    if (!$exists) {
+                    if (! $exists) {
                         $fail("字段 {$value} 在场景配置中不存在!");
                     }
                 },
@@ -201,28 +201,26 @@ class SceneRequest extends FormRequest
     {
         return [
             'page.required' => 'page参数不能为空!',
-            'filters.array' => 'filters参数必须是数组!'
+            'filters.array' => 'filters参数必须是数组!',
         ];
     }
 
     /**
      * 格式化筛选条件
-     * @param array $filter
-     * @return string
      */
     public function formatterText(array $filter): string
     {
-        $page          = $this->input('page');
-        $field         = SceneField::query()
+        $page = $this->input('page');
+        $field = SceneField::query()
             ->where('page', $page)
             ->where(function ($query) use ($filter) {
                 $query->where('field_alias', $filter['field'])
                     ->orWhere('field', $filter['field']);
             })
             ->first();
-        $operator      = collect($field->operators)->where('value', $filter['operator'])->first();
-        $fieldName     = $field->name;
-        $operatorText  = $operator['text'];
+        $operator = collect($field->operators)->where('value', $filter['operator'])->first();
+        $fieldName = $field->name;
+        $operatorText = $operator['text'];
         $operatorValue = $operator['value'];
 
         // 处理 is null 和 is not null 操作符（无需 value）
@@ -230,12 +228,13 @@ class SceneRequest extends FormRequest
             return "{$fieldName} {$operatorText}";
         }
 
-        // 处理 in 和 not in 操作符
-        if (in_array($operatorValue, ['in', 'not in']) && is_array($filter['value'])) {
+        // 处理多选筛选值
+        if ($this->isMultiSelectFilter($field, $operatorValue, $filter['value'] ?? null)) {
             $values = array_map(function ($value) use ($field, $operatorValue) {
                 return $this->formatterTextValue($field, $operatorValue, $value);
             }, $filter['value']);
-            return "{$fieldName} {$operatorText} " . implode('、', $values);
+
+            return "{$fieldName} {$operatorText} ".implode('、', $values);
         }
 
         // 级联选择器 渲染最后一级的值
@@ -253,10 +252,6 @@ class SceneRequest extends FormRequest
 
     /**
      * 解析筛选条件值
-     * @param SceneField $field
-     * @param string $operator
-     * @param string|null $value
-     * @return string|null
      */
     protected function formatterTextValue(SceneField $field, string $operator, ?string $value): ?string
     {
@@ -266,22 +261,22 @@ class SceneRequest extends FormRequest
         }
 
         // 处理select静态数据
-        if ($field->component === 'select' && !$field->api) {
+        if ($field->component === 'select' && ! $field->api) {
             return $this->formatterSelectValue($field, $value);
         }
 
         // 处理接口请求数据
         $mappings = [
-            '/cache/tags'                 => 'tags',
-            '/cache/items'                => 'item',
-            '/cache/mediums'              => 'medium',
-            '/cache/accounts'             => 'accounts',
-            '/cache/warehouse'            => 'warehouse',
-            '/cache/departments'          => 'department',
-            '/cache/goods-type'           => 'goods_type',
-            '/cache/product-type'         => 'product_type',
-            '/cache/reception-type'       => 'reception_type',
-            'department-picking-type'     => 'department_picking_types',
+            '/cache/tags' => 'tags',
+            '/cache/items' => 'item',
+            '/cache/mediums' => 'medium',
+            '/cache/accounts' => 'accounts',
+            '/cache/warehouse' => 'warehouse',
+            '/cache/departments' => 'department',
+            '/cache/goods-type' => 'goods_type',
+            '/cache/product-type' => 'product_type',
+            '/cache/reception-type' => 'reception_type',
+            'department-picking-type' => 'department_picking_types',
             '/cache/product-package-type' => 'product_package_type',
         ];
         foreach ($mappings as $apiPath => $tableName) {
@@ -301,22 +296,33 @@ class SceneRequest extends FormRequest
         return $value;
     }
 
+    private function isMultiSelectFilter(SceneField $field, string $operator, mixed $value): bool
+    {
+        if (! is_array($value)) {
+            return false;
+        }
+
+        if (in_array($operator, ['in', 'not in'])) {
+            return true;
+        }
+
+        return $field->component === 'select' && (bool) data_get($field->component_params, 'props.multiple', false);
+    }
+
     /**
      * 格式化筛选条件值
-     * @param SceneField $field
-     * @param string|null $value
-     * @return string
      */
     private function formatterSelectValue(SceneField $field, ?string $value): string
     {
         $params = $field->component_params;
-        if (!$params) {
-            return (string)$value;
+        if (! $params) {
+            return (string) $value;
         }
-        if (!isset($params['options']) || !is_array($params['options'])) {
-            return (string)$value;
+        if (! isset($params['options']) || ! is_array($params['options'])) {
+            return (string) $value;
         }
         $options = collect($params['options'])->firstWhere('value', $value);
-        return $options ? $options['label'] : (string)$value;
+
+        return $options ? $options['label'] : (string) $value;
     }
 }

@@ -47,6 +47,7 @@ Route::controller(Web\WorkbenchController::class)->prefix('workbench')->group(fu
     Route::post('followup', 'followup');
     Route::post('birthday', 'birthday');
     Route::post('reception', 'reception');
+    Route::post('consultant', 'consultant');
     Route::post('appointment', 'appointment');
     Route::post('inventory-alarm', 'inventoryAlarm');
     Route::post('inventory-expiry', 'inventoryExpiry');
@@ -486,6 +487,7 @@ Route::controller(Web\QuotationController::class)->prefix('quotation')->group(fu
 
 Route::controller(Web\ErkaiController::class)->prefix('erkai')->group(function () {
     Route::post('manage', 'manage');
+    Route::get('fill', 'fill');
     Route::post('create', 'create');
     Route::get('info', 'info');
     Route::post('update', 'update');

@@ -106,12 +106,6 @@ class ParametersTableSeeder extends Seeder
                 'remark' => '开启首诊制(无法挂其他咨询的顾客)',
             ],
             [
-                'name'   => 'consultant_allow_reception',
-                'value'  => 'false',
-                'type'   => 'boolean',
-                'remark' => '允许咨询师挂号(不经过前台)',
-            ],
-            [
                 'name'   => 'consultant_allow_modify_previous_record',
                 'value'  => 'false',
                 'type'   => 'boolean',

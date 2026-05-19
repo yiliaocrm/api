@@ -6,7 +6,7 @@
 services:
   # Nginx Web 服务器
   nginx:
-    image: nginx:alpine
+    image: registry.cn-hangzhou.aliyuncs.com/yiliaocrm/nginx:1.28.3-alpine
     container_name: his-nginx
     ports:
       - "8080:80"
@@ -53,7 +53,7 @@ services:
 
   # MySQL 数据库
   mysql:
-    image: mysql:8.0
+    image: registry.cn-hangzhou.aliyuncs.com/yiliaocrm/mysql:8.0.45-debian
     container_name: his-mysql
     ports:
       - "3306:3306"
@@ -77,7 +77,7 @@ services:
 
   # Redis 缓存与队列
   redis:
-    image: redis:alpine
+    image: registry.cn-hangzhou.aliyuncs.com/yiliaocrm/redis:7.4.9-alpine3.21
     container_name: his-redis
     ports:
       - "6379:6379"

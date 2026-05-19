@@ -80,6 +80,16 @@ class PermissionActionSeeder extends Seeder
                 'action' => 'create',
             ],
             [
+                'permission' => 'workbench.today.consultant',
+                'controller' => 'App\Http\Controllers\Web\ConsultantController',
+                'action' => 'fill',
+            ],
+            [
+                'permission' => 'workbench.today.consultant',
+                'controller' => 'App\Http\Controllers\Web\ConsultantController',
+                'action' => 'create',
+            ],
+            [
                 'permission' => 'workbench.today.arrival',
                 'controller' => 'App\Http\Controllers\Web\AppointmentController',
                 'action' => 'arrival',
@@ -143,6 +153,21 @@ class PermissionActionSeeder extends Seeder
                 'permission' => 'workbench.reception.dispatch.consultant',
                 'controller' => 'App\Http\Controllers\Web\ReceptionController',
                 'action' => 'dispatchConsultant',
+            ],
+            [
+                'permission' => 'workbench.consultant.index',
+                'controller' => 'App\Http\Controllers\Web\WorkbenchController',
+                'action' => 'consultant',
+            ],
+            [
+                'permission' => 'workbench.consultant.create',
+                'controller' => 'App\Http\Controllers\Web\ConsultantController',
+                'action' => 'create',
+            ],
+            [
+                'permission' => 'workbench.consultant.cancel',
+                'controller' => 'App\Http\Controllers\Web\ConsultantController',
+                'action' => 'cancel',
             ],
             [
                 'permission' => 'workbench.followup.index',
@@ -279,16 +304,6 @@ class PermissionActionSeeder extends Seeder
                 'permission' => 'cashier.list',
                 'controller' => 'App\Http\Controllers\Web\CashierController',
                 'action' => '*',
-            ],
-            [
-                'permission' => 'consultant.manage',
-                'controller' => 'App\Http\Controllers\Web\ConsultantController',
-                'action' => '*',
-            ],
-            [
-                'permission' => 'consultant.cancel.reception',
-                'controller' => 'App\Http\Controllers\Web\ConsultantController',
-                'action' => 'cancel',
             ],
             [
                 'permission' => 'customer.update.qufriend',
