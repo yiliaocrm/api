@@ -306,12 +306,6 @@ class PermissionActionSeeder extends Seeder
                 'action' => '*',
             ],
             [
-                'permission' => 'consultant.manage',
-                'controller' => 'App\Http\Controllers\Web\ConsultantController',
-                'action' => '*',
-                'except' => 'create,cancel',
-            ],
-            [
                 'permission' => 'customer.update.qufriend',
                 'controller' => 'App\Http\Controllers\Web\CustomerQufriendController',
                 'action' => '*',
