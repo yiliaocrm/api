@@ -7,64 +7,75 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Consumable\CreateRequest;
 use App\Models\Consumable;
 use App\Models\CustomerProduct;
-use Exception;
-use Throwable;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class ConsumableController extends Controller
 {
     /**
      * 用料登记列表
-     * @param Request $request
+     *
      * @return JsonResponse
      */
     public function manage(Request $request)
     {
-        $sort  = $request->input('sort', 'id');
+        $sort = $request->input('sort', 'id');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
+        $rows = $request->input('rows', 10);
+        $filters = $request->input('filters', []);
+        $dateStart = $request->input('date_start', $request->input('date_at_start'));
+        $dateEnd = $request->input('date_end', $request->input('date_at_end'));
+        $keyword = $request->input('keyword', $request->input('customer_keyword'));
         $query = Consumable::query()
             ->with([
                 'customer:id,idcard,name',
-                'details.goodsUnits'
+                'details.goodsUnits',
+                'details.inventoryBatchs',
+                'warehouse:id,name',
+                'department:id,name',
+                'user:id,name',
+                'createUser:id,name',
             ])
-            ->when($request->input('date_at_start') && $request->input('date_at_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('created_at', [
-                    Carbon::parse($request->input('date_at_start')),
-                    Carbon::parse($request->input('date_at_end'))->endOfDay()
+            ->select([
+                'consumable.*',
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'consumable.customer_id')
+            ->when($dateStart && $dateEnd, function (Builder $query) use ($dateStart, $dateEnd) {
+                $query->whereBetween('consumable.date', [
+                    Carbon::parse($dateStart)->toDateString(),
+                    Carbon::parse($dateEnd)->toDateString(),
                 ]);
             })
-            ->when($request->input('customer_keyword'), function (Builder $query) use ($request) {
-                $query->whereHas('customer', function (Builder $q) use ($request) {
-                    $q->where('keyword', 'like', '%' . $request->input('customer_keyword') . '%');
-                });
-            })
+            ->when($keyword, fn (Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
             ->when($request->input('goods_name'), function (Builder $query) use ($request) {
                 $query->whereHas('details', function (Builder $q) use ($request) {
-                    $q->where('goods_name', 'like', '%' . $request->input('goods_name') . '%');
+                    $q->where('goods_name', 'like', '%'.$request->input('goods_name').'%');
                 });
             })
-            ->when($request->input('key'), fn(Builder $query) => $query->where('key', $request->input('key')))
-            ->when($request->input('warehouse_id'), fn(Builder $query) => $query->where('warehouse_id', $request->input('warehouse_id')))
-            ->when($request->input('department_id'), fn(Builder $query) => $query->where('department_id', $request->input('department_id')))
-            ->when($request->input('product_name'), fn(Builder $query) => $query->where('product_name', 'like', '%' . $request->input('product_name') . '%'))
-            ->orderBy($sort, $order)
+            ->when($request->input('key'), fn (Builder $query) => $query->where('key', $request->input('key')))
+            ->when($request->input('warehouse_id'), fn (Builder $query) => $query->where('warehouse_id', $request->input('warehouse_id')))
+            ->when($request->input('department_id'), fn (Builder $query) => $query->where('department_id', $request->input('department_id')))
+            ->when($request->input('product_name'), fn (Builder $query) => $query->where('product_name', 'like', '%'.$request->input('product_name').'%'))
+            ->queryConditions('ConsumableIndex', $filters)
+            ->orderBy(str_contains($sort, '.') ? $sort : "consumable.{$sort}", $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
+            'rows' => $query->items(),
             'total' => $query->total(),
         ]);
     }
 
     /**
      * 用料登记
-     * @param CreateRequest $request
+     *
      * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
     public function create(CreateRequest $request)
@@ -95,6 +106,7 @@ class ConsumableController extends Controller
             );
 
             DB::commit();
+
             return response_success($consumable);
 
         } catch (Exception $e) {
@@ -105,21 +117,21 @@ class ConsumableController extends Controller
 
     /**
      * 查询客户已购项目
-     * @param Request $request
+     *
      * @return JsonResponse
      */
     public function customerProduct(Request $request)
     {
-        $sort  = $request->input('sort', 'id');
+        $sort = $request->input('sort', 'id');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
+        $rows = $request->input('rows', 10);
         $query = CustomerProduct::query()
             ->where('customer_id', $request->input('customer_id'))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
+            'rows' => $query->items(),
             'total' => $query->total(),
         ]);
     }

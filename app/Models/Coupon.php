@@ -2,24 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coupon extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected function casts(): array
     {
         return [
-            'integrals'    => 'float',
-            'sales_price'  => 'float',
+            'integrals' => 'float',
+            'sales_price' => 'float',
             'coupon_value' => 'float',
-            'multiple_use' => 'boolean'
+            'multiple_use' => 'boolean',
         ];
     }
 
     /**
      * 创建人员
-     * @return BelongsTo
      */
     public function createUser(): BelongsTo
     {
@@ -28,7 +30,6 @@ class Coupon extends BaseModel
 
     /**
      * 发放明细
-     * @return HasMany
      */
     public function details(): HasMany
     {

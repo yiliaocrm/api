@@ -1644,6 +1644,7 @@ class WebMenuTableSeeder extends Seeder
             'parentid'   => $menu->id,
             'name'       => '零售出料',
             'icon'       => 'icon-paper-money',
+            'url'        => '/new#/erp/order/retail-outbound',
             'path'       => '/retail-outbound/index',
             'meta'       => [
                 'title' => '零售出料'
@@ -2182,6 +2183,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '用户管理',
             'icon'       => 'iconfont if-customer',
             'path'       => '/market/miniapp-user/index',
+            'url'        => '/new#/market/miniapp-user/index',
             'meta'       => [
                 'title' => '用户管理'
             ],
@@ -2227,6 +2229,7 @@ class WebMenuTableSeeder extends Seeder
             'parentid'   => $menu->id,
             'name'       => '短信记录',
             'icon'       => 'iconfont if-log',
+            'url'        => '/new#/market/sms/index',
             'path'       => '/market/sms/index',
             'meta'       => [
                 'title' => '短信记录'
@@ -2261,6 +2264,7 @@ class WebMenuTableSeeder extends Seeder
             'name'       => '卡券管理',
             'icon'       => 'icon-coupon',
             'path'       => '/market/coupon/index',
+            'url'        => '/new#/market/coupon/index',
             'meta'       => [
                 'title' => '卡券管理'
             ],
@@ -2276,6 +2280,7 @@ class WebMenuTableSeeder extends Seeder
             'icon'       => 'icon-star',
             'remark'     => '卡券发放明细',
             'path'       => '/market/coupon-detail/index',
+            'url'        => '/new#/market/coupon-detail/index',
             'meta'       => [
                 'title' => '领券记录'
             ],
@@ -2290,6 +2295,7 @@ class WebMenuTableSeeder extends Seeder
             'icon'       => 'icon-excel',
             'remark'     => '卡券使用记录',
             'path'       => '/market/coupon-cashier/index',
+            'url'        => '/new#/market/coupon-cashier/index',
             'meta'       => [
                 'title' => '使用记录'
             ],
@@ -2442,26 +2448,13 @@ class WebMenuTableSeeder extends Seeder
             'icon'       => 'icon-pill',
             'remark'     => '客户用料登记',
             'path'       => '/treatment/consumable',
+            'url'        => '/new#/treatment/consumable',
             'meta'       => [
                 'title' => '用料登记'
             ],
             'route'      => 'ConsumableIndex',
             'component'  => 'consumable/index',
             'permission' => 'consumable.manage',
-        ]);
-
-        WebMenu::query()->create([
-            'parentid'   => $root->id,
-            'name'       => '照片档案',
-            'icon'       => 'iconfont if-photo',
-            'remark'     => '管理顾客术前术后对比照',
-            'path'       => '/treatment/photo',
-            'meta'       => [
-                'title' => '照片档案'
-            ],
-            'route'      => 'CustomerPhotoIndex',
-            'component'  => 'customer-photo/index',
-            'permission' => 'customer.photo.manage',
         ]);
 
         WebMenu::query()->create([

@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Traits\QueryConditionsTrait;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RetailOutboundDetail extends BaseModel
 {
@@ -16,14 +16,13 @@ class RetailOutboundDetail extends BaseModel
     protected function casts(): array
     {
         return [
-            'price'  => 'float',
-            'amount' => 'float'
+            'price' => 'float',
+            'amount' => 'float',
         ];
     }
 
     /**
      * 物品库存批次(多个)
-     * @return HasMany
      */
     public function inventoryBatchs(): HasMany
     {
@@ -31,8 +30,15 @@ class RetailOutboundDetail extends BaseModel
     }
 
     /**
+     * 商品单位
+     */
+    public function goodsUnits(): HasMany
+    {
+        return $this->hasMany(GoodsUnit::class, 'goods_id', 'goods_id');
+    }
+
+    /**
      * 出库对应的批次
-     * @return HasOne
      */
     public function inventoryBatch(): HasOne
     {
@@ -41,7 +47,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 商品信息
-     * @return BelongsTo
      */
     public function goods(): BelongsTo
     {
@@ -50,7 +55,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 商品基本单位
-     * @return HasOne
      */
     public function basicUnit(): HasOne
     {
@@ -59,7 +63,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 当前物品单位
-     * @return HasOne
      */
     public function currentUnit(): HasOne
     {
@@ -68,7 +71,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 顾客已购物品表
-     * @return HasOne
      */
     public function customerGoods(): HasOne
     {
@@ -77,7 +79,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -86,7 +87,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 出料科室
-     * @return BelongsTo
      */
     public function department(): BelongsTo
     {
@@ -95,7 +95,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 出料仓库
-     * @return BelongsTo
      */
     public function warehouse(): BelongsTo
     {
@@ -104,7 +103,6 @@ class RetailOutboundDetail extends BaseModel
 
     /**
      * 出料人员
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {

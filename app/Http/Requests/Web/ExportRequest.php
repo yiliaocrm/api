@@ -4,16 +4,14 @@ namespace App\Http\Requests\Web;
 
 use App\Models\ExportTask;
 use App\Rules\Web\SceneRule;
-use Illuminate\Support\Str;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ExportRequest extends FormRequest
 {
-
     /**
      * [场景化搜索]方法与页面的映射关系
-     * @var array
      */
     private array $pages = [
         'cashierRefund' => 'ReportCustomerRefund',
@@ -48,6 +46,7 @@ class ExportRequest extends FormRequest
             'departmentPickingDetail' => $this->getDepartmentPickingDetailRules(),
             'consumableDetail' => $this->getConsumableDetailRules(),
             'productRanking' => $this->getProductRankingRules(),
+            'couponDetail' => $this->getCouponDetailRules(),
             'user' => $this->getUserRules(),
             'appointment' => $this->getAppointmentRules(),
             'erkaiDetail' => $this->getErkaiDetailRules(),
@@ -81,6 +80,7 @@ class ExportRequest extends FormRequest
             'departmentPickingDetail' => $this->getDepartmentPickingDetailMessages(),
             'consumableDetail' => $this->getConsumableDetailMessages(),
             'productRanking' => $this->getProductRankingMessages(),
+            'couponDetail' => $this->getCouponDetailMessages(),
             'user' => $this->getUserMessages(),
             'appointment' => $this->getAppointmentMessages(),
             'erkaiDetail' => $this->getErkaiDetailMessages(),
@@ -96,7 +96,7 @@ class ExportRequest extends FormRequest
     private function getExportRules(): array
     {
         $rules = [
-            'filters' => ['nullable', 'array']
+            'filters' => ['nullable', 'array'],
         ];
 
         $method = request()->route()->getActionMethod();
@@ -123,8 +123,8 @@ class ExportRequest extends FormRequest
             'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('InventoryIndex')
-            ]
+                new SceneRule('InventoryIndex'),
+            ],
         ];
     }
 
@@ -132,10 +132,10 @@ class ExportRequest extends FormRequest
     {
         return [
             'type_id.required' => '商品分类必须选择',
-            'type_id.integer'  => '商品分类格式错误',
-            'type_id.exists'   => '商品分类不存在',
-            'keyword.string'   => '关键字格式错误',
-            'filters.array'    => '筛选条件必须是数组',
+            'type_id.integer' => '商品分类格式错误',
+            'type_id.exists' => '商品分类不存在',
+            'keyword.string' => '关键字格式错误',
+            'filters.array' => '筛选条件必须是数组',
         ];
     }
 
@@ -145,8 +145,8 @@ class ExportRequest extends FormRequest
             'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('InventoryBatchsIndex')
-            ]
+                new SceneRule('InventoryBatchsIndex'),
+            ],
         ];
     }
 
@@ -160,36 +160,36 @@ class ExportRequest extends FormRequest
     private function getInventoryDetailRules(): array
     {
         return [
-            'filters'    => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportInventoryDetail')
+                new SceneRule('ReportInventoryDetail'),
             ],
-            'date'       => 'required|array|size:2',
-            'date.*'     => 'required|date',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
             'goods_name' => 'nullable|string|max:200',
-            'sort'       => 'nullable|string',
-            'order'      => 'nullable|string|in:asc,desc',
-            'fileName'   => 'nullable|string|max:200',
+            'sort' => 'nullable|string',
+            'order' => 'nullable|string|in:asc,desc',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getInventoryDetailMessages(): array
     {
         return [
-            'filters.array'     => '筛选条件必须是数组',
-            'date.required'     => '[查询日期]不能为空',
-            'date.array'        => '[查询日期]格式错误',
-            'date.size'         => '[查询日期]必须包含开始和结束日期',
-            'date.*.required'   => '[查询日期]不能为空',
-            'date.*.date'       => '[查询日期]格式错误',
+            'filters.array' => '筛选条件必须是数组',
+            'date.required' => '[查询日期]不能为空',
+            'date.array' => '[查询日期]格式错误',
+            'date.size' => '[查询日期]必须包含开始和结束日期',
+            'date.*.required' => '[查询日期]不能为空',
+            'date.*.date' => '[查询日期]格式错误',
             'goods_name.string' => '[商品名称]格式错误',
-            'goods_name.max'    => '[商品名称]不能超过200个字符',
-            'sort.string'       => '[排序字段]格式错误',
-            'order.string'      => '[排序方向]格式错误',
-            'order.in'          => '[排序方向]值无效',
-            'fileName.string'   => '文件名称格式错误',
-            'fileName.max'      => '文件名称不能超过200个字符',
+            'goods_name.max' => '[商品名称]不能超过200个字符',
+            'sort.string' => '[排序字段]格式错误',
+            'order.string' => '[排序方向]格式错误',
+            'order.in' => '[排序方向]值无效',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
@@ -197,11 +197,11 @@ class ExportRequest extends FormRequest
     {
         return [
             'warehouse_id' => 'nullable|integer|exists:warehouse,id',
-            'type_id'      => 'nullable|integer|exists:goods_type,id',
-            'name'         => 'nullable|string|max:200',
-            'status'       => 'nullable|string|in:normal,high,low',
-            'filterable'   => 'nullable|string|in:show,hide',
-            'fileName'     => 'nullable|string|max:200',
+            'type_id' => 'nullable|integer|exists:goods_type,id',
+            'name' => 'nullable|string|max:200',
+            'status' => 'nullable|string|in:normal,high,low',
+            'filterable' => 'nullable|string|in:show,hide',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
@@ -209,17 +209,17 @@ class ExportRequest extends FormRequest
     {
         return [
             'warehouse_id.integer' => '[仓库]格式错误',
-            'warehouse_id.exists'  => '[仓库]不存在',
-            'type_id.integer'      => '[物品分类]格式错误',
-            'type_id.exists'       => '[物品分类]不存在',
-            'name.string'          => '[物品名称]格式错误',
-            'name.max'             => '[物品名称]不能超过200个字符',
-            'status.string'        => '[预警状态]格式错误',
-            'status.in'            => '[预警状态]值无效',
-            'filterable.string'    => '[过滤库存]格式错误',
-            'filterable.in'        => '[过滤库存]值无效',
-            'fileName.string'      => '文件名称格式错误',
-            'fileName.max'         => '文件名称不能超过200个字符',
+            'warehouse_id.exists' => '[仓库]不存在',
+            'type_id.integer' => '[物品分类]格式错误',
+            'type_id.exists' => '[物品分类]不存在',
+            'name.string' => '[物品名称]格式错误',
+            'name.max' => '[物品名称]不能超过200个字符',
+            'status.string' => '[预警状态]格式错误',
+            'status.in' => '[预警状态]值无效',
+            'filterable.string' => '[过滤库存]格式错误',
+            'filterable.in' => '[过滤库存]值无效',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
@@ -227,11 +227,11 @@ class ExportRequest extends FormRequest
     {
         return [
             'warehouse_id' => 'nullable|integer|exists:warehouse,id',
-            'type_id'      => 'nullable|integer|exists:goods_type,id',
-            'name'         => 'nullable|string|max:200',
-            'status'       => 'nullable|string|in:normal,expiring,expired',
-            'expiry_diff'  => 'nullable|integer|min:0',
-            'fileName'     => 'nullable|string|max:200',
+            'type_id' => 'nullable|integer|exists:goods_type,id',
+            'name' => 'nullable|string|max:200',
+            'status' => 'nullable|string|in:normal,expiring,expired',
+            'expiry_diff' => 'nullable|integer|min:0',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
@@ -239,31 +239,31 @@ class ExportRequest extends FormRequest
     {
         return [
             'warehouse_id.integer' => '[仓库]格式错误',
-            'warehouse_id.exists'  => '[仓库]不存在',
-            'type_id.integer'      => '[物品分类]格式错误',
-            'type_id.exists'       => '[物品分类]不存在',
-            'name.string'          => '[物品名称]格式错误',
-            'name.max'             => '[物品名称]不能超过200个字符',
-            'status.string'        => '[预警状态]格式错误',
-            'status.in'            => '[预警状态]值无效',
-            'expiry_diff.integer'  => '[剩余天数]格式错误',
-            'expiry_diff.min'      => '[剩余天数]不能小于0',
-            'fileName.string'      => '文件名称格式错误',
-            'fileName.max'         => '文件名称不能超过200个字符',
+            'warehouse_id.exists' => '[仓库]不存在',
+            'type_id.integer' => '[物品分类]格式错误',
+            'type_id.exists' => '[物品分类]不存在',
+            'name.string' => '[物品名称]格式错误',
+            'name.max' => '[物品名称]不能超过200个字符',
+            'status.string' => '[预警状态]格式错误',
+            'status.in' => '[预警状态]值无效',
+            'expiry_diff.integer' => '[剩余天数]格式错误',
+            'expiry_diff.min' => '[剩余天数]不能小于0',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getSalesPerformanceRules(): array
     {
         return [
-            'filters'    => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportPerformanceSales')
+                new SceneRule('ReportPerformanceSales'),
             ],
             'created_at' => 'required|array|size:2',
-            'keyword'    => 'nullable|string',
-            'fileName'   => 'nullable|string|max:200',
+            'keyword' => 'nullable|string',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
@@ -271,11 +271,11 @@ class ExportRequest extends FormRequest
     {
         return [
             'created_at.required' => '请选择导出时间',
-            'created_at.array'    => '导出时间格式错误',
-            'created_at.size'     => '导出时间格式错误',
-            'keyword.string'      => '关键字格式错误',
-            'fileName.string'     => '文件名称格式错误',
-            'fileName.max'        => '文件名称不能超过200个字符',
+            'created_at.array' => '导出时间格式错误',
+            'created_at.size' => '导出时间格式错误',
+            'keyword.string' => '关键字格式错误',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
@@ -285,7 +285,7 @@ class ExportRequest extends FormRequest
             'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('CustomerIndex')
+                new SceneRule('CustomerIndex'),
             ],
             'keyword' => 'nullable|string|max:200',
         ];
@@ -294,24 +294,24 @@ class ExportRequest extends FormRequest
     private function getCustomerMessages(): array
     {
         return [
-            'filters.array'  => '筛选条件必须是数组',
+            'filters.array' => '筛选条件必须是数组',
             'keyword.string' => '关键字格式错误',
-            'keyword.max'    => '关键字不能超过200个字符',
+            'keyword.max' => '关键字不能超过200个字符',
         ];
     }
 
     private function getCashierPayRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('CashierPayIndex')
+                new SceneRule('CashierPayIndex'),
             ],
-            'date'     => 'required|array|size:2',
-            'date.*'   => 'required|date',
-            'sort'     => 'nullable|string',
-            'order'    => 'nullable|string|in:asc,desc',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
+            'sort' => 'nullable|string',
+            'order' => 'nullable|string|in:asc,desc',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -319,64 +319,64 @@ class ExportRequest extends FormRequest
     private function getCashierPayMessages(): array
     {
         return [
-            'filters.array'   => '筛选条件必须是数组',
-            'date.required'   => '[查询日期]不能为空',
-            'date.array'      => '[查询日期]格式错误',
-            'date.size'       => '[查询日期]必须包含开始和结束日期',
+            'filters.array' => '筛选条件必须是数组',
+            'date.required' => '[查询日期]不能为空',
+            'date.array' => '[查询日期]格式错误',
+            'date.size' => '[查询日期]必须包含开始和结束日期',
             'date.*.required' => '[查询日期]不能为空',
-            'date.*.date'     => '[查询日期]格式错误',
-            'sort.string'     => '[排序字段]格式错误',
-            'order.string'    => '[排序方向]格式错误',
-            'order.in'        => '[排序方向]值无效',
+            'date.*.date' => '[查询日期]格式错误',
+            'sort.string' => '[排序字段]格式错误',
+            'order.string' => '[排序方向]格式错误',
+            'order.in' => '[排序方向]值无效',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getCashierListRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
                 new SceneRule('ReportCashierList'),
             ],
-            'created_at'   => 'required|array|size:2',
+            'created_at' => 'required|array|size:2',
             'created_at.0' => 'required|date',
             'created_at.1' => 'required|date|after_or_equal:created_at.0',
-            'keyword'      => 'nullable|string|max:100',
-            'fileName'     => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:100',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getCashierListMessages(): array
     {
         return [
-            'filters.array'               => '筛选条件必须为数组',
-            'created_at.required'         => '[日期范围]不能为空',
-            'created_at.array'            => '[日期范围]必须为数组',
-            'created_at.size'             => '[日期范围]必须包含开始和结束日期',
-            'created_at.0.required'       => '[开始日期]不能为空',
-            'created_at.0.date'           => '[开始日期]格式不正确',
-            'created_at.1.required'       => '[结束日期]不能为空',
-            'created_at.1.date'           => '[结束日期]格式不正确',
+            'filters.array' => '筛选条件必须为数组',
+            'created_at.required' => '[日期范围]不能为空',
+            'created_at.array' => '[日期范围]必须为数组',
+            'created_at.size' => '[日期范围]必须包含开始和结束日期',
+            'created_at.0.required' => '[开始日期]不能为空',
+            'created_at.0.date' => '[开始日期]格式不正确',
+            'created_at.1.required' => '[结束日期]不能为空',
+            'created_at.1.date' => '[结束日期]格式不正确',
             'created_at.1.after_or_equal' => '[结束日期]不能早于开始日期',
-            'keyword.string'              => '[关键词]必须是字符串',
-            'keyword.max'                 => '[关键词]最多100个字符',
-            'fileName.string'             => '文件名称格式错误',
-            'fileName.max'                => '文件名称不能超过200个字符',
+            'keyword.string' => '[关键词]必须是字符串',
+            'keyword.max' => '[关键词]最多100个字符',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     /**
      * 生成导出任务
-     * @param string $name 任务名称
-     * @return ExportTask
+     *
+     * @param  string  $name  任务名称
      */
     public function createExportTask(string $name): ExportTask
     {
         $params = $this->getExportParameter();
-        $hash   = md5(json_encode(array_merge($params, ['user_id' => user()->id])));
+        $hash = md5(json_encode(array_merge($params, ['user_id' => user()->id])));
 
         // 检查是否存在进行中的相同导出任务
         $existingTask = ExportTask::query()
@@ -392,27 +392,27 @@ class ExportRequest extends FormRequest
         }
 
         // 导出文件路径
-        $path = 'exports/' . date('YmdHis') . '_' . Str::random(6) . '.xlsx';
+        $path = 'exports/'.date('YmdHis').'_'.Str::random(6).'.xlsx';
 
         return ExportTask::query()->create([
-            'name'      => $name,
-            'hash'      => $hash,
-            'status'    => 'pending',
-            'params'    => $params,
+            'name' => $name,
+            'hash' => $hash,
+            'status' => 'pending',
+            'params' => $params,
             'file_path' => $path,
-            'user_id'   => user()->id,
+            'user_id' => user()->id,
         ]);
     }
 
     private function getCustomerProductRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportCustomerProduct')
+                new SceneRule('ReportCustomerProduct'),
             ],
-            'keyword'  => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:200',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -420,23 +420,23 @@ class ExportRequest extends FormRequest
     private function getCustomerProductMessages(): array
     {
         return [
-            'filters.array'   => '筛选条件必须是数组',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
+            'filters.array' => '筛选条件必须是数组',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getCustomerGoodsRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportCustomerGoods')
+                new SceneRule('ReportCustomerGoods'),
             ],
-            'keyword'  => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:200',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -444,23 +444,23 @@ class ExportRequest extends FormRequest
     private function getCustomerGoodsMessages(): array
     {
         return [
-            'filters.array'   => '筛选条件必须是数组',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
+            'filters.array' => '筛选条件必须是数组',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getPurchaseDetailRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportPurchaseDetail')
+                new SceneRule('ReportPurchaseDetail'),
             ],
-            'keyword'  => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:200',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -468,27 +468,27 @@ class ExportRequest extends FormRequest
     private function getPurchaseDetailMessages(): array
     {
         return [
-            'filters.array'   => '筛选条件必须是数组',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
+            'filters.array' => '筛选条件必须是数组',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
             'fileName.string' => '文件称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getRetailOutboundDetailRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportRetailOutboundDetail')
+                new SceneRule('ReportRetailOutboundDetail'),
             ],
-            'date'     => 'required|array|size:2',
-            'date.*'   => 'required|date',
-            'keyword'  => 'nullable|string|max:200',
-            'sort'     => 'nullable|string',
-            'order'    => 'nullable|string|in:asc,desc',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
+            'keyword' => 'nullable|string|max:200',
+            'sort' => 'nullable|string',
+            'order' => 'nullable|string|in:asc,desc',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -496,31 +496,31 @@ class ExportRequest extends FormRequest
     private function getRetailOutboundDetailMessages(): array
     {
         return [
-            'filters.array'     => '筛选条件必须是数组',
-            'date.required'     => '[查询日期]不能为空',
-            'date.array'        => '[查询日期]格式错误',
-            'date.size'         => '[查询日期]必须包含开始和结束日期',
-            'date.*.required'   => '[查询日期]不能为空',
-            'date.*.date'       => '[查询日期]格式错误',
-            'keyword.string'    => '关键字格式错误',
-            'keyword.max'       => '关键字不能超过200个字符',
-            'sort.string'       => '[排序字段]格式错误',
-            'order.string'      => '[排序方向]格式错误',
-            'order.in'          => '[排序方向]值无效',
-            'fileName.string'   => '文件名称格式错误',
-            'fileName.max'      => '文件名称不能超过200个字符',
+            'filters.array' => '筛选条件必须是数组',
+            'date.required' => '[查询日期]不能为空',
+            'date.array' => '[查询日期]格式错误',
+            'date.size' => '[查询日期]必须包含开始和结束日期',
+            'date.*.required' => '[查询日期]不能为空',
+            'date.*.date' => '[查询日期]格式错误',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
+            'sort.string' => '[排序字段]格式错误',
+            'order.string' => '[排序方向]格式错误',
+            'order.in' => '[排序方向]值无效',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getDepartmentPickingDetailRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportDepartmentPickingDetail')
+                new SceneRule('ReportDepartmentPickingDetail'),
             ],
-            'keyword'  => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:200',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -528,23 +528,23 @@ class ExportRequest extends FormRequest
     private function getDepartmentPickingDetailMessages(): array
     {
         return [
-            'filters.array'   => '筛选条件必须是数组',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
+            'filters.array' => '筛选条件必须是数组',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getConsumableDetailRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportConsumableDetail')
+                new SceneRule('ReportConsumableDetail'),
             ],
-            'keyword'  => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:200',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -552,147 +552,188 @@ class ExportRequest extends FormRequest
     private function getConsumableDetailMessages(): array
     {
         return [
-            'filters.array'   => '筛选条件必须是数组',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
+            'filters.array' => '筛选条件必须是数组',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getProductRankingRules(): array
     {
         return [
-            'created_at'   => 'required|array|size:2',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date',
-            'medium_id'    => 'nullable|integer|exists:medium,id',
-            'type_id'      => 'nullable|integer|exists:product_type,id',
-            'sort'         => 'nullable|string|in:income,times,used,refund_times,leftover,payable,deposit,coupon,arrearage',
-            'order'        => 'nullable|string|in:asc,desc',
-            'fileName'     => 'nullable|string|max:200',
+            'medium_id' => 'nullable|integer|exists:medium,id',
+            'type_id' => 'nullable|integer|exists:product_type,id',
+            'sort' => 'nullable|string|in:income,times,used,refund_times,leftover,payable,deposit,coupon,arrearage',
+            'order' => 'nullable|string|in:asc,desc',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getProductRankingMessages(): array
     {
         return [
-            'created_at.required'   => '[消费日期]不能为空',
-            'created_at.array'      => '[消费日期]格式错误',
-            'created_at.size'       => '[消费日期]必须包含开始和结束日期',
+            'created_at.required' => '[消费日期]不能为空',
+            'created_at.array' => '[消费日期]格式错误',
+            'created_at.size' => '[消费日期]必须包含开始和结束日期',
             'created_at.*.required' => '[消费日期]不能为空',
-            'created_at.*.date'     => '[消费日期]格式错误',
-            'medium_id.integer'     => '[媒介来源]格式错误',
-            'medium_id.exists'      => '[媒介来源]不存在',
-            'type_id.integer'       => '[项目分类]格式错误',
-            'type_id.exists'        => '[项目分类]不存在',
-            'sort.string'           => '[排序字段]格式错误',
-            'sort.in'               => '[排序字段]值无效',
-            'order.string'          => '[排序方向]格式错误',
-            'order.in'              => '[排序方向]值无效',
-            'fileName.string'       => '文件名称格式错误',
-            'fileName.max'          => '文件名称不能超过200个字符',
+            'created_at.*.date' => '[消费日期]格式错误',
+            'medium_id.integer' => '[媒介来源]格式错误',
+            'medium_id.exists' => '[媒介来源]不存在',
+            'type_id.integer' => '[项目分类]格式错误',
+            'type_id.exists' => '[项目分类]不存在',
+            'sort.string' => '[排序字段]格式错误',
+            'sort.in' => '[排序字段]值无效',
+            'order.string' => '[排序方向]格式错误',
+            'order.in' => '[排序方向]值无效',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
+        ];
+    }
+
+    private function getCouponDetailRules(): array
+    {
+        return [
+            'filters' => [
+                'nullable',
+                'array',
+                new SceneRule('CouponDetailIndex'),
+            ],
+            'created_at_start' => 'nullable|date',
+            'created_at_end' => 'nullable|date|after_or_equal:created_at_start',
+            'keyword' => 'nullable|string|max:200',
+            'number' => 'nullable|string|max:100',
+            'create_user_id' => 'nullable|integer',
+            'status' => 'nullable|integer',
+            'sort' => 'nullable|string',
+            'order' => 'nullable|string|in:asc,desc',
+            'fileName' => 'nullable|string|max:200',
+        ];
+    }
+
+    private function getCouponDetailMessages(): array
+    {
+        return [
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'created_at_start.date' => '[发券开始]格式不正确',
+            'created_at_end.date' => '[发券结束]格式不正确',
+            'created_at_end.after_or_equal' => '[发券结束]不能早于开始日期',
+            'keyword.string' => '[顾客信息]格式错误',
+            'keyword.max' => '[顾客信息]不能超过200个字符',
+            'number.string' => '[卡券编号]格式错误',
+            'number.max' => '[卡券编号]不能超过100个字符',
+            'create_user_id.integer' => '[发券人员]格式错误',
+            'status.integer' => '[使用状态]格式错误',
+            'sort.string' => '[排序字段]格式错误',
+            'order.string' => '[排序方向]格式错误',
+            'order.in' => '[排序方向]值无效',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getUserRules(): array
     {
         return [
-            'keyword'       => 'nullable|string|max:200',
-            'roles'         => 'nullable|integer|exists:roles,id',
+            'keyword' => 'nullable|string|max:200',
+            'roles' => 'nullable|integer|exists:roles,id',
             'department_id' => 'nullable|integer|exists:department,id',
-            'fileName'      => 'nullable|string|max:200',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getUserMessages(): array
     {
         return [
-            'keyword.string'        => '关键字格式错误',
-            'keyword.max'           => '关键字不能超过200个字符',
-            'roles.integer'         => '角色格式错误',
-            'roles.exists'          => '角色不存在',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
+            'roles.integer' => '角色格式错误',
+            'roles.exists' => '角色不存在',
             'department_id.integer' => '部门格式错误',
-            'department_id.exists'  => '部门不存在',
-            'fileName.string'       => '文件名称格式错误',
-            'fileName.max'          => '文件名称不能超过200个字符',
+            'department_id.exists' => '部门不存在',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getAppointmentRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('WorkbenchAppointment')
+                new SceneRule('WorkbenchAppointment'),
             ],
-            'keyword'      => 'nullable|string|max:200',
-            'created_at'   => 'required|array|size:2',
+            'keyword' => 'nullable|string|max:200',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date|date_format:Y-m-d',
-            'fileName'     => 'nullable|string|max:200',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getAppointmentMessages(): array
     {
         return [
-            'filters.array'            => '[场景化筛选条件]格式不正确',
-            'keyword.string'           => '[顾客信息]格式错误',
-            'keyword.max'              => '[顾客信息]不能超过200个字符',
-            'created_at.required'      => '[查询时间]不能为空',
-            'created_at.array'         => '[查询时间]格式不正确',
-            'created_at.size'          => '[查询时间]格式不正确',
-            'created_at.*.required'    => '[查询时间]格式不正确',
-            'created_at.*.date'        => '[查询时间]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'keyword.string' => '[顾客信息]格式错误',
+            'keyword.max' => '[顾客信息]不能超过200个字符',
+            'created_at.required' => '[查询时间]不能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date' => '[查询时间]格式不正确',
             'created_at.*.date_format' => '[查询时间]格式不正确',
-            'fileName.string'          => '文件名称格式错误',
-            'fileName.max'             => '文件名称不能超过200个字符',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getErkaiDetailRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportErkaiDetail')
+                new SceneRule('ReportErkaiDetail'),
             ],
-            'keyword'      => 'nullable|string|max:200',
-            'created_at'   => 'required|array|size:2',
+            'keyword' => 'nullable|string|max:200',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date|date_format:Y-m-d',
-            'fileName'     => 'nullable|string|max:200',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getErkaiDetailMessages(): array
     {
         return [
-            'filters.array'            => '[场景化筛选条件]格式不正确',
-            'keyword.string'           => '[顾客信息]格式错误',
-            'keyword.max'              => '[顾客信息]不能超过200个字符',
-            'created_at.required'      => '[查询时间]不能为空',
-            'created_at.array'         => '[查询时间]格式不正确',
-            'created_at.size'          => '[查询时间]格式不正确',
-            'created_at.*.required'    => '[查询时间]格式不正确',
-            'created_at.*.date'        => '[查询时间]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'keyword.string' => '[顾客信息]格式错误',
+            'keyword.max' => '[顾客信息]不能超过200个字符',
+            'created_at.required' => '[查询时间]不能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
+            'created_at.*.required' => '[查询时间]格式不正确',
+            'created_at.*.date' => '[查询时间]格式不正确',
             'created_at.*.date_format' => '[查询时间]格式不正确',
-            'fileName.string'          => '文件名称格式错误',
-            'fileName.max'             => '文件名称不能超过200个字符',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getTreatmentRecordRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('TreatmentRecord')
+                new SceneRule('TreatmentRecord'),
             ],
-            'keyword'  => 'nullable|string|max:200',
-            'date'     => 'required|array|size:2',
-            'date.*'   => 'required|date',
+            'keyword' => 'nullable|string|max:200',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -700,30 +741,30 @@ class ExportRequest extends FormRequest
     private function getTreatmentRecordMessages(): array
     {
         return [
-            'filters.array'   => '[场景化筛选条件]格式不正确',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
-            'date.required'   => '[查询时间]不能为空',
-            'date.array'      => '[查询时间]格式不正确',
-            'date.size'       => '[查询时间]必须包含开始和结束日期',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
+            'date.required' => '[查询时间]不能为空',
+            'date.array' => '[查询时间]格式不正确',
+            'date.size' => '[查询时间]必须包含开始和结束日期',
             'date.*.required' => '[查询时间]不能为空',
-            'date.*.date'     => '[查询时间]格式错误',
+            'date.*.date' => '[查询时间]格式错误',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getTreatmentDetailRules(): array
     {
         return [
-            'filters'  => [
+            'filters' => [
                 'nullable',
                 'array',
-                new SceneRule('ReportTreatmentDetail')
+                new SceneRule('ReportTreatmentDetail'),
             ],
-            'keyword'  => 'nullable|string|max:200',
-            'date'     => 'required|array|size:2',
-            'date.*'   => 'required|date',
+            'keyword' => 'nullable|string|max:200',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -731,115 +772,115 @@ class ExportRequest extends FormRequest
     private function getTreatmentDetailMessages(): array
     {
         return [
-            'filters.array'   => '[场景化筛选条件]格式不正确',
-            'keyword.string'  => '关键字格式错误',
-            'keyword.max'     => '关键字不能超过200个字符',
-            'date.required'   => '[查询时间]不能为空',
-            'date.array'      => '[查询时间]格式不正确',
-            'date.size'       => '[查询时间]必须包含开始和结束日期',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
+            'date.required' => '[查询时间]不能为空',
+            'date.array' => '[查询时间]格式不正确',
+            'date.size' => '[查询时间]必须包含开始和结束日期',
             'date.*.required' => '[查询时间]不能为空',
-            'date.*.date'     => '[查询时间]格式错误',
+            'date.*.date' => '[查询时间]格式错误',
             'fileName.string' => '文件名称格式错误',
-            'fileName.max'    => '文件名称不能超过200个字符',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getCustomerDepositDetailRules(): array
     {
         return [
-            'date'             => 'required|array|size:2',
-            'date.*'           => 'required|date',
-            'keyword'          => 'nullable|string|max:200',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
+            'keyword' => 'nullable|string|max:200',
             'cashierable_type' => 'nullable|string',
-            'fileName'         => 'nullable|string|max:200',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getCustomerDepositDetailMessages(): array
     {
         return [
-            'date.required'           => '[查询日期]不能为空',
-            'date.array'              => '[查询日期]格式错误',
-            'date.size'               => '[查询日期]必须包含开始和结束日期',
-            'date.*.required'         => '[查询日期]不能为空',
-            'date.*.date'             => '[查询日期]格式错误',
-            'keyword.string'          => '关键字格式错误',
-            'keyword.max'             => '关键字不能超过200个字符',
+            'date.required' => '[查询日期]不能为空',
+            'date.array' => '[查询日期]格式错误',
+            'date.size' => '[查询日期]必须包含开始和结束日期',
+            'date.*.required' => '[查询日期]不能为空',
+            'date.*.date' => '[查询日期]格式错误',
+            'keyword.string' => '关键字格式错误',
+            'keyword.max' => '关键字不能超过200个字符',
             'cashierable_type.string' => '业务类型格式错误',
-            'fileName.string'         => '文件名称格式错误',
-            'fileName.max'            => '文件名称不能超过200个字符',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getConsultantOrderRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
                 new SceneRule('ReportConsultantOrder'),
             ],
-            'created_at'   => 'required|array|size:2',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date',
-            'keyword'      => 'nullable|string|max:100',
-            'fileName'     => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:100',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getConsultantOrderMessages(): array
     {
         return [
-            'filters.array'         => '[场景化筛选条件]格式不正确',
-            'created_at.required'   => '[查询时间]能为空',
-            'created_at.array'      => '[查询时间]格式不正确',
-            'created_at.size'       => '[查询时间]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'created_at.required' => '[查询时间]能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
             'created_at.*.required' => '[查询时间]格式不正确',
-            'created_at.*.date'     => '[查询时间]格式不正确',
-            'keyword.string'        => '[顾客信息]格式错误',
-            'keyword.max'           => '[顾客信息]不能超过100个字符',
-            'fileName.string'       => '文件名称格式错误',
-            'fileName.max'          => '文件名称不能超过200个字符',
+            'created_at.*.date' => '[查询时间]格式不正确',
+            'keyword.string' => '[顾客信息]格式错误',
+            'keyword.max' => '[顾客信息]不能超过100个字符',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getConsultantDetailRules(): array
     {
         return [
-            'filters'      => [
+            'filters' => [
                 'nullable',
                 'array',
                 new SceneRule('ReportConsultantDetailIndex'),
             ],
-            'created_at'   => 'required|array|size:2',
+            'created_at' => 'required|array|size:2',
             'created_at.*' => 'required|date',
-            'keyword'      => 'nullable|string|max:100',
-            'fileName'     => 'nullable|string|max:200',
+            'keyword' => 'nullable|string|max:100',
+            'fileName' => 'nullable|string|max:200',
         ];
     }
 
     private function getConsultantDetailMessages(): array
     {
         return [
-            'filters.array'         => '[场景化筛选条件]格式不正确',
-            'created_at.required'   => '[查询时间]不能为空',
-            'created_at.array'      => '[查询时间]格式不正确',
-            'created_at.size'       => '[查询时间]格式不正确',
+            'filters.array' => '[场景化筛选条件]格式不正确',
+            'created_at.required' => '[查询时间]不能为空',
+            'created_at.array' => '[查询时间]格式不正确',
+            'created_at.size' => '[查询时间]格式不正确',
             'created_at.*.required' => '[查询时间]格式不正确',
-            'created_at.*.date'     => '[查询时间]格式不正确',
-            'keyword.string'        => '[顾客信息]格式错误',
-            'keyword.max'           => '[顾客信息]不能超过100个字符',
-            'fileName.string'       => '文件名称格式错误',
-            'fileName.max'          => '文件名称不能超过200个字符',
+            'created_at.*.date' => '[查询时间]格式不正确',
+            'keyword.string' => '[顾客信息]格式错误',
+            'keyword.max' => '[顾客信息]不能超过100个字符',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     private function getArrearageDetailRules(): array
     {
         return [
-            'date'     => 'required|array|size:2',
-            'date.*'   => 'required|date',
-            'keyword'  => 'nullable|string|max:200',
-            'type'     => 'nullable|string|in:arrearage,repayment',
+            'date' => 'required|array|size:2',
+            'date.*' => 'required|date',
+            'keyword' => 'nullable|string|max:200',
+            'type' => 'nullable|string|in:arrearage,repayment',
             'fileName' => 'nullable|string|max:200',
         ];
     }
@@ -847,23 +888,22 @@ class ExportRequest extends FormRequest
     private function getArrearageDetailMessages(): array
     {
         return [
-            'date.required'       => '[业务日期]不能为空',
-            'date.array'          => '[业务日期]格式错误',
-            'date.size'           => '[业务日期]必须包含开始和结束日期',
-            'date.*.required'     => '[业务日期]不能为空',
-            'date.*.date'         => '[业务日期]格式错误',
-            'keyword.string'      => '[顾客信息]格式错误',
-            'keyword.max'         => '[顾客信息]不能超过200个字符',
-            'type.string'         => '[单据类型]格式错误',
-            'type.in'             => '[单据类型]值无效',
-            'fileName.string'     => '文件名称格式错误',
-            'fileName.max'        => '文件名称不能超过200个字符',
+            'date.required' => '[业务日期]不能为空',
+            'date.array' => '[业务日期]格式错误',
+            'date.size' => '[业务日期]必须包含开始和结束日期',
+            'date.*.required' => '[业务日期]不能为空',
+            'date.*.date' => '[业务日期]格式错误',
+            'keyword.string' => '[顾客信息]格式错误',
+            'keyword.max' => '[顾客信息]不能超过200个字符',
+            'type.string' => '[单据类型]格式错误',
+            'type.in' => '[单据类型]值无效',
+            'fileName.string' => '文件名称格式错误',
+            'fileName.max' => '文件名称不能超过200个字符',
         ];
     }
 
     /**
      * 获取导出请求参数
-     * @return array
      */
     private function getExportParameter(): array
     {
@@ -880,6 +920,7 @@ class ExportRequest extends FormRequest
             'salesPerformance' => $this->only(['filters', 'created_at', 'keyword']),
             'customerIntegral' => $this->only(['created_at', 'type', 'keyword', 'expired']),
             'productRanking' => $this->only(['created_at', 'medium_id', 'type_id', 'sort', 'order']),
+            'couponDetail' => $this->only(['filters', 'keyword', 'created_at_start', 'created_at_end', 'number', 'create_user_id', 'status', 'sort', 'order']),
             'inventoryAlarm' => $this->only(['warehouse_id', 'type_id', 'name', 'status', 'filterable']),
             'inventoryExpiry' => $this->only(['warehouse_id', 'type_id', 'name', 'status', 'expiry_diff']),
             'inventoryDetail', 'retailOutboundDetail' => $this->only(['filters', 'date', 'keyword', 'sort', 'order']),

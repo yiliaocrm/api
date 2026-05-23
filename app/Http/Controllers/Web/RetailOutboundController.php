@@ -8,46 +8,57 @@ use App\Http\Requests\RetailOutbound\CreateRequest;
 use App\Http\Requests\RetailOutbound\QueryCustomerGoodsRequest;
 use App\Models\CustomerGoods;
 use App\Models\RetailOutbound;
-use Exception;
-use Throwable;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class RetailOutboundController extends Controller
 {
     public function manage(Request $request)
     {
-        $sort  = $request->input('sort', 'created_at');
+        $sort = $request->input('sort', 'created_at');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
+        $rows = $request->input('rows', 10);
+        $keyword = $request->input('keyword');
+        $filters = $request->input('filters', []);
         $query = RetailOutbound::query()
             ->with([
                 'customer:id,idcard,name',
-                'details',
+                'warehouse:id,name',
+                'department:id,name',
+                'details.goodsUnits',
+                'details.inventoryBatchs',
                 'user:id,name',
                 'createUser:id,name',
             ])
+            ->select([
+                'retail_outbound.*',
+            ])
+            ->leftJoin('customer', 'customer.id', '=', 'retail_outbound.customer_id')
             ->when($request->input('date_start') && $request->input('date_end'), function ($query) use ($request) {
-                $query->whereBetween('date', [
+                $query->whereBetween('retail_outbound.date', [
                     Carbon::parse($request->input('date_start')),
-                    Carbon::parse($request->input('date_end'))->endOfDay()
+                    Carbon::parse($request->input('date_end'))->endOfDay(),
                 ]);
             })
-            ->orderBy($sort, $order)
+            ->when($keyword, fn (Builder $query) => $query->where('customer.keyword', 'like', "%{$keyword}%"))
+            ->queryConditions('RetailOutboundIndex', $filters)
+            ->orderBy("retail_outbound.{$sort}", $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 零售出料
-     * @param CreateRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
     public function create(CreateRequest $request): JsonResponse
@@ -87,6 +98,7 @@ class RetailOutboundController extends Controller
             $retailOutbound->load(['customer:id,idcard,name', 'details']);
 
             DB::commit();
+
             return response_success($retailOutbound);
         } catch (Exception $e) {
             DB::rollBack();
@@ -96,7 +108,7 @@ class RetailOutboundController extends Controller
 
     /**
      * 查询顾客购买物品
-     * @param QueryCustomerGoodsRequest $request
+     *
      * @return JsonResponse
      */
     public function queryCustomerGoods(QueryCustomerGoodsRequest $request)
@@ -108,11 +120,12 @@ class RetailOutboundController extends Controller
                         ->where('number', '>', 0)
                         ->orderBy('created_at', 'ASC');
                 },
-                'units'
+                'units',
             ])
             ->where('customer_id', $request->input('customer_id'))
             ->orderBy('created_at', 'desc')
             ->get();
+
         return response_success($data);
     }
 }

@@ -329,6 +329,7 @@ export default {
 				'sc-icon-fixed-left-fill',
 				'sc-icon-fixed-right',
 				'sc-icon-fixed-right-fill',
+				'sc-icon-mini-program',
 				'sc-icon-function-outlined'
 			]
 		}

@@ -328,7 +328,17 @@ class PermissionActionSeeder extends Seeder
             [
                 'permission' => 'coupon.detail',
                 'controller' => 'App\Http\Controllers\Web\CouponDetailController',
-                'action' => '*',
+                'action' => 'void',
+            ],
+            [
+                'permission' => 'coupon.detail.index',
+                'controller' => 'App\Http\Controllers\Web\CouponDetailController',
+                'action' => 'manage,histories',
+            ],
+            [
+                'permission' => 'coupon.detail.export',
+                'controller' => 'App\Http\Controllers\Web\ExportController',
+                'action' => 'couponDetail',
             ],
             [
                 'permission' => 'customer.info',
@@ -692,7 +702,7 @@ class PermissionActionSeeder extends Seeder
             [
                 'permission' => 'miniapp.user.index',
                 'controller' => 'App\Http\Controllers\Web\MiniappController',
-                'action' => 'getUserList',
+                'action' => '*',
             ],
             [
                 'permission' => 'market.channel.index',
