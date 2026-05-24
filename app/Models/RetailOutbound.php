@@ -2,25 +2,27 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class RetailOutbound extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected $table = 'retail_outbound';
 
     protected function casts(): array
     {
         return [
-            'amount' => 'float'
+            'amount' => 'float',
         ];
     }
 
     /**
      * 出料明细
-     * @return HasMany
      */
     public function details(): HasMany
     {
@@ -28,8 +30,15 @@ class RetailOutbound extends BaseModel
     }
 
     /**
+     * 出料明细的商品单位
+     */
+    public function detailsWithUnits(): HasMany
+    {
+        return $this->hasMany(RetailOutboundDetail::class)->with(['goodsUnits']);
+    }
+
+    /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -37,8 +46,23 @@ class RetailOutbound extends BaseModel
     }
 
     /**
+     * 出料仓库
+     */
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    /**
+     * 出料科室
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
      * 出料人员
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -47,16 +71,14 @@ class RetailOutbound extends BaseModel
 
     /**
      * 创建人员
-     * @return BelongsTo
      */
     public function createUser(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'create_user_id');
     }
 
     /**
      * 库存变动明细
-     * @return MorphMany
      */
     public function inventoryDetail(): MorphMany
     {
@@ -65,14 +87,14 @@ class RetailOutbound extends BaseModel
 
     /**
      * 今日单据
-     * @param $query
+     *
      * @return mixed
      */
     public function scopeToday($query)
     {
         return $query->whereBetween('retail_outbound.created_at', [
             Carbon::today(),
-            Carbon::today()->endOfDay()
+            Carbon::today()->endOfDay(),
         ]);
     }
 }

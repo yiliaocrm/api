@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\QueryConditionsTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CustomerWechat extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected $guarded = [];
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -20,7 +22,6 @@ class CustomerWechat extends BaseModel
 
     /**
      * 顾客日志
-     * @return MorphMany
      */
     public function customerLog(): MorphMany
     {

@@ -407,10 +407,16 @@ class ExportController extends Controller
 
     /**
      * 导出[领券记录]
+     *
+     * @throws ValidationException
      */
-    public function couponDetail(): CouponDetailExport
+    public function couponDetail(ExportRequest $request): JsonResponse
     {
-        return new CouponDetailExport;
+        $name = $request->input('fileName', '领券记录');
+        $task = $request->createExportTask($name);
+        dispatch(new CouponDetailExport($request->all(), $task, tenant('id'), user()->id));
+
+        return response_success();
     }
 
     /**

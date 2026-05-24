@@ -2,27 +2,39 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Enums\CouponDetailStatus;
+use App\Traits\QueryConditionsTrait;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class CouponDetail extends BaseModel
 {
+    use QueryConditionsTrait;
+
     protected function casts(): array
     {
         return [
-            'rate'         => 'float',
-            'balance'      => 'float',
-            'salesman'     => 'array',
-            'integrals'    => 'float',
-            'sales_price'  => 'float',
-            'coupon_value' => 'float'
+            'status' => CouponDetailStatus::class,
+            'rate' => 'float',
+            'balance' => 'float',
+            'salesman' => 'array',
+            'integrals' => 'float',
+            'sales_price' => 'float',
+            'coupon_value' => 'float',
         ];
+    }
+
+    protected function statusText(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->status?->getLabel(),
+        );
     }
 
     /**
      * 创建人员
-     * @return BelongsTo
      */
     public function createUser(): BelongsTo
     {
@@ -31,7 +43,6 @@ class CouponDetail extends BaseModel
 
     /**
      * 顾客信息
-     * @return BelongsTo
      */
     public function customer(): BelongsTo
     {
@@ -40,7 +51,6 @@ class CouponDetail extends BaseModel
 
     /**
      * 收费通知
-     * @return MorphMany
      */
     public function cashierable(): MorphMany
     {
@@ -49,7 +59,6 @@ class CouponDetail extends BaseModel
 
     /**
      * 变动历史
-     * @return HasMany
      */
     public function histories(): HasMany
     {

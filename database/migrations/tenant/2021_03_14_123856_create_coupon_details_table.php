@@ -4,17 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
         Schema::create('coupon_details', function (Blueprint $table) {
             $table->id();
-            $table->tinyInteger('status')->unsigned()->comment('状态:1:未使用,2:部分使用,3:已使用');
+            $table->tinyInteger('status')->unsigned()->comment('状态:1:未使用,2:部分使用,3:已使用,4:已过期,5:已作废');
             $table->integer('coupon_id')->unsigned();
             $table->string('coupon_name')->comment('卡券名称');
             $table->decimal('coupon_value')->unsigned()->comment('面值(优惠金额)');
@@ -35,8 +34,6 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

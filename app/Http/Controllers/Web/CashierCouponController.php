@@ -13,33 +13,36 @@ class CashierCouponController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $sort  = $request->input('sort', 'created_at');
+        $sort = $request->input('sort', 'cashier_coupons.created_at');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
+        $rows = $request->input('rows', 10);
+        $date = $request->input('date', []);
+        $start = $request->input('created_at_start', $date[0] ?? null);
+        $end = $request->input('created_at_end', $date[1] ?? null);
+        $filters = $request->input('filters', []);
+
         $query = CashierCoupon::query()
             ->with([
-                'customer:id,idcard,name'
+                'customer:id,idcard,name',
             ])
             ->select('cashier_coupons.*')
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function (Builder $builder) use ($request) {
+            ->when($start && $end, function (Builder $builder) use ($start, $end) {
                 $builder->whereBetween('cashier_coupons.created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
+                    Carbon::parse($start),
+                    Carbon::parse($end)->endOfDay(),
                 ]);
             })
             ->when($request->input('keyword'), function (Builder $builder) use ($request) {
                 $builder->leftJoin('customer', 'customer.id', 'cashier_coupons.customer_id')
-                    ->where('customer.keyword', 'like', '%' . $request->input('keyword') . '%');
+                    ->where('customer.keyword', 'like', '%'.$request->input('keyword').'%');
             })
-            ->when($request->input('coupon_number'), function (Builder $builder) use ($request) {
-                $builder->where('cashier_coupons.coupon_number', 'like', '%' . $request->input('coupon_number') . '%');
-            })
+            ->queryConditions('CouponCashierIndex', $filters)
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 }

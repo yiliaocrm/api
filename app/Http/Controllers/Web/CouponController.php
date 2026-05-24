@@ -13,7 +13,6 @@ use App\Models\Coupon;
 use App\Models\CouponDetail;
 use App\Models\Customer;
 use App\Models\Product;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -25,41 +24,34 @@ class CouponController extends Controller
 {
     /**
      * 现金券列表
-     * @param Request $request
-     * @return JsonResponse
      */
     public function manage(Request $request): JsonResponse
     {
-        $sort  = $request->input('sort', 'id');
+        $sort = $request->input('sort', 'id');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
+        $rows = $request->input('rows', 10);
+        $filters = $request->input('filters', []);
         $query = Coupon::query()
             ->with(['createUser:id,name'])
-            ->when($request->input('created_at_start') && $request->input('created_at_end'), function (Builder $query) use ($request) {
-                $query->whereBetween('created_at', [
-                    Carbon::parse($request->input('created_at_start')),
-                    Carbon::parse($request->input('created_at_end'))->endOfDay()
-                ]);
-            })
             ->when($request->input('name'), function (Builder $query) use ($request) {
-                $query->where('name', 'like', '%' . $request->input('name') . '%');
+                $query->where('name', 'like', '%'.$request->input('name').'%');
             })
             ->when($request->input('status'), function (Builder $query) use ($request) {
-                $query->where('status', $request->input('name'));
+                $query->where('status', $request->input('status'));
             })
+            ->queryConditions('CouponIndex', $filters)
             ->orderBy($sort, $order)
             ->paginate($rows);
 
         return response_success([
-            'rows'  => $query->items(),
-            'total' => $query->total()
+            'rows' => $query->items(),
+            'total' => $query->total(),
         ]);
     }
 
     /**
      * 创建卡券
-     * @param CreateRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
     public function create(CreateRequest $request): JsonResponse
@@ -83,8 +75,7 @@ class CouponController extends Controller
 
     /**
      * 发券
-     * @param IssueRequest $request
-     * @return JsonResponse
+     *
      * @throws HisException|Throwable
      */
     public function issue(IssueRequest $request): JsonResponse
@@ -158,6 +149,7 @@ class CouponController extends Controller
             );
 
             DB::commit();
+
             return response_success($couponDetail);
 
         } catch (Exception $e) {
@@ -168,75 +160,61 @@ class CouponController extends Controller
 
     /**
      * 删除卡券
-     * @param RemoveRequest $request
-     * @return JsonResponse
+     *
      * @throws Exception
      */
     public function remove(RemoveRequest $request): JsonResponse
     {
         Coupon::query()->find($request->input('id'))->delete();
+
         return response_success();
     }
 
     /**
      * 发券明细
-     * @param InfoRequest $request
-     * @return JsonResponse
      */
     public function detail(InfoRequest $request): JsonResponse
     {
-        $sort  = $request->input('sort', 'id');
+        $sort = $request->input('sort', 'id');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
-        $data  = [];
+        $rows = $request->input('rows', 10);
         $query = CouponDetail::query()
             ->with([
                 'createUser:id,name',
-                'customer:id,idcard,name'
+                'customer:id,idcard,name',
             ])
             ->where('coupon_id', $request->input('coupon_id'))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
-        if ($query) {
-            $data['rows']  = $query->items();
-            $data['total'] = $query->total();
-        } else {
-            $data['rows']  = [];
-            $data['total'] = 0;
-        }
+        $query->append(['status_text']);
 
-        return response_success($data);
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
     }
 
     /**
      * 卡券使用记录
-     * @param InfoRequest $request
-     * @return JsonResponse
      */
     public function cashier(InfoRequest $request): JsonResponse
     {
-        $sort  = $request->input('sort', 'id');
+        $sort = $request->input('sort', 'id');
         $order = $request->input('order', 'desc');
-        $rows  = $request->input('rows', 10);
-        $data  = [];
+        $rows = $request->input('rows', 10);
         $query = CashierCoupon::query()
             ->with([
                 'user:id,name',
-                'customer:id,idcard,name'
+                'customer:id,idcard,name',
             ])
             ->where('coupon_id', $request->input('coupon_id'))
             ->orderBy($sort, $order)
             ->paginate($rows);
 
-        if ($query) {
-            $data['rows']  = $query->items();
-            $data['total'] = $query->total();
-        } else {
-            $data['rows']  = [];
-            $data['total'] = 0;
-        }
-
-        return response_success($data);
+        return response_success([
+            'rows' => $query->items(),
+            'total' => $query->total(),
+        ]);
     }
 }

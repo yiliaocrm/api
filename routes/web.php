@@ -902,6 +902,7 @@ Route::controller(Web\CouponController::class)->prefix('coupon')->group(function
 Route::controller(Web\CouponDetailController::class)->prefix('coupon-detail')->group(function () {
     Route::get('manage', 'manage');
     Route::get('histories', 'histories');
+    Route::post('void', 'void');
 });
 
 Route::controller(Web\CustomerGroupController::class)->prefix('customer-group')->group(function () {
